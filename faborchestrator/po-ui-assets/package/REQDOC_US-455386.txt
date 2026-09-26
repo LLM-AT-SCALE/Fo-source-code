@@ -1,0 +1,208 @@
+AI Requirement Document – PO Management UI
+Project Information
+Date: 12-Nov-2024
+User Story: 455386
+Customer: Entegris KSP
+Feature: PO Management UI
+
+Business Requirement
+Create a Production Order Management page that enables users to perform bulk operations on materials belonging to a selected Production Order.
+The solution should allow users to:
+View Production Orders.
+Filter Production Orders.
+View materials belonging to the selected Production Order.
+Select multiple materials.
+Perform bulk actions:
+Hold
+Release
+Change Priority
+Update IsHot flag
+
+Functional Flow
+User opens the Production Order Management page.
+User optionally filters Production Orders using the Production Order field.
+Matching Production Orders are displayed in a grid.
+User selects one Production Order.
+Materials belonging to the selected Production Order are displayed.
+User selects one or more materials.
+User performs one of the following actions:
+Hold
+Release
+Change Priority
+The selected action is executed for all selected materials.
+
+Technical Requirements
+1. Custom API
+API Name
+CustomUpdateMaterialsPriority
+Purpose
+Updates multiple selected materials with:
+Priority
+IsHot
+Inputs
+List of Material IDs
+Priority (Integer)
+IsHot (Boolean)
+Processing
+For every selected material:
+Update Priority
+Update IsHot
+Return success or failure.
+
+2. Queries
+Query 1
+Name
+CustomRetrieveProductionOrders
+Purpose
+Retrieve Production Orders.
+Supports filtering by:
+Production Order Name
+Returns:
+Name
+Product
+Quantity
+ActiveMaterialsCount
+PlannedStartDate
+PlannedEndDate
+
+Query 2
+Name
+CustomRetrievePOMaterials
+Purpose
+Retrieve materials belonging to the selected Production Order.
+Returns:
+Material
+Step
+DateEnteredStep
+IsHot
+HoldCount
+SystemState
+TrackInDate
+TrackInResource
+TrackInId
+Comment
+
+UI Pages
+
+Page 1
+Name
+CustomChangePriorityWizard
+Type
+Wizard
+Form Fields
+Field
+	Type
+
+Priority
+	Integer
+
+IsHot
+	Boolean
+
+Purpose
+Collect user input before calling the custom API.
+
+Page 2
+Name
+CustomProductionOrderManagementUI
+Type
+Page
+
+Section 1 – Filter Form
+Field:
+Name
+	Type
+
+Production Order
+	String
+
+Purpose:
+Filter Production Orders.
+
+Section 2 – Production Order Grid
+Entity:
+Production Order
+Columns:
+Name (Link)
+Product (Link)
+Quantity
+ActiveMaterialsCount
+PlannedStartDate
+PlannedEndDate
+Selection Mode:
+Single Selection
+When a Production Order is selected:
+Load corresponding materials into the Materials grid.
+
+Section 3 – Materials Grid
+Entity:
+Material
+Columns:
+Material (Link)
+Step (Link)
+DateEnteredStep
+IsHot
+HoldCount
+SystemState
+TrackInDate
+TrackInResource
+TrackInId
+Comment (Link)
+Selection Mode:
+Multiple Selection
+
+Action Bar
+Buttons:
+Hold
+Action:
+Hold all selected materials.
+Supports multiple material selection.
+
+Release
+Action:
+Release all selected materials.
+Supports multiple material selection.
+
+Change Priority
+Opens:
+CustomChangePriorityWizard
+After user enters:
+Priority
+IsHot
+Call:
+CustomUpdateMaterialsPriority
+Update all selected materials.
+Supports multiple material selection.
+
+Workflow Diagram
+
+Expected Deliverables
+Custom API
+CustomUpdateMaterialsPriority
+Queries
+CustomRetrieveProductionOrders
+CustomRetrievePOMaterials
+UI Pages
+CustomProductionOrderManagementUI
+CustomChangePriorityWizard
+Bulk Operations
+Hold
+Release
+Change Priority
+Update IsHot
+Selection Rules
+Production Order: Single selection
+Materials: Multiple selection
+
+Acceptance Criteria
+Production Orders can be filtered.
+Production Orders are displayed correctly.
+Selecting a Production Order loads its materials.
+Users can select multiple materials.
+Hold works for all selected materials.
+Release works for all selected materials.
+Change Priority opens the wizard.
+Wizard accepts Priority and IsHot values.
+Custom API updates all selected materials.
+UI refreshes after successful update.
+Proper validation and error handling are implemented for invalid inputs or update failures.

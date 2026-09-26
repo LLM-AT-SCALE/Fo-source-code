@@ -1,0 +1,272 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+# =============================================================================
+# CMF networking (CloudFormation).
+#
+# Purpose: make the Fab app able to reach on-prem CMF. The app tier lives in
+# private subnets inside the CMF VPC (vpc-0bfed…), attached to the existing
+# route table that sends 10.10.1.0/24 to the Site-to-Site VPN (VGW) and
+# 0.0.0.0/0 to a NAT gateway, so the subnets inherit the VPN + NAT paths.
+# It also peers the CMF VPC to the shared VPC so the app can reach RDS (5432).
+#
+# This template owns the CMF networking. The VPC, VGW/VPN,
+# NAT, S3 gateway endpoint, and the CMF private route table already exist and
+# are referenced by ID (they are NOT managed here).
+#
+# Account 628203515088, region us-west-2.
+#
+# -----------------------------------------------------------------------------
+# IMPORT MAPPING — logical resource  ->  existing physical ID
+#   AppSubnetA                       ->  subnet-0cfc26eb17af33330   (us-west-2a)
+#   AppSubnetB                       ->  subnet-03de8d1716947ddfb   (us-west-2b)
+#   AppSubnetAAssociation            ->  <rtb-assoc id> (SubnetRouteTableAssociation, rtb-09fded11d95955fbd)
+#   AppSubnetBAssociation            ->  <rtb-assoc id> (SubnetRouteTableAssociation, rtb-09fded11d95955fbd)
+#   AppEgressSecurityGroup           ->  sg-0dc3bdccf1d97f2c3       (faborch-cmf-app-egress)
+#   RdsPeeringConnection             ->  <pcx-...>                  (CMF VPC <-> shared VPC)
+#   AppToSharedRoute                 ->  Route in rtb-09fded11d95955fbd -> shared VPC CIDR via peering
+#   SharedToAppRoute                 ->  Route in SharedRouteTableId -> CMF VPC CIDR via peering
+#   RdsIngressFromSubnetA/B          ->  SecurityGroupIngress on sg-0af6fdeed5a3882f2 (5432)
+#
+# For adoption of existing resources use:
+#   aws cloudformation create-change-set --change-set-type IMPORT ...
+# supplying the ResourcesToImport map (logical id -> physical id above).
+# The four inline SecurityGroup rule resources (Egress/Ingress) below are
+# import-supported as AWS::EC2::SecurityGroupEgress / SecurityGroupIngress.
+# =============================================================================
+
+Description: >-
+  CMF networking for the Fab app (account 628203515088, us-west-2). Port of the
+  earlier hand-managed networking. Defines private app subnets
+  in the CMF VPC on the VGW+NAT route table, an egress-only security group to
+  on-prem CMF (SQL + REST) and AWS/Anthropic via NAT, a VPC peering to the shared
+  VPC for RDS, the associated routes, and RDS ingress on 5432. Resource types are
+  chosen to support CloudFormation resource import so the already-existing
+  resources can be adopted, or recreated in another account/region.
+
+Parameters:
+  NamePrefix:
+    Type: String
+    Default: faborch-cmf
+    Description: Name prefix/tag for resources created by this template.
+
+  CmfVpcId:
+    Type: AWS::EC2::VPC::Id
+    Default: vpc-0bfed5466dbec5bf2
+    Description: >-
+      CMF VPC (CIDR 10.200.0.0/22) that already has the Site-to-Site VPN
+      (VGW vgw-02b836da79f6df84c) to on-prem CMF, a NAT for 0.0.0.0/0, and an
+      S3 gateway endpoint.
+
+  CmfVpcCidr:
+    Type: String
+    Default: 10.200.0.0/22
+    Description: CIDR of the CMF VPC (used for the shared->CMF return route).
+
+  CmfPrivateRouteTableId:
+    Type: String
+    Default: rtb-09fded11d95955fbd
+    Description: >-
+      Existing CMF private route table that routes 10.10.1.0/24 to the VGW and
+      0.0.0.0/0 to the NAT gateway. App subnets associate with it and it holds
+      the route to the shared VPC via peering.
+
+  AppSubnetACidr:
+    Type: String
+    Default: 10.200.0.0/25
+    Description: CIDR of the us-west-2a private app subnet.
+
+  AppSubnetBCidr:
+    Type: String
+    Default: 10.200.0.128/25
+    Description: CIDR of the us-west-2b private app subnet.
+
+  AppSubnetAAvailabilityZone:
+    Type: AWS::EC2::AvailabilityZone::Name
+    Default: us-west-2a
+    Description: AZ for the first private app subnet.
+
+  AppSubnetBAvailabilityZone:
+    Type: AWS::EC2::AvailabilityZone::Name
+    Default: us-west-2b
+    Description: AZ for the second private app subnet.
+
+  CmfOnPremCidr:
+    Type: String
+    Default: 10.10.1.0/24
+    Description: On-prem CIDR reachable over the VPN (CMF SQL + REST live here).
+
+  SharedVpcId:
+    Type: AWS::EC2::VPC::Id
+    Default: vpc-0521d5dc5d2554e5a
+    Description: Shared VPC that holds RDS (peered for 5432 connectivity).
+
+  SharedVpcCidr:
+    Type: String
+    Description: >-
+      CIDR of the shared VPC (vpc-0521d5dc5d2554e5a), used for the
+      app-subnets->shared return route. No default: the real value was not
+      supplied — look it up (aws ec2 describe-vpcs --vpc-ids
+      vpc-0521d5dc5d2554e5a --query 'Vpcs[0].CidrBlock') and pass it in.
+
+  SharedRouteTableId:
+    Type: String
+    Description: >-
+      Route table in the shared VPC that needs a return route to the CMF VPC.
+      Supply it explicitly here.
+
+  RdsSecurityGroupId:
+    Type: String
+    Default: sg-0af6fdeed5a3882f2
+    Description: RDS security group to open on 5432 from the app subnets.
+
+Resources:
+
+  # 1) Private app subnets in the CMF VPC, on the VGW+NAT route table.
+  AppSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref CmfVpcId
+      AvailabilityZone: !Ref AppSubnetAAvailabilityZone
+      CidrBlock: !Ref AppSubnetACidr
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: !Sub '${NamePrefix}-app-${AppSubnetAAvailabilityZone}'
+
+  AppSubnetB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref CmfVpcId
+      AvailabilityZone: !Ref AppSubnetBAvailabilityZone
+      CidrBlock: !Ref AppSubnetBCidr
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: !Sub '${NamePrefix}-app-${AppSubnetBAvailabilityZone}'
+
+  AppSubnetAAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref AppSubnetA
+      RouteTableId: !Ref CmfPrivateRouteTableId
+
+  AppSubnetBAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref AppSubnetB
+      RouteTableId: !Ref CmfPrivateRouteTableId
+
+  # 2) Egress-only SG for the app instances. Declared with an empty ingress and
+  #    no inline egress so the default allow-all egress rule is NOT created;
+  #    egress is defined explicitly via AWS::EC2::SecurityGroupEgress below
+  #    (one egress rule per destination).
+  AppEgressSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub '${NamePrefix}-app-egress'
+      GroupDescription: Fab app egress to on-prem CMF (SQL + REST) and AWS services
+      VpcId: !Ref CmfVpcId
+      SecurityGroupEgress:
+        # CMF SQL Browser (named-instance discovery) — UDP 1434 to on-prem.
+        - IpProtocol: udp
+          FromPort: 1434
+          ToPort: 1434
+          CidrIp: !Ref CmfOnPremCidr
+          Description: CMF SQL Browser (named-instance discovery)
+        # CMF SQL Server (1433 + dynamic instance port) — TCP 1024-65535 to on-prem.
+        - IpProtocol: tcp
+          FromPort: 1024
+          ToPort: 65535
+          CidrIp: !Ref CmfOnPremCidr
+          Description: CMF SQL Server (1433 + dynamic instance port)
+        # CMF REST API (HTTPS) over the VPN — TCP 443 to on-prem.
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: !Ref CmfOnPremCidr
+          Description: CMF REST API (HTTPS) over the VPN
+        # AWS services + Anthropic API (HTTPS via NAT) — TCP 443 to anywhere.
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+          Description: AWS services + Anthropic API (HTTPS via NAT)
+      Tags:
+        - Key: Name
+          Value: !Sub '${NamePrefix}-app-egress'
+
+  # 3) Peer the CMF VPC to the shared VPC for RDS (5432).
+  #    NOTE: AWS::EC2::VPCPeeringConnection does NOT support DNS-over-peering
+  #    options (remote VPC DNS resolution). Enable it out of
+  #    band, e.g.:
+  #      aws ec2 modify-vpc-peering-connection-options \
+  #        --vpc-peering-connection-id <pcx> \
+  #        --requester-peering-connection-options AllowDnsResolutionFromRemoteVpc=true \
+  #        --accepter-peering-connection-options AllowDnsResolutionFromRemoteVpc=true
+  RdsPeeringConnection:
+    Type: AWS::EC2::VPCPeeringConnection
+    Properties:
+      VpcId: !Ref CmfVpcId
+      PeerVpcId: !Ref SharedVpcId
+      Tags:
+        - Key: Name
+          Value: !Sub '${NamePrefix}-to-shared-rds'
+
+  # App subnets -> shared VPC (RDS) via the peer. Added to the CMF private
+  # route table that the app subnets are associated with.
+  AppToSharedRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref CmfPrivateRouteTableId
+      DestinationCidrBlock: !Ref SharedVpcCidr
+      VpcPeeringConnectionId: !Ref RdsPeeringConnection
+
+  # Shared VPC route table -> CMF VPC (return path) via the peer.
+  SharedToAppRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref SharedRouteTableId
+      DestinationCidrBlock: !Ref CmfVpcCidr
+      VpcPeeringConnectionId: !Ref RdsPeeringConnection
+
+  # Let the app subnets into the RDS security group on 5432.
+  RdsIngressFromSubnetA:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref RdsSecurityGroupId
+      Description: Fab app (CMF VPC us-west-2a) to RDS PostgreSQL
+      IpProtocol: tcp
+      FromPort: 5432
+      ToPort: 5432
+      CidrIp: !Ref AppSubnetACidr
+
+  RdsIngressFromSubnetB:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref RdsSecurityGroupId
+      Description: Fab app (CMF VPC us-west-2b) to RDS PostgreSQL
+      IpProtocol: tcp
+      FromPort: 5432
+      ToPort: 5432
+      CidrIp: !Ref AppSubnetBCidr
+
+Outputs:
+  AppSubnetAId:
+    Description: Private app subnet in us-west-2a.
+    Value: !Ref AppSubnetA
+
+  AppSubnetBId:
+    Description: Private app subnet in us-west-2b.
+    Value: !Ref AppSubnetB
+
+  AppSubnetIds:
+    Description: Comma-separated list of app subnet IDs (for EB / ASG placement).
+    Value: !Join [ ',', [ !Ref AppSubnetA, !Ref AppSubnetB ] ]
+
+  AppEgressSecurityGroupId:
+    Description: Egress-only security group for the Fab app instances.
+    Value: !Ref AppEgressSecurityGroup
+
+  RdsPeeringConnectionId:
+    Description: CMF VPC <-> shared VPC peering connection (for RDS).
+    Value: !Ref RdsPeeringConnection

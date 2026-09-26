@@ -1,0 +1,124 @@
+{
+  "$comment": "One entry per Docker image. `routes` are the app/ folders the image owns (everything else under app/ is removed before `next build`); `paths` are the URL prefixes the router/ALB sends to it; `assets` are the runtime folders it needs on disk; `scheduler` marks the one image that runs the background workers. `common` is kept in every web image. Static assets of every image are served under /_fab/<image>/_next/* so several builds can share one origin.",
+  "common": {
+    "routes": [
+      "app/layout.tsx",
+      "app/globals.css",
+      "app/artifact-panel.css",
+      "app/loading.tsx",
+      "app/favicon.ico",
+      "app/api/health"
+    ]
+  },
+  "images": {
+    "home": {
+      "description": "Login, cockpit, account settings, auth and user endpoints. Default target for anything no other image owns (public/ files, favicon).",
+      "default": true,
+      "routes": [
+        "app/page.tsx",
+        "app/home",
+        "app/settings",
+        "app/register",
+        "app/forgot-password",
+        "app/reset-password",
+        "app/force-password-change",
+        "app/api/auth",
+        "app/api/user",
+        "app/api/platform-theme"
+      ],
+      "paths": [
+        "/",
+        "/home",
+        "/settings",
+        "/register",
+        "/forgot-password",
+        "/reset-password",
+        "/force-password-change",
+        "/api/auth",
+        "/api/user",
+        "/api/platform-theme"
+      ],
+      "assets": [],
+      "nodeOptions": "--max-old-space-size=1024"
+    },
+    "support-engineer": {
+      "description": "AI Support Engineer and FabInsight chat, reports, MCP connections, conversations, files and artifacts.",
+      "routes": [
+        "app/chat",
+        "app/reports",
+        "app/api/chat",
+        "app/api/conversations",
+        "app/api/messages",
+        "app/api/artifacts",
+        "app/api/files",
+        "app/api/memory",
+        "app/api/mcp",
+        "app/api/fabinsight"
+      ],
+      "paths": [
+        "/chat",
+        "/reports",
+        "/api/chat",
+        "/api/conversations",
+        "/api/messages",
+        "/api/artifacts",
+        "/api/files",
+        "/api/memory",
+        "/api/mcp",
+        "/api/fabinsight"
+      ],
+      "assets": [],
+      "nodeOptions": "--max-old-space-size=6144"
+    },
+    "master-data-load": {
+      "description": "Modeling Agent: loader wizard, modeling chat, CMF package APIs. Needs the KSP templates on disk and, in AWS, the CMF VPC placement.",
+      "routes": [
+        "app/modeling-agent",
+        "app/api/modeling-agent",
+        "app/api/cmf"
+      ],
+      "paths": [
+        "/modeling-agent",
+        "/api/modeling-agent",
+        "/api/cmf"
+      ],
+      "assets": ["templates"],
+      "nodeOptions": "--max-old-space-size=2048"
+    },
+    "coding-agent": {
+      "description": "Coding Agent: requirement document to CMF deployment unit. Needs po-ui-assets/ on disk and a writable PO_UI_RUNS_DIR.",
+      "routes": [
+        "app/backend-agent",
+        "app/api/backend-agent"
+      ],
+      "paths": [
+        "/backend-agent",
+        "/api/backend-agent"
+      ],
+      "assets": ["po-ui-assets"],
+      "nodeOptions": "--max-old-space-size=4096"
+    },
+    "admin": {
+      "description": "Admin Console. Only image that carries the on-the-fly MCP deploy permissions (create Lambdas + secrets).",
+      "routes": [
+        "app/admin",
+        "app/api/admin"
+      ],
+      "paths": [
+        "/admin",
+        "/api/admin"
+      ],
+      "assets": [],
+      "nodeOptions": "--max-old-space-size=2048"
+    },
+    "fabinsight": {
+      "description": "Scheduler process: compile jobs, dashboard refresh, expiry, alerts, baselines, shift summaries and the session-log retention sweep. No public route; only /api/health for the orchestrator.",
+      "routes": [],
+      "paths": [],
+      "assets": [],
+      "scheduler": true,
+      "port": 8080,
+      "nodeOptions": "--max-old-space-size=4096"
+    }
+  }
+}

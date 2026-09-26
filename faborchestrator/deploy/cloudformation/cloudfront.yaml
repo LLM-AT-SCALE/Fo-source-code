@@ -1,0 +1,88 @@
+AWSTemplateFormatVersion: '2010-09-09'
+# =============================================================================
+# CloudFront — optional HTTPS front for the ALB (one public hostname).
+#
+# Two behaviours:
+#   /_fab/*/_next/static/*   immutable hashed assets → cached (CachingOptimized)
+#   everything else          pass-through, no caching, all headers/cookies/query
+#                            forwarded (CachingDisabled + AllViewer)
+#
+# Known limit: CloudFront's origin response timeout is 60 s (can be raised to
+# 180 s by AWS support). The chat streams tokens continuously, so the stream
+# stays alive; a query that returns nothing for longer than the timeout is cut.
+# The ALB itself keeps the 600 s idle timeout, so point clients that need long
+# silent requests at the ALB hostname directly if that ever matters.
+#
+# Deploy in us-east-1 for the certificate only if you use a custom domain; the
+# stack itself can run in any region (CloudFront is global).
+# =============================================================================
+Description: >-
+  CloudFront distribution in front of the FabOrchestrator ALB with static-asset
+  caching and a pass-through default behaviour.
+
+Parameters:
+  AlbDnsName:
+    Type: String
+    Description: DNS name of the platform ALB (platform stack output).
+  DomainName:
+    Type: String
+    Default: ''
+    Description: Optional custom hostname (needs CertificateArn in us-east-1).
+  CertificateArn:
+    Type: String
+    Default: ''
+    Description: ACM certificate ARN in us-east-1 for DomainName.
+  WebAclArn:
+    Type: String
+    Default: ''
+    Description: Optional WAF web ACL (e.g. an IP allow-list for /admin/*).
+
+Conditions:
+  HasDomain: !Not [!Equals [!Ref DomainName, '']]
+  HasWebAcl: !Not [!Equals [!Ref WebAclArn, '']]
+
+Resources:
+  Distribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        Comment: FabOrchestrator (per-module ALB origin)
+        HttpVersion: http2and3
+        PriceClass: PriceClass_100
+        Aliases: !If [HasDomain, [!Ref DomainName], !Ref 'AWS::NoValue']
+        WebACLId: !If [HasWebAcl, !Ref WebAclArn, !Ref 'AWS::NoValue']
+        ViewerCertificate: !If
+          - HasDomain
+          - { AcmCertificateArn: !Ref CertificateArn, SslSupportMethod: sni-only, MinimumProtocolVersion: TLSv1.2_2021 }
+          - { CloudFrontDefaultCertificate: true }
+        Origins:
+          - Id: alb
+            DomainName: !Ref AlbDnsName
+            CustomOriginConfig:
+              OriginProtocolPolicy: https-only
+              OriginSSLProtocols: [TLSv1.2]
+              OriginReadTimeout: 60
+              OriginKeepaliveTimeout: 60
+        DefaultCacheBehavior:
+          TargetOriginId: alb
+          ViewerProtocolPolicy: redirect-to-https
+          AllowedMethods: [GET, HEAD, OPTIONS, PUT, PATCH, POST, DELETE]
+          CachedMethods: [GET, HEAD]
+          Compress: true
+          CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad          # Managed-CachingDisabled
+          OriginRequestPolicyId: 216adef6-5c7f-47e4-b989-5492eafa07d3  # Managed-AllViewer
+        CacheBehaviors:
+          - PathPattern: '/_fab/*/_next/static/*'
+            TargetOriginId: alb
+            ViewerProtocolPolicy: redirect-to-https
+            AllowedMethods: [GET, HEAD]
+            CachedMethods: [GET, HEAD]
+            Compress: true
+            CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6        # Managed-CachingOptimized
+
+Outputs:
+  DistributionId:
+    Value: !Ref Distribution
+  DistributionDomainName:
+    Value: !GetAtt Distribution.DomainName

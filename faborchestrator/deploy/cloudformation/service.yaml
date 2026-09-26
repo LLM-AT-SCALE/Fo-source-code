@@ -1,0 +1,407 @@
+AWSTemplateFormatVersion: '2010-09-09'
+# =============================================================================
+# Service — ONE module image as its own ECS Fargate service (deploy six times).
+#
+# Each module gets its own stack, so a deploy, rollback, scaling change or
+# crash in one module never touches another:
+#
+#   stack                              module image        ALB paths (modules.json)
+#   faborchestrator-svc-home           home                /  /home  /settings  /api/auth ...  + catch-all /*
+#   faborchestrator-svc-support-engineer support-engineer              /chat /reports /api/chat /api/mcp /api/fabinsight ...
+#   faborchestrator-svc-master-data-load  master-data-load /modeling-agent /api/modeling-agent /api/cmf  (CMF VPC subnets)
+#   faborchestrator-svc-coding-agent   coding-agent        /backend-agent /api/backend-agent  (+ EFS runs volume)
+#   faborchestrator-svc-admin          admin               /admin /api/admin  (+ OTF MCP deploy policy)
+#   faborchestrator-svc-fabinsight  fabinsight  none (scheduler; REPORT_SCHEDULER_ENABLED=true)
+#
+# deploy/scripts/aws-deploy.sh derives the parameters from deploy/modules.json
+# and deploy/aws-params.json, builds + pushes the image and deploys this stack.
+#
+# Path patterns: every prefix in modules.json becomes `<prefix>*` (and `/` stays
+# exact); the image's own assets are `/_fab/<image>/*`. An ALB rule takes at most
+# five patterns, so up to four rules are created (PathPatterns1..4) at
+# RulePriority, RulePriority+1, ... Priorities must not collide between stacks:
+# admin 100, chat 200, master-data-load 300, coding-agent 400, home 900 and its
+# catch-all `/*` at 1000.
+#
+# Environment: plain values come in as parameters below; secrets are read from
+# the platform stack's Secrets Manager JSON secret by key. Every key listed
+# under `Secrets` must exist in that secret (an empty string is fine).
+# =============================================================================
+Description: >-
+  One FabOrchestrator module image as an ECS Fargate service with its own task
+  definition, target group, ALB path rules, log group and task role.
+
+Parameters:
+  PlatformStackName:
+    Type: String
+    Default: faborchestrator-platform
+    Description: Name of the platform.yaml stack (its exports are imported).
+  Module:
+    Type: String
+    AllowedValues: [home, support-engineer, master-data-load, coding-agent, admin, fabinsight]
+  ImageUri:
+    Type: String
+    Description: Full image URI incl. tag, e.g. 1234.dkr.ecr.us-west-2.amazonaws.com/faborchestrator/chat:2026-09-22-1
+  AppUrl:
+    Type: String
+    Description: Public origin, e.g. https://app.example.com (APP_URL for every module).
+  SubnetIds:
+    Type: List<AWS::EC2::Subnet::Id>
+    Description: Subnets for the tasks (shared-VPC private subnets, or the CMF app subnets for master-data-load).
+  SecurityGroupIds:
+    Type: List<AWS::EC2::SecurityGroup::Id>
+    Description: Task security groups (the platform task SG; plus the CMF egress SG for master-data-load).
+  Cpu:
+    Type: Number
+    Default: 1024
+    AllowedValues: [256, 512, 1024, 2048, 4096, 8192]
+  Memory:
+    Type: Number
+    Default: 2048
+    Description: Task memory (MiB). Chat needs 8192 (6 GB heap); keep NodeOptions below it.
+  NodeOptions:
+    Type: String
+    Default: --max-old-space-size=1536
+  DesiredCount:
+    Type: Number
+    Default: 1
+  MaxCount:
+    Type: Number
+    Default: 3
+    Description: Upper bound for CPU-based auto scaling (web images only).
+  ContainerPort:
+    Type: Number
+    Default: 3000
+    Description: 3000 for web images, 8080 for the worker.
+  HasLoadBalancer:
+    Type: String
+    Default: 'true'
+    AllowedValues: ['true', 'false']
+    Description: false for fabinsight (no public route).
+  RulePriority:
+    Type: Number
+    Default: 100
+  PathPatterns1:
+    Type: CommaDelimitedList
+    Default: ''
+    Description: Up to five ALB path patterns.
+  PathPatterns2:
+    Type: CommaDelimitedList
+    Default: ''
+  PathPatterns3:
+    Type: CommaDelimitedList
+    Default: ''
+  PathPatterns4:
+    Type: CommaDelimitedList
+    Default: ''
+  CatchAll:
+    Type: String
+    Default: 'false'
+    AllowedValues: ['true', 'false']
+    Description: true only for home — adds the `/*` rule at priority 1000 (public/ files, unknown URLs).
+  SchedulerEnabled:
+    Type: String
+    Default: 'false'
+    AllowedValues: ['true', 'false']
+    Description: REPORT_SCHEDULER_ENABLED — true only for fabinsight.
+  UseRunsVolume:
+    Type: String
+    Default: 'false'
+    AllowedValues: ['true', 'false']
+    Description: true only for coding-agent — mounts the platform EFS access point at PO_UI_RUNS_DIR.
+  ExtraManagedPolicyArns:
+    Type: CommaDelimitedList
+    Default: ''
+    Description: >-
+      Managed policies for the TASK role: admin → the mcp-otf-admin-deploy policy
+      (mcp-onthefly.yaml output); master-data-load → cmf-loader-access (iam.yaml);
+      support-engineer and fabinsight → the policy that invokes the MCP Lambdas.
+  LogRetentionDays:
+    Type: Number
+    Default: 30
+
+Conditions:
+  WithLoadBalancer: !Equals [!Ref HasLoadBalancer, 'true']
+  HasPaths1: !And [!Condition WithLoadBalancer, !Not [!Equals [!Join ['', !Ref PathPatterns1], '']]]
+  HasPaths2: !And [!Condition WithLoadBalancer, !Not [!Equals [!Join ['', !Ref PathPatterns2], '']]]
+  HasPaths3: !And [!Condition WithLoadBalancer, !Not [!Equals [!Join ['', !Ref PathPatterns3], '']]]
+  HasPaths4: !And [!Condition WithLoadBalancer, !Not [!Equals [!Join ['', !Ref PathPatterns4], '']]]
+  IsCatchAll: !And [!Condition WithLoadBalancer, !Equals [!Ref CatchAll, 'true']]
+  WithRunsVolume: !Equals [!Ref UseRunsVolume, 'true']
+  HasExtraPolicies: !Not [!Equals [!Join ['', !Ref ExtraManagedPolicyArns], '']]
+
+Resources:
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/faborchestrator/${Module}'
+      RetentionInDays: !Ref LogRetentionDays
+
+  TaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub 'faborchestrator-${Module}-task'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: { Service: ecs-tasks.amazonaws.com }
+            Action: sts:AssumeRole
+      ManagedPolicyArns: !If [HasExtraPolicies, !Ref ExtraManagedPolicyArns, !Ref 'AWS::NoValue']
+      Policies:
+        - PolicyName: exec-and-logs
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ssmmessages:CreateControlChannel
+                  - ssmmessages:CreateDataChannel
+                  - ssmmessages:OpenControlChannel
+                  - ssmmessages:OpenDataChannel
+                Resource: '*'
+        - !If
+          - WithRunsVolume
+          - PolicyName: efs-runs
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action: [elasticfilesystem:ClientMount, elasticfilesystem:ClientWrite]
+                  Resource: !Sub
+                    - 'arn:aws:elasticfilesystem:${AWS::Region}:${AWS::AccountId}:file-system/${Fs}'
+                    - Fs: { 'Fn::ImportValue': !Sub '${PlatformStackName}-RunsFileSystemId' }
+          - !Ref 'AWS::NoValue'
+
+  TaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub 'faborchestrator-${Module}'
+      RequiresCompatibilities: [FARGATE]
+      NetworkMode: awsvpc
+      Cpu: !Ref Cpu
+      Memory: !Ref Memory
+      RuntimePlatform: { OperatingSystemFamily: LINUX, CpuArchitecture: X86_64 }
+      ExecutionRoleArn: { 'Fn::ImportValue': !Sub '${PlatformStackName}-TaskExecutionRoleArn' }
+      TaskRoleArn: !GetAtt TaskRole.Arn
+      Volumes:
+        - !If
+          - WithRunsVolume
+          - Name: po-ui-runs
+            EFSVolumeConfiguration:
+              FilesystemId: { 'Fn::ImportValue': !Sub '${PlatformStackName}-RunsFileSystemId' }
+              TransitEncryption: ENABLED
+              AuthorizationConfig:
+                AccessPointId: { 'Fn::ImportValue': !Sub '${PlatformStackName}-RunsAccessPointId' }
+                IAM: ENABLED
+          - !Ref 'AWS::NoValue'
+      ContainerDefinitions:
+        - Name: app
+          Image: !Ref ImageUri
+          Essential: true
+          PortMappings:
+            - { ContainerPort: !Ref ContainerPort, Protocol: tcp }
+          StopTimeout: 120
+          HealthCheck:
+            Command: ['CMD-SHELL', !Sub 'wget -qO- http://127.0.0.1:${ContainerPort}/api/health >/dev/null 2>&1 || exit 1']
+            Interval: 15
+            Timeout: 10
+            Retries: 5
+            StartPeriod: 30
+          MountPoints:
+            - !If
+              - WithRunsVolume
+              - { SourceVolume: po-ui-runs, ContainerPath: /data/po-ui-runs, ReadOnly: false }
+              - !Ref 'AWS::NoValue'
+          Environment:
+            - { Name: NODE_ENV, Value: production }
+            - { Name: HOSTNAME, Value: 0.0.0.0 }
+            - { Name: PORT, Value: !Ref ContainerPort }
+            - { Name: NODE_OPTIONS, Value: !Ref NodeOptions }
+            - { Name: APP_URL, Value: !Ref AppUrl }
+            - { Name: FAB_IMAGE, Value: !Ref Module }
+            - { Name: REPORT_SCHEDULER_ENABLED, Value: !Ref SchedulerEnabled }
+            - { Name: PO_UI_RUNS_DIR, Value: /data/po-ui-runs }
+            - { Name: AWS_REGION, Value: !Ref 'AWS::Region' }
+          Secrets:
+            # Core — must exist in the platform secret
+            - { Name: DATABASE_URL,           ValueFrom: !Sub ['${SecretArn}:DATABASE_URL::', { SecretArn: { 'Fn::ImportValue': !Sub '${PlatformStackName}-AppSecretArn' } }] }
+            - { Name: ANTHROPIC_API_KEY,      ValueFrom: !Sub ['${SecretArn}:ANTHROPIC_API_KEY::', { SecretArn: { 'Fn::ImportValue': !Sub '${PlatformStackName}-AppSecretArn' } }] }
+            - { Name: KEY_ENCRYPTION_SECRET,  ValueFrom: !Sub ['${SecretArn}:KEY_ENCRYPTION_SECRET::', { SecretArn: { 'Fn::ImportValue': !Sub '${PlatformStackName}-AppSecretArn' } }] }
+            # Email (invitations, resets, dashboard live, shift summaries)
+            - { Name: SMTP_SERVER,            ValueFrom: !Sub ['${SecretArn}:SMTP_SERVER::', { SecretArn: { 'Fn::ImportValue': !Sub '${PlatformStackName}-AppSecretArn' } }] }
+            - { Name: SMTP_PORT,              ValueFrom: !Sub ['${SecretArn}:SMTP_PORT::', { SecretArn: { 'Fn::ImportValue': !Sub '${PlatformStackName}-AppSecretArn' } }] }
+            - { Name: SMTP_USERNAME,          ValueFrom: !Sub ['${SecretArn}:SMTP_USERNAME::', { SecretArn: { 'Fn::ImportValue': !Sub '${PlatformStackName}-AppSecretArn' } }] }
+            - { Name: SMTP_PASSWORD,          ValueFrom: !Sub ['${SecretArn}:SMTP_PASSWORD::', { SecretArn: { 'Fn::ImportValue': !Sub '${PlatformStackName}-AppSecretArn' } }] }
+            - { Name: SMTP_FROM_EMAIL,        ValueFrom: !Sub ['${SecretArn}:SMTP_FROM_EMAIL::', { SecretArn: { 'Fn::ImportValue': !Sub '${PlatformStackName}-AppSecretArn' } }] }
+            # Uploads
+            - { Name: S3_UPLOAD_BUCKET,       ValueFrom: !Sub ['${SecretArn}:S3_UPLOAD_BUCKET::', { SecretArn: { 'Fn::ImportValue': !Sub '${PlatformStackName}-AppSecretArn' } }] }
+            - { Name: S3_PRESIGN_TTL_SECONDS, ValueFrom: !Sub ['${SecretArn}:S3_PRESIGN_TTL_SECONDS::', { SecretArn: { 'Fn::ImportValue': !Sub '${PlatformStackName}-AppSecretArn' } }] }
+            - { Name: S3_BUCKET,              ValueFrom: !Sub ['${SecretArn}:S3_BUCKET::', { SecretArn: { 'Fn::ImportValue': !Sub '${PlatformStackName}-AppSecretArn' } }] }
+            # CMF / Master Data Load
+            - { Name: CMF_BASE_URL,           ValueFrom: !Sub ['${SecretArn}:CMF_BASE_URL::', { SecretArn: { 'Fn::ImportValue': !Sub '${PlatformStackName}-AppSecretArn' } }] }
+            - { Name: HOST_RESOLVER,          ValueFrom: !Sub ['${SecretArn}:HOST_RESOLVER::', { SecretArn: { 'Fn::ImportValue': !Sub '${PlatformStackName}-AppSecretArn' } }] }
+            - { Name: CMF_SQL_SERVER,         ValueFrom: !Sub ['${SecretArn}:CMF_SQL_SERVER::', { SecretArn: { 'Fn::ImportValue': !Sub '${PlatformStackName}-AppSecretArn' } }] }
+            - { Name: CMF_SQL_INSTANCE,       ValueFrom: !Sub ['${SecretArn}:CMF_SQL_INSTANCE::', { SecretArn: { 'Fn::ImportValue': !Sub '${PlatformStackName}-AppSecretArn' } }] }
+            - { Name: CMF_SQL_DB,             ValueFrom: !Sub ['${SecretArn}:CMF_SQL_DB::', { SecretArn: { 'Fn::ImportValue': !Sub '${PlatformStackName}-AppSecretArn' } }] }
+            - { Name: CMF_SQL_USER,           ValueFrom: !Sub ['${SecretArn}:CMF_SQL_USER::', { SecretArn: { 'Fn::ImportValue': !Sub '${PlatformStackName}-AppSecretArn' } }] }
+            - { Name: CMF_SQL_PASS,           ValueFrom: !Sub ['${SecretArn}:CMF_SQL_PASS::', { SecretArn: { 'Fn::ImportValue': !Sub '${PlatformStackName}-AppSecretArn' } }] }
+            - { Name: CMF_TLS_INSECURE,       ValueFrom: !Sub ['${SecretArn}:CMF_TLS_INSECURE::', { SecretArn: { 'Fn::ImportValue': !Sub '${PlatformStackName}-AppSecretArn' } }] }
+            - { Name: CMF_TOKEN_SECRET_ID,    ValueFrom: !Sub ['${SecretArn}:CMF_TOKEN_SECRET_ID::', { SecretArn: { 'Fn::ImportValue': !Sub '${PlatformStackName}-AppSecretArn' } }] }
+            - { Name: CMF_TOKEN_REGION,       ValueFrom: !Sub ['${SecretArn}:CMF_TOKEN_REGION::', { SecretArn: { 'Fn::ImportValue': !Sub '${PlatformStackName}-AppSecretArn' } }] }
+            # On-the-fly MCP (admin) — see DEPLOYMENT.md §5b
+            - { Name: MCP_OTF_RUNTIME_ROLE_ARN,       ValueFrom: !Sub ['${SecretArn}:MCP_OTF_RUNTIME_ROLE_ARN::', { SecretArn: { 'Fn::ImportValue': !Sub '${PlatformStackName}-AppSecretArn' } }] }
+            - { Name: MCP_OTF_ARTIFACT_BUCKET,        ValueFrom: !Sub ['${SecretArn}:MCP_OTF_ARTIFACT_BUCKET::', { SecretArn: { 'Fn::ImportValue': !Sub '${PlatformStackName}-AppSecretArn' } }] }
+            - { Name: MCP_OTF_DISCOVERY_FUNCTION,     ValueFrom: !Sub ['${SecretArn}:MCP_OTF_DISCOVERY_FUNCTION::', { SecretArn: { 'Fn::ImportValue': !Sub '${PlatformStackName}-AppSecretArn' } }] }
+            - { Name: MCP_OTF_RUNTIME_VERSION,        ValueFrom: !Sub ['${SecretArn}:MCP_OTF_RUNTIME_VERSION::', { SecretArn: { 'Fn::ImportValue': !Sub '${PlatformStackName}-AppSecretArn' } }] }
+            - { Name: MCP_OTF_CMF_SUBNET_IDS,         ValueFrom: !Sub ['${SecretArn}:MCP_OTF_CMF_SUBNET_IDS::', { SecretArn: { 'Fn::ImportValue': !Sub '${PlatformStackName}-AppSecretArn' } }] }
+            - { Name: MCP_OTF_CMF_SECURITY_GROUP_ID,  ValueFrom: !Sub ['${SecretArn}:MCP_OTF_CMF_SECURITY_GROUP_ID::', { SecretArn: { 'Fn::ImportValue': !Sub '${PlatformStackName}-AppSecretArn' } }] }
+            - { Name: MCP_OTF_SUBNET_IDS,             ValueFrom: !Sub ['${SecretArn}:MCP_OTF_SUBNET_IDS::', { SecretArn: { 'Fn::ImportValue': !Sub '${PlatformStackName}-AppSecretArn' } }] }
+            - { Name: MCP_OTF_SECURITY_GROUP_ID,      ValueFrom: !Sub ['${SecretArn}:MCP_OTF_SECURITY_GROUP_ID::', { SecretArn: { 'Fn::ImportValue': !Sub '${PlatformStackName}-AppSecretArn' } }] }
+            # CMF token-refresh Lambda provisioning (admin)
+            - { Name: CMF_LAMBDA_ROLE_ARN,            ValueFrom: !Sub ['${SecretArn}:CMF_LAMBDA_ROLE_ARN::', { SecretArn: { 'Fn::ImportValue': !Sub '${PlatformStackName}-AppSecretArn' } }] }
+            - { Name: CMF_LAMBDA_ARTIFACT_BUCKET,     ValueFrom: !Sub ['${SecretArn}:CMF_LAMBDA_ARTIFACT_BUCKET::', { SecretArn: { 'Fn::ImportValue': !Sub '${PlatformStackName}-AppSecretArn' } }] }
+            - { Name: CMF_LAMBDA_ARTIFACT_KEY,        ValueFrom: !Sub ['${SecretArn}:CMF_LAMBDA_ARTIFACT_KEY::', { SecretArn: { 'Fn::ImportValue': !Sub '${PlatformStackName}-AppSecretArn' } }] }
+            - { Name: CMF_LAMBDA_SUBNET_IDS,          ValueFrom: !Sub ['${SecretArn}:CMF_LAMBDA_SUBNET_IDS::', { SecretArn: { 'Fn::ImportValue': !Sub '${PlatformStackName}-AppSecretArn' } }] }
+            - { Name: CMF_LAMBDA_SECURITY_GROUP_ID,   ValueFrom: !Sub ['${SecretArn}:CMF_LAMBDA_SECURITY_GROUP_ID::', { SecretArn: { 'Fn::ImportValue': !Sub '${PlatformStackName}-AppSecretArn' } }] }
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref LogGroup
+              awslogs-region: !Ref 'AWS::Region'
+              awslogs-stream-prefix: ecs
+
+  # ------------------------------------------------------------- load balancing
+  TargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Condition: WithLoadBalancer
+    Properties:
+      Name: !Sub 'fab-${Module}'
+      VpcId: { 'Fn::ImportValue': !Sub '${PlatformStackName}-VpcId' }
+      TargetType: ip
+      Protocol: HTTP
+      Port: !Ref ContainerPort
+      # /api/health does no work (no DB, no render) so a busy task stays in service.
+      HealthCheckPath: /api/health
+      HealthCheckIntervalSeconds: 15
+      HealthCheckTimeoutSeconds: 10
+      HealthyThresholdCount: 3
+      UnhealthyThresholdCount: 5
+      Matcher: { HttpCode: '200' }
+      TargetGroupAttributes:
+        - { Key: deregistration_delay.timeout_seconds, Value: '60' }
+        - { Key: stickiness.enabled, Value: 'false' }
+
+  Rule1:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Condition: HasPaths1
+    Properties:
+      ListenerArn: { 'Fn::ImportValue': !Sub '${PlatformStackName}-HttpsListenerArn' }
+      Priority: !Ref RulePriority
+      Conditions: [{ Field: path-pattern, PathPatternConfig: { Values: !Ref PathPatterns1 } }]
+      Actions: [{ Type: forward, TargetGroupArn: !Ref TargetGroup }]
+  Rule2:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Condition: HasPaths2
+    Properties:
+      ListenerArn: { 'Fn::ImportValue': !Sub '${PlatformStackName}-HttpsListenerArn' }
+      Priority: !Sub '${RulePriority}1'
+      Conditions: [{ Field: path-pattern, PathPatternConfig: { Values: !Ref PathPatterns2 } }]
+      Actions: [{ Type: forward, TargetGroupArn: !Ref TargetGroup }]
+  Rule3:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Condition: HasPaths3
+    Properties:
+      ListenerArn: { 'Fn::ImportValue': !Sub '${PlatformStackName}-HttpsListenerArn' }
+      Priority: !Sub '${RulePriority}2'
+      Conditions: [{ Field: path-pattern, PathPatternConfig: { Values: !Ref PathPatterns3 } }]
+      Actions: [{ Type: forward, TargetGroupArn: !Ref TargetGroup }]
+  Rule4:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Condition: HasPaths4
+    Properties:
+      ListenerArn: { 'Fn::ImportValue': !Sub '${PlatformStackName}-HttpsListenerArn' }
+      Priority: !Sub '${RulePriority}3'
+      Conditions: [{ Field: path-pattern, PathPatternConfig: { Values: !Ref PathPatterns4 } }]
+      Actions: [{ Type: forward, TargetGroupArn: !Ref TargetGroup }]
+  CatchAllRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Condition: IsCatchAll
+    Properties:
+      ListenerArn: { 'Fn::ImportValue': !Sub '${PlatformStackName}-HttpsListenerArn' }
+      Priority: 1000
+      Conditions: [{ Field: path-pattern, PathPatternConfig: { Values: ['/*'] } }]
+      Actions: [{ Type: forward, TargetGroupArn: !Ref TargetGroup }]
+
+  # -------------------------------------------------------------------- service
+  Service:
+    Type: AWS::ECS::Service
+    Properties:
+      ServiceName: !Sub 'faborchestrator-${Module}'
+      # The target group must be attached to the listener before the service is
+      # created; referencing the first rule here creates that dependency only
+      # when the module has a public route (the worker has none).
+      Tags:
+        - Key: fab:module
+          Value: !Ref Module
+        - Key: fab:first-rule
+          Value: !If [HasPaths1, !Ref Rule1, none]
+      Cluster: { 'Fn::ImportValue': !Sub '${PlatformStackName}-ClusterName' }
+      LaunchType: FARGATE
+      PlatformVersion: LATEST
+      TaskDefinition: !Ref TaskDefinition
+      DesiredCount: !Ref DesiredCount
+      EnableExecuteCommand: true
+      HealthCheckGracePeriodSeconds: !If [WithLoadBalancer, 90, !Ref 'AWS::NoValue']
+      DeploymentConfiguration:
+        MinimumHealthyPercent: !If [WithRunsVolume, 0, 100]   # the runs volume is single-writer
+        MaximumPercent: !If [WithRunsVolume, 100, 200]
+        DeploymentCircuitBreaker: { Enable: true, Rollback: true }
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: DISABLED
+          Subnets: !Ref SubnetIds
+          SecurityGroups: !Ref SecurityGroupIds
+      LoadBalancers: !If
+        - WithLoadBalancer
+        - - { ContainerName: app, ContainerPort: !Ref ContainerPort, TargetGroupArn: !Ref TargetGroup }
+        - !Ref 'AWS::NoValue'
+
+  # ------------------------------------------------------------- auto scaling
+  ScalableTarget:
+    Type: AWS::ApplicationAutoScaling::ScalableTarget
+    Condition: WithLoadBalancer
+    Properties:
+      ServiceNamespace: ecs
+      ScalableDimension: ecs:service:DesiredCount
+      ResourceId: !Sub
+        - 'service/${Cluster}/${Svc}'
+        - Cluster: { 'Fn::ImportValue': !Sub '${PlatformStackName}-ClusterName' }
+          Svc: !GetAtt Service.Name
+      MinCapacity: !Ref DesiredCount
+      MaxCapacity: !If [WithRunsVolume, 1, !Ref MaxCount]
+      RoleARN: !Sub 'arn:aws:iam::${AWS::AccountId}:role/aws-service-role/ecs.application-autoscaling.amazonaws.com/AWSServiceRoleForApplicationAutoScaling_ECSService'
+
+  CpuScaling:
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    Condition: WithLoadBalancer
+    Properties:
+      PolicyName: !Sub 'faborchestrator-${Module}-cpu'
+      PolicyType: TargetTrackingScaling
+      ScalingTargetId: !Ref ScalableTarget
+      TargetTrackingScalingPolicyConfiguration:
+        PredefinedMetricSpecification: { PredefinedMetricType: ECSServiceAverageCPUUtilization }
+        TargetValue: 65
+        ScaleInCooldown: 300
+        ScaleOutCooldown: 60
+
+Outputs:
+  ServiceName:
+    Value: !GetAtt Service.Name
+  TaskDefinitionArn:
+    Value: !Ref TaskDefinition
+  TargetGroupArn:
+    Condition: WithLoadBalancer
+    Value: !Ref TargetGroup
+  LogGroupName:
+    Value: !Ref LogGroup

@@ -1,0 +1,89 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+/test-results/
+/playwright-report/
+/playwright/.cache/
+/.lighthouse/
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+.env*
+
+# sensitive config files
+iam/
+.claude/settings.local.json
+
+# non-essential / generated
+.agents/
+.claude/skills/
+docs/
+app-logs.json
+test-resolve.js
+test-resolve-file.js
+patch-full-chat-app.mjs
+.playwright-mcp/
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+/lib/generated/prisma
+
+/lib/generated/prisma
+
+# Coding Agent run directories (PO_UI_RUNS_DIR, default .po-ui-runs).
+# Every run writes the CLIENT'S requirement document plus the generated page,
+# queries and reports here. It is per-machine working output and it carries
+# customer content — it must never reach the repository.
+.po-ui-runs/
+
+# Coding Agent evidence corpora — the CLIENT'S OWN artifacts, not our source.
+#   corpus/   69 delivered CMF query and UI-page exports
+#   samples/  10 requirement documents (.docx), export zips, screenshots
+# The pipeline reads them (querySources.roots and samplesDir in pipeline.json),
+# so a checkout without them can serve the app but cannot GENERATE. Provision
+# them per environment and point `PO_UI_ASSETS_DIR` at the populated root.
+# Everything else under po-ui-assets/ is curated and stays in the repo:
+# config/ (pipeline.json), package/ (prompts, skeletons, dictionaries),
+# graph/ and schema/ (entity relations).
+po-ui-assets/corpus/
+po-ui-assets/samples/
+po-ui-assets/package/samples/
+
+# per-account deployment parameters (copy of deploy/aws-params.example.json)
+deploy/aws-params.json
+
+# Local-only Helm values with secrets (never commit)
+deploy/helm/**/values-*.secret.yaml
+prisma/fresh_schema.sql

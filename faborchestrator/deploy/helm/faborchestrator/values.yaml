@@ -1,0 +1,113 @@
+# Defaults shared by every environment. Environment values (account, ARNs,
+# buckets, URL) live in values-<env>.yaml next to this file.
+
+image:
+  registry: ""            # <account>.dkr.ecr.<region>.amazonaws.com
+  repositoryPrefix: fo-dev
+  tag: latest
+  pullPolicy: IfNotPresent
+
+appUrl: ""                 # APP_URL — the CloudFront URL (eks-edge output AppUrl)
+awsRegion: us-west-2
+
+# Plain (non-secret) environment for every module.
+env:
+  NODE_ENV: production
+  HOSTNAME: 0.0.0.0
+  PG_POOL_MAX: "5"          # db.t4g.micro: keep the total connection count low
+  PO_UI_RUNS_DIR: /data/po-ui-runs
+
+# Secrets Manager -> Kubernetes Secret (External Secrets Operator).
+secrets:
+  refreshInterval: 1h
+  # env var name -> Secrets Manager secret name (plain-string secrets)
+  keys: {}
+  database:
+    passwordSecret: ""      # Secrets Manager name holding the DB password
+    user: ""
+    host: ""
+    port: 5432
+    name: ""
+
+# Coding Agent run output on EFS (static volume on the edge stack's access point).
+runsVolume:
+  fileSystemId: ""
+  accessPointId: ""
+  size: 20Gi
+
+# One entry per image in deploy/modules.json. CPU requests are small on purpose:
+# idle pods use ~5m each, and the t3.large nodes (2 vCPU) need room for the
+# extra pod a rolling update starts before stopping the old one.
+modules:
+  home:
+    enabled: true
+    replicas: 1
+    port: 3000
+    targetGroupArn: ""
+    heapMb: 768
+    resources:
+      requests: { cpu: 100m, memory: 512Mi }
+      limits: { memory: 1Gi }
+    autoscaling: { enabled: true, maxReplicas: 2 }
+    env: {}
+  support-engineer:
+    enabled: true
+    replicas: 1
+    port: 3000
+    targetGroupArn: ""
+    heapMb: 2048
+    resources:
+      requests: { cpu: 200m, memory: 1536Mi }
+      limits: { memory: 3Gi }
+    autoscaling: { enabled: true, maxReplicas: 2 }
+    terminationGracePeriodSeconds: 120   # let streaming chats finish
+    env: {}
+  master-data-load:
+    enabled: true
+    replicas: 1
+    port: 3000
+    targetGroupArn: ""
+    heapMb: 1536
+    resources:
+      requests: { cpu: 100m, memory: 1Gi }
+      limits: { memory: 2Gi }
+    autoscaling: { enabled: false }
+    env: {}
+  coding-agent:
+    enabled: true
+    replicas: 1                           # single writer on the EFS runs volume
+    port: 3000
+    targetGroupArn: ""
+    heapMb: 2048
+    resources:
+      requests: { cpu: 100m, memory: 1Gi }
+      limits: { memory: 3Gi }
+    autoscaling: { enabled: false }
+    recreate: true
+    runsVolume: true
+    terminationGracePeriodSeconds: 120
+    env: {}
+  admin:
+    enabled: true
+    replicas: 1
+    port: 3000
+    targetGroupArn: ""
+    heapMb: 1536
+    resources:                            # + headroom for the headless Chromium of the CMF portal login
+      requests: { cpu: 100m, memory: 1Gi }
+      limits: { memory: 3Gi }
+    autoscaling: { enabled: false }
+    env: {}
+  fabinsight:
+    enabled: true
+    replicas: 1                           # exactly one scheduler
+    port: 8080
+    targetGroupArn: ""                    # no public route
+    heapMb: 1536
+    resources:                            # + headroom for the headless Chromium of the CMF token refresher
+      requests: { cpu: 100m, memory: 1536Mi }
+      limits: { memory: 3Gi }
+    autoscaling: { enabled: false }
+    recreate: true                        # never two schedulers during a rollout
+    env:
+      REPORT_SCHEDULER_ENABLED: "true"

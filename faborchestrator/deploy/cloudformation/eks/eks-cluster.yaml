@@ -1,0 +1,336 @@
+AWSTemplateFormatVersion: '2010-09-09'
+# =============================================================================
+# EKS cluster — control plane, managed node group and add-ons (deploy once per env).
+#
+# Target: the dedicated application VPC (fo-dev-vpc, account 358982197923,
+# us-west-2). The VPC, subnets, NAT, VPN to CMF, RDS and VPC endpoints are owned
+# by Terraform and only REFERENCED here by id — never modify them from this stack.
+#
+#   - EKS control plane (API access entries; the deploying principal is admin)
+#   - one managed node group (AL2023) in the private subnets, which already
+#     route 10.10.1.0/24 to the CMF VPN and reach RDS (fo-dev-db-sg allows the
+#     private subnet CIDRs on 5432)
+#   - node security group (the edge stack opens 3000 on it from the ALB)
+#   - add-ons: vpc-cni (tuned to hold few spare IPs — the private subnets are
+#     /25s), coredns, kube-proxy, eks-pod-identity-agent, metrics-server,
+#     aws-efs-csi-driver, amazon-cloudwatch-observability
+#
+# Deploy (see README.md in this folder for the full order):
+#   aws cloudformation deploy --stack-name fo-dev-eks-cluster \
+#     --template-file deploy/cloudformation/eks/eks-cluster.yaml \
+#     --capabilities CAPABILITY_NAMED_IAM
+# =============================================================================
+Description: >-
+  FabOrchestrator EKS cluster in the dedicated application VPC: control plane,
+  managed node group, node security group and core add-ons.
+
+Parameters:
+  EnvName:
+    Type: String
+    Default: fo-dev
+    Description: Prefix for every name in this stack.
+  KubernetesVersion:
+    Type: String
+    Default: '1.36'
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Default: vpc-0755aa657acaf5889
+    Description: fo-dev-vpc (10.202.0.0/22), owned by Terraform.
+  PrivateSubnetIds:
+    Type: List<AWS::EC2::Subnet::Id>
+    Default: subnet-034bde507954cb9e9,subnet-0c4bf393f88595751
+    Description: fo-dev-private-us-west-2a / 2b — nodes, pods and control-plane ENIs.
+  PublicSubnetIds:
+    Type: List<AWS::EC2::Subnet::Id>
+    Default: subnet-04e8fbf78e3508053,subnet-04cd6f35f1cb40ba9
+    Description: fo-dev-public-us-west-2a / 2b — exported for the ALB (edge stack).
+  EndpointPublicAccessCidrs:
+    Type: CommaDelimitedList
+    Default: 0.0.0.0/0
+    Description: >-
+      Who may reach the Kubernetes API from the internet (kubectl, helm).
+      Narrow this to your office / VPN egress IPs.
+  NodeInstanceTypes:
+    Type: CommaDelimitedList
+    Default: t3.large,t3a.large
+    Description: >-
+      Same-size types EKS may choose from (x86_64 — the images are amd64). More
+      than one keeps Spot capacity available. Changing this, or
+      NodeCapacityType, replaces the node group: CloudFormation creates the new
+      one, pods move over, then the old one is deleted.
+  NodeCapacityType:
+    Type: String
+    Default: SPOT
+    AllowedValues: [ON_DEMAND, SPOT]
+    Description: >-
+      SPOT (~65% cheaper; a node can be reclaimed with 2 minutes' notice and its
+      pods restart on the other node) for test; ON_DEMAND for production.
+  NodeMinSize:
+    Type: Number
+    Default: 2
+  NodeDesiredSize:
+    Type: Number
+    Default: 2
+  NodeMaxSize:
+    Type: Number
+    Default: 4
+  NodeDiskSizeGiB:
+    Type: Number
+    Default: 50
+  EnableObservability:
+    Type: String
+    Default: 'true'
+    AllowedValues: ['true', 'false']
+    Description: CloudWatch Container Insights + container logs (Fluent Bit).
+
+Conditions:
+  WithObservability: !Equals [!Ref EnableObservability, 'true']
+
+Resources:
+  # ------------------------------------------------------------- control plane
+  ClusterRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${EnvName}-eks-cluster'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: { Service: eks.amazonaws.com }
+            Action: [sts:AssumeRole, sts:TagSession]
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonEKSClusterPolicy
+
+  Cluster:
+    Type: AWS::EKS::Cluster
+    Properties:
+      Name: !Sub '${EnvName}-eks'
+      Version: !Ref KubernetesVersion
+      RoleArn: !GetAtt ClusterRole.Arn
+      AccessConfig:
+        AuthenticationMode: API
+        # The principal that deploys this stack becomes cluster admin. Add more
+        # admins with `aws eks create-access-entry` (use the role ARN WITHOUT
+        # the aws-reserved/sso.amazonaws.com/ path for SSO roles).
+        BootstrapClusterCreatorAdminPermissions: true
+      ResourcesVpcConfig:
+        SubnetIds: !Ref PrivateSubnetIds
+        EndpointPrivateAccess: true
+        EndpointPublicAccess: true
+        PublicAccessCidrs: !Ref EndpointPublicAccessCidrs
+      Logging:
+        ClusterLogging:
+          EnabledTypes:
+            - { Type: api }
+            - { Type: audit }
+            - { Type: authenticator }
+      Tags:
+        - { Key: project, Value: faborchestrator }
+        - { Key: env, Value: !Ref EnvName }
+
+  # ---------------------------------------------------------------- nodes
+  NodeSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub '${EnvName}-eks-nodes'
+      GroupDescription: >-
+        FabOrchestrator EKS nodes and pods. Ingress is added by the edge stack
+        (ALB to 3000) and the EFS mount targets; egress is open (RDS, CMF over
+        the VPN, Anthropic and AWS APIs via NAT / endpoints).
+      VpcId: !Ref VpcId
+      Tags:
+        - { Key: Name, Value: !Sub '${EnvName}-eks-nodes' }
+
+  NodeRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${EnvName}-eks-node'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: { Service: ec2.amazonaws.com }
+            Action: sts:AssumeRole
+      # App permissions are NOT here: each module gets its own role through
+      # EKS Pod Identity (eks-workload-iam.yaml).
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy
+        - arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy
+        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
+        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+
+  NodeLaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateName: !Sub '${EnvName}-eks-nodes'
+      LaunchTemplateData:
+        # Listing security groups here replaces the defaults, so the cluster
+        # security group (node <-> control plane) is included explicitly.
+        SecurityGroupIds:
+          - !GetAtt Cluster.ClusterSecurityGroupId
+          - !Ref NodeSecurityGroup
+        MetadataOptions:
+          HttpTokens: required
+          # 2 so the CloudWatch agent and the load balancer controller can read
+          # instance metadata; the node role above carries no app permissions.
+          HttpPutResponseHopLimit: 2
+        BlockDeviceMappings:
+          - DeviceName: /dev/xvda
+            Ebs:
+              VolumeSize: !Ref NodeDiskSizeGiB
+              VolumeType: gp3
+              Encrypted: true
+              DeleteOnTermination: true
+        TagSpecifications:
+          - ResourceType: instance
+            Tags:
+              - { Key: Name, Value: !Sub '${EnvName}-eks-node' }
+              - { Key: project, Value: faborchestrator }
+
+  NodeGroup:
+    Type: AWS::EKS::Nodegroup
+    DependsOn: VpcCniAddon
+    Properties:
+      ClusterName: !Ref Cluster
+      # No fixed NodegroupName: instance types and capacity type can only change
+      # by replacing the node group, and CloudFormation cannot replace a
+      # resource with a custom name. A generated name lets it build the new
+      # group, move the pods, then delete the old one.
+      NodeRole: !GetAtt NodeRole.Arn
+      AmiType: AL2023_x86_64_STANDARD
+      CapacityType: !Ref NodeCapacityType
+      InstanceTypes: !Ref NodeInstanceTypes
+      Subnets: !Ref PrivateSubnetIds
+      LaunchTemplate:
+        Id: !Ref NodeLaunchTemplate
+        Version: !GetAtt NodeLaunchTemplate.LatestVersionNumber
+      ScalingConfig:
+        MinSize: !Ref NodeMinSize
+        DesiredSize: !Ref NodeDesiredSize
+        MaxSize: !Ref NodeMaxSize
+      UpdateConfig:
+        MaxUnavailable: 1
+      Labels:
+        workload: general
+      Tags:
+        project: faborchestrator
+        env: !Ref EnvName
+
+  # --------------------------------------------------------------- add-ons
+  VpcCniAddon:
+    Type: AWS::EKS::Addon
+    Properties:
+      ClusterName: !Ref Cluster
+      AddonName: vpc-cni
+      ResolveConflicts: OVERWRITE
+      # Each pod takes a VPC IP and the private subnets are /25s (~117 free
+      # each). Keep only a couple of spare IPs per node instead of a whole ENI.
+      ConfigurationValues: '{"env":{"WARM_IP_TARGET":"2","MINIMUM_IP_TARGET":"8"}}'
+
+  KubeProxyAddon:
+    Type: AWS::EKS::Addon
+    Properties:
+      ClusterName: !Ref Cluster
+      AddonName: kube-proxy
+      ResolveConflicts: OVERWRITE
+
+  PodIdentityAgentAddon:
+    Type: AWS::EKS::Addon
+    Properties:
+      ClusterName: !Ref Cluster
+      AddonName: eks-pod-identity-agent
+      ResolveConflicts: OVERWRITE
+
+  # Add-ons that run as regular pods need nodes first.
+  CoreDnsAddon:
+    Type: AWS::EKS::Addon
+    DependsOn: NodeGroup
+    Properties:
+      ClusterName: !Ref Cluster
+      AddonName: coredns
+      ResolveConflicts: OVERWRITE
+
+  MetricsServerAddon:
+    Type: AWS::EKS::Addon
+    DependsOn: NodeGroup
+    Properties:
+      ClusterName: !Ref Cluster
+      AddonName: metrics-server
+      ResolveConflicts: OVERWRITE
+
+  EfsCsiRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${EnvName}-eks-efs-csi'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: { Service: pods.eks.amazonaws.com }
+            Action: [sts:AssumeRole, sts:TagSession]
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonEFSCSIDriverPolicy
+
+  EfsCsiAddon:
+    Type: AWS::EKS::Addon
+    DependsOn: [NodeGroup, PodIdentityAgentAddon]
+    Properties:
+      ClusterName: !Ref Cluster
+      AddonName: aws-efs-csi-driver
+      ResolveConflicts: OVERWRITE
+      PodIdentityAssociations:
+        - ServiceAccount: efs-csi-controller-sa
+          RoleArn: !GetAtt EfsCsiRole.Arn
+
+  ObservabilityRole:
+    Type: AWS::IAM::Role
+    Condition: WithObservability
+    Properties:
+      RoleName: !Sub '${EnvName}-eks-cloudwatch'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: { Service: pods.eks.amazonaws.com }
+            Action: [sts:AssumeRole, sts:TagSession]
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy
+
+  ObservabilityAddon:
+    Type: AWS::EKS::Addon
+    Condition: WithObservability
+    DependsOn: [NodeGroup, PodIdentityAgentAddon]
+    Properties:
+      ClusterName: !Ref Cluster
+      AddonName: amazon-cloudwatch-observability
+      ResolveConflicts: OVERWRITE
+      PodIdentityAssociations:
+        - ServiceAccount: cloudwatch-agent
+          RoleArn: !GetAtt ObservabilityRole.Arn
+
+Outputs:
+  ClusterName:
+    Value: !Ref Cluster
+    Export: { Name: !Sub '${AWS::StackName}-ClusterName' }
+  ClusterEndpoint:
+    Value: !GetAtt Cluster.Endpoint
+  ClusterSecurityGroupId:
+    Value: !GetAtt Cluster.ClusterSecurityGroupId
+    Export: { Name: !Sub '${AWS::StackName}-ClusterSecurityGroupId' }
+  NodeSecurityGroupId:
+    Value: !Ref NodeSecurityGroup
+    Export: { Name: !Sub '${AWS::StackName}-NodeSecurityGroupId' }
+  NodeRoleArn:
+    Value: !GetAtt NodeRole.Arn
+  VpcId:
+    Value: !Ref VpcId
+    Export: { Name: !Sub '${AWS::StackName}-VpcId' }
+  PrivateSubnetIds:
+    Value: !Join [',', !Ref PrivateSubnetIds]
+    Export: { Name: !Sub '${AWS::StackName}-PrivateSubnetIds' }
+  PublicSubnetIds:
+    Value: !Join [',', !Ref PublicSubnetIds]
+    Export: { Name: !Sub '${AWS::StackName}-PublicSubnetIds' }
+  EnvName:
+    Value: !Ref EnvName
+    Export: { Name: !Sub '${AWS::StackName}-EnvName' }

@@ -1,0 +1,62 @@
+# Export every table of a database to ONE Excel workbook (a sheet per table) plus
+# a compressed pg_dump, both written to s3://$BACKUP_BUCKET/db-backups/. Runs inside
+# the VPC through the environment's CodeBuild migration project, so it can reach a
+# restored copy of the database (for example a point-in-time restore made before a
+# wipe). Read-only: nothing is written to the database.
+#
+#   aws codebuild start-build --project-name <env>-migrate \
+#     --source-type-override NO_SOURCE --artifacts-override type=NO_ARTIFACTS \
+#     --buildspec-override "$(cat faborchestrator/scripts/db/export-database.buildspec.yml)" \
+#     --environment-variables-override name=DB_HOST,value=<endpoint> name=DB_NAME,value=<db> \
+#        name=DB_USER,value=<user> name=DB_PASSWORD_SECRET,value=<env>/app/db-password \
+#        name=BACKUP_BUCKET,value=<bucket> name=LABEL,value=before-wipe
+version: 0.2
+env:
+  shell: bash
+phases:
+  install:
+    commands:
+      - apt-get update -qq && apt-get install -y -qq curl ca-certificates gnupg lsb-release python3-pip > /dev/null
+      - curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /usr/share/keyrings/pgdg.gpg
+      - echo "deb [signed-by=/usr/share/keyrings/pgdg.gpg] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list
+      - apt-get update -qq && apt-get install -y -qq postgresql-client-16 > /dev/null
+      - pip3 install -q pandas openpyxl > /dev/null
+  build:
+    commands:
+      - set -o pipefail
+      - export PGPASSWORD="$(aws secretsmanager get-secret-value --secret-id "$DB_PASSWORD_SECRET" --query SecretString --output text)"
+      - export DATABASE_URL="postgresql://${DB_USER}:$(python3 -c 'import os,urllib.parse;print(urllib.parse.quote(os.environ["PGPASSWORD"],safe=""))')@${DB_HOST}:5432/${DB_NAME}"
+      - psql "$DATABASE_URL" -At -c "select 'connected to '||current_database()||' at '||inet_server_addr()"
+      - stamp="$(date -u +%Y%m%dT%H%M%SZ)"; base="${DB_NAME}-${LABEL:-export}-${stamp}"; echo "$base" > /tmp/base
+      - pg_dump "$DATABASE_URL" --no-owner --no-privileges | gzip > "/tmp/$(cat /tmp/base).sql.gz"; test "$(stat -c %s /tmp/$(cat /tmp/base).sql.gz)" -gt 4096
+      - |
+        mkdir -p /tmp/csv
+        for t in $(psql "$DATABASE_URL" -At -c "select table_name from information_schema.tables where table_schema='public' and table_type='BASE TABLE' order by 1"); do
+          psql "$DATABASE_URL" -c "\\copy (select * from \"$t\") to '/tmp/csv/$t.csv' csv header"
+        done
+        echo "tables exported $(ls /tmp/csv | wc -l)"
+      - |
+        python3 - <<'PY'
+        import glob, os, pandas as pd
+        base = open('/tmp/base').read().strip()
+        out = f'/tmp/{base}.xlsx'
+        used = set()
+        with pd.ExcelWriter(out, engine='openpyxl') as xw:
+            index = []
+            for path in sorted(glob.glob('/tmp/csv/*.csv')):
+                table = os.path.basename(path)[:-4]
+                df = pd.read_csv(path, dtype=str, keep_default_na=False, low_memory=False)
+                # Excel: sheet names max 31 chars and unique; rows max 1,048,575 + header.
+                name = table[:31]; i = 1
+                while name in used:
+                    i += 1; name = f'{table[:28]}~{i}'
+                used.add(name)
+                truncated = len(df) > 1_048_000
+                df.head(1_048_000).to_excel(xw, sheet_name=name, index=False)
+                index.append((table, name, len(df), 'yes' if truncated else ''))
+            pd.DataFrame(index, columns=['table', 'sheet', 'rows', 'truncated']).to_excel(xw, sheet_name='_tables', index=False)
+        print('workbook', out, os.path.getsize(out), 'bytes')
+        PY
+      - aws s3 cp "/tmp/$(cat /tmp/base).sql.gz" "s3://${BACKUP_BUCKET}/db-backups/" --only-show-errors
+      - aws s3 cp "/tmp/$(cat /tmp/base).xlsx" "s3://${BACKUP_BUCKET}/db-backups/" --only-show-errors
+      - echo "EXPORT_KEYS db-backups/$(cat /tmp/base).sql.gz db-backups/$(cat /tmp/base).xlsx"

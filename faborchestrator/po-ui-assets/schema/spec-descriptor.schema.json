@@ -1,0 +1,478 @@
+{
+  "$id": "https://llmatscale.ai/cmf/spec-descriptor.schema.json",
+  "title": "CMF spec descriptor",
+  "description": "What a user story asks for, in the story's own language. Generated from app/src/descriptor.ts — do not edit by hand; run scripts/emit-schema.ts.",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "type": "number",
+      "const": 1
+    },
+    "userStory": {
+      "type": "string",
+      "minLength": 1
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "termPaths": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "term": {
+            "type": "string",
+            "minLength": 1
+          },
+          "path": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "why": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "term",
+          "path",
+          "why"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "pages": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The artifact name for this page."
+          },
+          "uiType": {
+            "type": "string",
+            "enum": [
+              "Page",
+              "Wizard",
+              "Cluster",
+              "Step"
+            ],
+            "description": "Which kind of UI object the story asks for."
+          },
+          "title": {
+            "description": "The heading shown on the page, if the story gives one.",
+            "type": "string",
+            "minLength": 1
+          },
+          "forms": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "purpose": {
+                  "description": "A short phrase for what this form is for, from the story. A few words, not a sentence - it is shown as the widget's title. If the form's job is to NARROW a list shown on this page, it is not a form: put it in `filters` instead, naming the list it narrows. A form collects values; a filter restricts a list.",
+                  "type": "string",
+                  "minLength": 1
+                },
+                "fields": {
+                  "minItems": 1,
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "label": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "The field's caption in the story's own words - what an operator would read on screen. Not a CMF path, not a message name."
+                      },
+                      "scalarType": {
+                        "type": "string",
+                        "enum": [
+                          "String",
+                          "Integer",
+                          "Boolean",
+                          "DateTime",
+                          "Decimal",
+                          "Reference"
+                        ],
+                        "description": "The kind of value the field holds."
+                      },
+                      "entity": {
+                        "description": "For a reference field, the entity it points at.",
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "label",
+                      "scalarType"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "description": "The fields this form collects, in the order the story lists them."
+                }
+              },
+              "required": [
+                "fields"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Forms the story asks for. A form COLLECTS values; a set of controls that narrows a list belongs in `filters`, not here."
+          },
+          "grids": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "entity": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "The business record this grid lists, e.g. \"ProductionOrder\"."
+                },
+                "role": {
+                  "description": "Only when one page shows two grids of the SAME entity, to tell them apart. Omit otherwise.",
+                  "type": "string",
+                  "minLength": 1
+                },
+                "selection": {
+                  "type": "string",
+                  "enum": [
+                    "single",
+                    "multiple",
+                    "none"
+                  ],
+                  "description": "How many rows the story lets the user pick at once."
+                },
+                "columns": {
+                  "minItems": 1,
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "The column heading in the story's own words. Not a CMF data path and not a message name - both are decided later, from evidence this call does not have."
+                      },
+                      "link": {
+                        "description": "True only where the story marks the column as a link.",
+                        "type": "boolean"
+                      },
+                      "entity": {
+                        "description": "The entity a link column points at, only where the story says.",
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "scalarType": {
+                        "description": "Only when the story states the type. Absent means not specified; do not infer one from the column name.",
+                        "type": "string",
+                        "enum": [
+                          "String",
+                          "Integer",
+                          "Boolean",
+                          "DateTime",
+                          "Decimal",
+                          "Reference"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "name"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "description": "The columns the story asks for, in the order it lists them."
+                }
+              },
+              "required": [
+                "entity",
+                "selection",
+                "columns"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Lists of records the story asks the page to show."
+          },
+          "actionButtons": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "The button's caption as the story writes it."
+                },
+                "opensPage": {
+                  "description": "The UI page this button opens, only if the story names one.",
+                  "type": "string",
+                  "minLength": 1
+                },
+                "dataSource": {
+                  "description": "The service or API this button calls, only if the story names it.",
+                  "type": "string",
+                  "minLength": 1
+                },
+                "control": {
+                  "type": "object",
+                  "properties": {
+                    "placement": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "enum": [
+                            "actionBar",
+                            "screen"
+                          ]
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "\"actionBar\" = the strip along the top of the page. \"screen\" = a control in the page body, next to what it acts on. null = the story does not say, which is different from the story saying action bar."
+                    },
+                    "inputs": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "description": "What the button acts on, as the story names them - \"attach THESE MATERIALS to THIS RESOURCE\". Empty when the story does not say."
+                    }
+                  },
+                  "required": [
+                    "placement",
+                    "inputs"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "name"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Buttons the story asks for, wherever it places them."
+          },
+          "filters": {
+            "description": "Sets of controls that NARROW a list, and which list each narrows. Omit when the story asks for none.",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "entity": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "The entity of the list these filters narrow. Must equal the `entity` of the grid they filter, which is how the two are paired."
+                },
+                "fields": {
+                  "minItems": 1,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "description": "The filter CAPTIONS in the story's own wording - the name of the thing being filtered, and nothing else. Strip the story's annotations about the field: its control type, and whether it is mandatory or optional. Those are facts about the field, not part of its caption. Do not translate a caption into a data path either; you have been given a vocabulary that maps captions to paths and it does NOT apply in this field, because resolving a caption to a path is the generation call's job. This text is shown to the engineer who approves the specification, and they can only check it in their own words."
+                }
+              },
+              "required": [
+                "entity",
+                "fields"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "queries": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "autoRefresh": {
+            "type": "boolean"
+          },
+          "autoRefreshInterval": {
+            "type": "string",
+            "pattern": "^P(?!$)(\\d+Y)?(\\d+M)?(\\d+W)?(\\d+D)?(T(?=\\d)(\\d+H)?(\\d+M)?(\\d+S)?)?$"
+          }
+        },
+        "required": [
+          "name",
+          "uiType",
+          "forms",
+          "grids",
+          "actionButtons"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "queries": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "api": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "queryDefinitions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "entity": {
+            "type": "string",
+            "minLength": 1
+          },
+          "fields": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "filters": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "operator": {
+                  "type": "string",
+                  "enum": [
+                    "IsEqualTo",
+                    "IsNotEqualTo",
+                    "Contains",
+                    "StartsWith",
+                    "GreaterThan",
+                    "GreaterThanOrEqualTo",
+                    "LessThan",
+                    "LessThanOrEqualTo",
+                    "Like",
+                    "NotLike",
+                    "In",
+                    "NotIn",
+                    "IsNull",
+                    "IsNotNull"
+                  ]
+                },
+                "parameter": {
+                  "type": "boolean"
+                },
+                "value": {
+                  "type": "string"
+                },
+                "optional": {
+                  "type": "boolean"
+                },
+                "logicalOperator": {
+                  "type": "string",
+                  "enum": [
+                    "AND",
+                    "OR"
+                  ]
+                }
+              },
+              "required": [
+                "path",
+                "operator"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "joins": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "entity": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "sourceProperty": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "targetProperty": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "joinType": {
+                  "type": "string",
+                  "enum": [
+                    "InnerJoin",
+                    "LeftJoin",
+                    "RightJoin",
+                    "FullJoin"
+                  ]
+                }
+              },
+              "required": [
+                "path",
+                "entity",
+                "sourceProperty",
+                "targetProperty"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "distinct": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "entity",
+          "fields",
+          "filters"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "notes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "userStory",
+    "pages",
+    "queries",
+    "api"
+  ],
+  "additionalProperties": false
+}

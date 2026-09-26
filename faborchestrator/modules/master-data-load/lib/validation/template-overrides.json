@@ -1,0 +1,151 @@
+{
+  "extractedFrom": "/Users/vikramans/Downloads/TemplateObjectCatalog.xlsx",
+  "extractedAt": "2026-07-08T05:21:58.673Z",
+  "manualOverrides": "ResourceService was REMOVED from removedObjects on 2026-08-14: the client's catalog struck it through, but it is the REQUIRED Resource<->Service association sheet (confirmed by Yogita) and is a declared sub-sheet of both Resource and Service in composition-overrides.json. Keeping it blacklisted made isObjectRemoved(ResourceService)=true, so any path that treated it as a top-level object skipped it with 'removed by client policy' (ksp-skeleton.ts) and dropped the ResourceService sheet — while dependency exports that carry it as a passenger sub-sheet still included it (inconsistent). Do NOT re-add it from the catalog.",
+  "removedObjects": [
+    "AreaSupplyArea",
+    "AreaTransferRequirementType",
+    "BusinessPartner",
+    "ChangeSet",
+    "ChangeSetUrgency",
+    "EmployeeCertification",
+    "EmployeeDelegate",
+    "EmployeeQualification",
+    "EmployeeShiftDetails",
+    "ExperimentDefinition",
+    "ImportObject",
+    "KPITimeFrame",
+    "LogicalChart",
+    "MaintenanceActivityPersonnelRequirement",
+    "MaintenancePlan",
+    "MaintenancePlanInstance",
+    "Map",
+    "MapDefinition",
+    "Notification",
+    "Protocol",
+    "ResourcePersonnelRequirements",
+    "SamplingPattern",
+    "SamplingPlan",
+    "ShiftLogbookEntrySeverity",
+    "ShiftPlan",
+    "SubResource",
+    "WorkgroupStep"
+  ],
+  "removedColumns": {
+    "Config": [
+      "ValueType"
+    ],
+    "Enterprise": [
+      "DataGroup"
+    ],
+    "Site": [
+      "DataGroup",
+      "RemoteExportAddress",
+      "RemoteExportTenant",
+      "RemoteExportToken"
+    ],
+    "Area": [
+      "DataGroup",
+      "ParentArea",
+      "DefaultTransferOrderDestinationLocation",
+      "IsExternal",
+      "FlowPath",
+      "SetFlowPath",
+      "IncomingPickingPlace",
+      "OutgoingPickingPlace",
+      "PickingStrategy",
+      "PickingSequence"
+    ],
+    "Service": [
+      "DataGroup"
+    ],
+    "CompatibleService": [
+      "SourceEntity",
+      "TargetEntity"
+    ],
+    "Reason": [
+      "DataGroup",
+      "ReasonType",
+      "ExcludeFromStepYield",
+      "ExcludeFromResourceYield",
+      "SecurityRole",
+      "EnableConcurrentInstances"
+    ],
+    "Employee": [
+      "DataGroup",
+      "CostPerHour",
+      "Manager"
+    ],
+    "AQLAcceptanceQualityLimit": [
+      "WI: 68955"
+    ],
+    "Step": [
+      "IsTemplate",
+      "DataGroup"
+    ],
+    "Resource": [
+      "ConsumableFeedType",
+      "HasStorageBins",
+      "IsPickingPlace",
+      "TransportService",
+      "IsFloorLifeSafe",
+      "StartFloorLifeCounterOnRetrieve",
+      "EnableAutomaticReplenishment",
+      "AutomaticReplenishmentTransferRequirementType",
+      "LoadPortType",
+      "StorageDimensions",
+      "StoragePositionAddressFormat",
+      "DimensionXAddressFormat",
+      "DimensionXOrientation",
+      "DimensionYAddressFormat",
+      "DimensionYOrientation",
+      "DimensionZSize",
+      "DimensionZAddressFormat",
+      "DimensionZOrientation",
+      "Dimension0Size",
+      "Dimension0AddressFormat",
+      "Dimension0Orientation",
+      "EnableConsumableFeedContainerDock",
+      "InstrumentType",
+      "CalibrationStatus",
+      "LastCalibrationDate",
+      "InstrumentExclusiveUsage",
+      "Location",
+      "FixedCost",
+      "CostPerUnit",
+      "CostPerHour",
+      "DispatchScheduleType",
+      "IncludeInPlanning",
+      "SchedulingType",
+      "CanProcessInNonWorkingTime",
+      "MinimumBatchCapacityUsage",
+      "Saturation",
+      "SetupMatrix",
+      "DefaultSetupTime",
+      "DefaultSetupTimeTimeScale",
+      "ScheduleTrackInTolerance",
+      "SetResourceAsPreferred",
+      "ResourceCapacityMode",
+      "ExcludeFromScheduling",
+      "ScheduleAvailabilityDate",
+      "Efficiency",
+      "DefaultScheduleView",
+      "UseTimelineInDefaultScheduleView",
+      "ResourceViewScheduleTimeFrame",
+      "ScheduleViewMode",
+      "EnableCheckIn",
+      "RestrictCheckIn",
+      "EnforceResourcePersonnelRequirementsAtTrackIn",
+      "AutomaticCheckOutAtEndOfShift",
+      "RequireCheckInForMaterialOperations",
+      "RequireCheckInForResourceOperations",
+      "AllowEmployeeCheckOutOnCheckIn",
+      "LogCheckInActivity",
+      "AllowMESControl"
+    ],
+    "BOM": [
+      "DataGroup"
+    ]
+  },
+  "unmatchedColumns": {}
+}

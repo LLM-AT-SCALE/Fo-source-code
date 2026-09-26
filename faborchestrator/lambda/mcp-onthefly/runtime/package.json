@@ -1,0 +1,21 @@
+{
+  "name": "mcp-onthefly-runtime",
+  "version": "0.1.0",
+  "description": "Generic, hand-written MCP-over-HTTP runtime Lambda (Postgres, read-only) for the on-the-fly MCP server feature. The LLM never edits this code — only the accompanying manifest.json.",
+  "type": "module",
+  "main": "index.mjs",
+  "scripts": {
+    "test": "node --test",
+    "build:zip": "node build.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@aws-sdk/client-secrets-manager": "^3.1086.0",
+    "pg": "^8.13.0"
+  },
+  "devDependencies": {
+    "adm-zip": "^0.5.16"
+  }
+}

@@ -1,0 +1,69 @@
+# fo-dev — account 358982197923, us-west-2, fo-dev-vpc.
+# ARNs / ids come from the CloudFormation stacks in deploy/cloudformation/eks/.
+#
+#   helm upgrade --install faborchestrator deploy/helm/faborchestrator \
+#     -n faborchestrator --create-namespace \
+#     -f deploy/helm/faborchestrator/values-fo-dev.yaml \
+#     -f deploy/helm/faborchestrator/values-fo-dev.secret.yaml --set image.tag=<commit>
+
+image:
+  registry: 358982197923.dkr.ecr.us-west-2.amazonaws.com
+  repositoryPrefix: fo-dev
+
+appUrl: https://d57m300rjz73m.cloudfront.net          # fo-dev-eks-edge AppUrl
+
+env:
+  S3_UPLOAD_BUCKET: fo-dev-user-uploads-358982197923
+  S3_BUCKET: fo-dev-cmf-loader-uploads-358982197923
+  # Email (Gmail SMTP). SMTP_PASSWORD is set in the git-ignored
+  # values-fo-dev.secret.yaml (it overrides fo-dev/app/smtp-password, which is
+  # out of date). Deploy with BOTH files or email stops working.
+  SMTP_SERVER: smtp.gmail.com
+  SMTP_PORT: "587"
+  SMTP_USERNAME: admin@llmatscale.ai
+  SMTP_FROM_EMAIL: admin@llmatscale.ai
+
+secrets:
+  keys:
+    ANTHROPIC_API_KEY: fo-dev/app/anthropic-api-key
+    KEY_ENCRYPTION_SECRET: fo-dev/app/key-encryption-secret
+    SMTP_PASSWORD: fo-dev/app/smtp-password
+  database:
+    passwordSecret: fo-dev/app/db-password
+    user: fab_admin
+    host: fo-dev-db.c9im4i8o2ejq.us-west-2.rds.amazonaws.com
+    port: 5432
+    name: claude_ai_athena
+
+runsVolume:
+  fileSystemId: fs-098c1c6046f1f9ba2
+  accessPointId: fsap-05fc24df9c8d40a28
+
+modules:
+  home:
+    targetGroupArn: arn:aws:elasticloadbalancing:us-west-2:358982197923:targetgroup/fo-dev-home/0fe52eeb0c3f7cd8
+  support-engineer:
+    targetGroupArn: arn:aws:elasticloadbalancing:us-west-2:358982197923:targetgroup/fo-dev-support-engineer/678c97dcf47da810
+  master-data-load:
+    targetGroupArn: arn:aws:elasticloadbalancing:us-west-2:358982197923:targetgroup/fo-dev-master-data-load/0277d6473e461417
+  coding-agent:
+    targetGroupArn: arn:aws:elasticloadbalancing:us-west-2:358982197923:targetgroup/fo-dev-coding-agent/28b28c5c1347bee5
+  admin:
+    targetGroupArn: arn:aws:elasticloadbalancing:us-west-2:358982197923:targetgroup/fo-dev-admin/f24766d5dc35e811
+    env:
+      # On-the-fly MCP substrate in fo-dev-vpc (the code defaults point at the
+      # old 628203515088 account).
+      MCP_OTF_RUNTIME_ROLE_ARN: arn:aws:iam::358982197923:role/fo-dev-mcp-otf-runtime-exec
+      MCP_OTF_ARTIFACT_BUCKET: fo-dev-mcp-otf-artifacts-358982197923
+      MCP_OTF_DISCOVERY_FUNCTION: mcp-otf-discovery
+      MCP_OTF_RUNTIME_VERSION: v3            # runtime-base/v3*.zip = lambda/mcp-onthefly/runtime* with the built-in health_check
+      MCP_OTF_SUBNET_IDS: subnet-034bde507954cb9e9,subnet-0c4bf393f88595751
+      MCP_OTF_SECURITY_GROUP_ID: sg-02492884848166348          # fo-dev-mcp-otf-runtime-sg
+      MCP_OTF_CMF_SUBNET_IDS: subnet-034bde507954cb9e9,subnet-0c4bf393f88595751
+      MCP_OTF_CMF_SECURITY_GROUP_ID: sg-07904f6b5599c5000       # fo-dev-mcp-lambda-sg: SQL Server 1433 over the VPN (the runtime SG only opens 5432)
+      # CMF token Lambdas (only used if provisioning is enabled on the
+      # workload-iam stack); same subnets / SG as the existing cmf-token-* ones.
+      CMF_LAMBDA_ROLE_ARN: arn:aws:iam::358982197923:role/feb-orc-mcp-lambda-role
+      CMF_LAMBDA_ARTIFACT_BUCKET: fo-dev-mcp-otf-artifacts-358982197923
+      CMF_LAMBDA_SUBNET_IDS: subnet-034bde507954cb9e9,subnet-0c4bf393f88595751
+      CMF_LAMBDA_SECURITY_GROUP_ID: sg-07904f6b5599c5000       # fo-dev-mcp-lambda-sg

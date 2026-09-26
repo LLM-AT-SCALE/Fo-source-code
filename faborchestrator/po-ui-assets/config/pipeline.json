@@ -1,0 +1,532 @@
+{
+  "_comment": [
+    "PO UI generation pipeline, as configured INSIDE FabOrchestrator.",
+    "",
+    "Paths are relative to `po-ui-assets/`, which is where the runtime data was",
+    "staged during the port. The standalone app resolved them against `app/`;",
+    "nothing else about this file changed, so a diff against the standalone",
+    "config shows only the moves."
+  ],
+  "packageDir": "package",
+  "samplesDir": "samples",
+  "assets": {
+    "rules": "SYSTEM_PROMPT.md",
+    "skeleton": "skeleton-uipage.xml",
+    "skeletonSettings": "skeleton-uipage-settings.json",
+    "skeletonSettings.Wizard": "skeleton-uipage-settings-wizard.json",
+    "skeletonQuery": "skeleton-query.xml",
+    "widgets": "WIDGETS.md",
+    "entityTypes": "ENTITY-TYPES.md",
+    "dictionary": "DICTIONARY.md",
+    "descriptorSchema": "../schema/spec-descriptor.schema.json",
+    "extractPrompt": "EXTRACT_PROMPT.md",
+    "prdPrompt": "PRD_PROMPT.md",
+    "revisePrompt": "REVISE_PROMPT.md",
+    "oobPages": "OOB-PAGES.md",
+    "modifyPrompt": "MODIFY_PROMPT.md",
+    "fixPrompt": "FIX_PROMPT.md",
+    "knownMessages": "KNOWN-MESSAGES.txt",
+    "guiSelectors": "GUI-SELECTORS.json",
+    "messageText": "MESSAGE-TEXT.json",
+    "actionIds": "ACTION-IDS.json",
+    "actionContracts": "ACTION-CONTRACTS.json",
+    "_sampleNote": [
+      "What the web UI offers as a ready-made input so an engineer can run something",
+      "without hunting for files. These were literals in src/web/server.ts until",
+      "2026-08-19, which baked one user story into the server. Point them at a",
+      "different story to change the sample; remove them and the endpoint 404s."
+    ],
+    "sampleStory": "SPEC_US-455386.txt",
+    "sampleDescriptor": "descriptor-US-455386.json",
+    "entityRelations": "../graph/cmf-EntityRelations.json",
+    "services": "SERVICES.json",
+    "columnLabels": "COLUMN-LABELS.json",
+    "widgetShapes": "WIDGET-SHAPES.json",
+    "messageNames": "MESSAGE-NAMES.json",
+    "entityQueries": "ENTITY-QUERIES.json"
+  },
+  "widgetShapes": {
+    "_comment": [
+      "Which widget kinds get a TRANSCRIBED EXEMPLAR in WIDGET-SHAPES.json.",
+      "scripts/extract-widget-shapes.ts regenerates the asset; --check gates it.",
+      "",
+      "Counts are harvested for EVERY kind the client has delivered — instances,",
+      "pages, hosting UITypes, schema versions, settings-key frequency, and the",
+      "entry-key frequency of every settings array. `detail` only decides which",
+      "kinds also carry a full settings block, because those cost prompt budget.",
+      "",
+      "Filter and Button are here because they are the two shapes we have never",
+      "emitted (F-171). Grid, Form and UiPageWidget already have hand-written",
+      "shapes in WIDGETS.md, so an exemplar would only duplicate them.",
+      "",
+      "THE COUNTS ARE THE POINT, NOT THE EXEMPLAR. The last time an asset cited a",
+      "single example, the model read it as a rule about where the thing belongs",
+      "and declined to emit a service call on an ordinary Page (F-172). Adding a",
+      "kind here adds one data point INSIDE its own distribution."
+    ],
+    "detail": [
+      "Filter",
+      "Button"
+    ],
+    "exemplarsPerKind": 2
+  },
+  "entityTypes": {
+    "_comment": [
+      "How ENTITY-TYPES.md is built (A-16). scripts/build-entity-types.ts regenerates it.",
+      "",
+      "detail = entities whose FULL property list is fed to the model. Everything else",
+      "is indexed by name and property count only, so the model knows the entity exists",
+      "and can report a gap rather than guessing.",
+      "",
+      "WHY NOT ALL 340 (D-04): the full property text is 246 KB against a ~304 KB cached",
+      "prefix — it would nearly double what every request pays to cache. Five entities",
+      "cost 17 KB and the index costs 8 KB. Per-story selection was rejected because the",
+      "package sits before the single cache breakpoint, so a varying asset would miss the",
+      "cache on every first attempt.",
+      "",
+      "Add an entity here when a story needs it, then re-run the script."
+    ],
+    "detail": [
+      "ProductionOrder",
+      "Material",
+      "Step",
+      "Resource",
+      "Product"
+    ],
+    "_note": "build-time source removed: not read while serving"
+  },
+  "guiTests": {
+    "_comment": [
+      "Sources for the two GENERATED assets behind the GUI-test gate (A-54).",
+      "Neither is a prompt asset: they are validator inputs, so they never enter",
+      "the cached package and their size costs nothing at generation time.",
+      "",
+      "source        Athena's Selenium suite. Its CSS selectors are the strongest",
+      "              statement of 'correct' we hold, because they execute (F-116).",
+      "              scripts/extract-selectors.ts -> GUI-SELECTORS.json",
+      "messageSource the live localized-message dump. Their selectors assert",
+      "              RENDERED text, and a page carries $(MessageName), so the",
+      "              label half of the contract is uncheckable without it.",
+      "              scripts/extract-message-text.ts -> MESSAGE-TEXT.json",
+      "culture       the culture their suite is written against. en-US text is",
+      "              what the selectors contain; another culture would change",
+      "              every label assertion, which is why it is config."
+    ],
+    "culture": "EN-US",
+    "_note": "build-time source removed: not read while serving"
+  },
+  "masterData": {
+    "_comment": [
+      "The deployment unit that ships alongside the artifacts (F-98). Every value",
+      "here was measured across the 96 master-data files in Entegris' repository,",
+      "not read off the single example for our pilot story.",
+      "",
+      "cultures VARIES in the wild: 5 on the older files (the pilot story's own),",
+      "8 on newer ones once vi-VN, pl-PL and sv-SE were added. It is config for",
+      "exactly that reason. primaryCulture carries the text; the rest are emitted",
+      "empty, which is what 195 of 201 live message entries do.",
+      "",
+      "loadOrder is the numeric filename prefix their convention uses, and it is",
+      "load ORDER, not decoration: a page that consumes a query must import after",
+      "it. 100 queries, 200 step, 201 wizard, 300 the page."
+    ],
+    "cultures": [
+      "en-US",
+      "de-DE",
+      "pt-PT",
+      "zh-CN",
+      "zh-TW"
+    ],
+    "primaryCulture": "en-US",
+    "featurePrefix": "Entegris",
+    "messageType": "Message",
+    "loadOrder": {
+      "query": 100,
+      "step": 200,
+      "wizard": 201,
+      "page": 300
+    }
+  },
+  "_assetsNote": [
+    "widgets and entityTypes are OPTIONAL. buildPackage() emits a cached prompt block for each",
+    "only when the key is present here, so the package contents are driven by config rather than",
+    "by source. Remove a key to drop its block; add one to introduce another static asset.",
+    "Both were added 2026-08-17 from the live CMF client and schema:",
+    "  WIDGETS.md      40 widgets, 36 data sources, 102 converters, with declared ports, plus",
+    "                  the measured dataSources[].settings.query reference shape (69 live refs).",
+    "  ENTITY-TYPES.md ProductionOrder + Material property -> database type -> UI column type code.",
+    "Order matters: everything here precedes the single cache breakpoint on the samples block,",
+    "so all of it must stay static. Nothing volatile may be added."
+  ],
+  "samples": [
+    "CustomProductionOrderManagementUI/CustomProductionOrderManagementUI_extracted/CustomProductionOrderManagementUI.xml",
+    "CustomChangePriorityWizard/CustomChangePriorityWizard_extracted/CustomChangePriorityWizard.xml",
+    "CustomChangePriorityStep/CustomChangePriorityStep_extracted/CustomChangePriorityStep.xml"
+  ],
+  "model": {
+    "id": "claude-opus-5",
+    "maxTokens": 64000,
+    "extractEffort": "medium",
+    "generateEffort": "medium",
+    "_effortNote": [
+      "SWEPT TWICE, 2026-08-24: xhigh -> high -> medium, each step measured before it",
+      "shipped. The original note asked for exactly this once evals existed; they now",
+      "do (two scored pairs, a 30-file acceptance corpus, a reproducibility method).",
+      "",
+      "GENERATE, on US-455386 _New, fixed descriptor + --templates-from:",
+      "  xhigh    205.4s   first token 86.5s   20,562 out   (1 run)",
+      "  high     151-172s first token 50-59s  ~16,000 out  (3 runs)",
+      "  medium   119-121s first token 23-29s  ~13,300 out  (3 runs)   <- shipped",
+      "  low      101.0s   first token 16.2s   11,718 out   (1 run)    <- rejected",
+      "  => medium is 41% less wall clock and 70% less time to the first character",
+      "     than xhigh, and 22% less than high.",
+      "",
+      "EXTRACT, same story, 3 runs at medium against 1 at high:",
+      "  high    24.2s + 22.7s      medium  19.3s + 22.5s",
+      "  All 8 structural dimensions of the descriptor IDENTICAL across the three",
+      "  medium runs AND matching high: pages, uiType, grids with every column's",
+      "  type and path, forms, buttons, queries, api, queryDefinitions.",
+      "",
+      "QUALITY HELD AT MEDIUM, and this is the reason it shipped rather than the",
+      "speed. Every arm scored 24 identical / 5 different against Athena's delivered",
+      "page - xhigh, high, medium and low all produced the SAME five differences,",
+      "each of which is something the requirement document does not ask for. All",
+      "runs passed on attempt 1 at PASS 21 WARN 2 FAIL 0.",
+      "",
+      "MEDIUM IS ALSO MORE REPRODUCIBLE THAN HIGH. Its three runs were identical on",
+      "all five functional dimensions including all 13 links. One high run of three",
+      "dropped the two `loadChange -> loading` spinner links.",
+      "",
+      "WHY NOT LOW: it saves a further 15% but drops those same two spinner links.",
+      "That is the cliff. Not broken, but it is paying quality for a smaller return.",
+      "",
+      "WHAT IS *NOT* THE BOTTLENECK, measured so nobody re-optimises it: the cached",
+      "prefix. scripts/cache-probe.ts sends the 161,515-token package twice: writing",
+      "it costs 3.8s, reading it 2.6s. Passing the dictionary, skeleton, samples and",
+      "OOB pages costs about 3 seconds of a two-minute run. The cost is the model",
+      "THINKING - roughly 7,400 of medium's 13,300 output tokens are thinking, and",
+      "the emitted JSON is only ~5,900. Effort is the lever; prompt size is not.",
+      "",
+      "Override per run with `--effort <level>` on the generate or PRD CLI. Those",
+      "flags are measurement controls, not settings anyone needs day to day."
+    ],
+    "streamIdleSeconds": 120,
+  "_streamIdleNote": [
+    "Seconds a generation may stream without producing a character before it is",
+    "aborted and retried. 0 disables it.",
+    "",
+    "MEASURED 2026-09-10, from a real run that hung: the model streamed 28,038",
+    "characters and then stopped \u2014 no more bytes, no error, no close. Nothing in",
+    "the stack could break that: `call()` awaits finalMessage(), a hang throws",
+    "nothing, so the retry loop never fired and the HTTP request stayed open.",
+    "",
+    "The threshold has to clear the longest legitimate silence, which is the wait",
+    "for the FIRST token, not any mid-stream gap: 23-29s at medium, 50-59s at",
+    "high, 86.5s at xhigh, and 49.2s in the run that then hung. 120 is better",
+    "than 2x the worst of those and still ends a hang in two minutes instead of",
+    "never."
+  ],
+  "serverSideFallback": true,
+    "_fallbackNote": "Opus 5 safety classifiers can decline a request. 'default' routes by refusal category. Disabled automatically if the account lacks the beta.",
+    "extractSchemaOmit": [
+      "queryDefinitions"
+    ],
+    "_extractSchemaNote": [
+      "Top-level descriptor keys omitted from the schema SENT on the extraction call.",
+      "",
+      "MEASURED 2026-08-28 by probing the API: 22 optionals / 3,856 B is accepted,",
+      "22 optionals / 4,114 B is rejected as \"the compiled grammar is too large\", and",
+      "the same schema without queryDefinitions (3,055 B) is accepted with room. The",
+      "ceiling is grammar STRUCTURE, not the optional count the error text mentions.",
+      "",
+      "queryDefinitions is query STRUCTURE, and this pipeline does not extract that",
+      "from prose - it TRANSCRIBES it from the exports the client delivered (T-21),",
+      "because a join cannot be inferred (F-125). So the subtree cost a third of the",
+      "budget to constrain a field we fill from evidence afterwards.",
+      "",
+      "zod still validates the full descriptor on the reply, query-read.ts still fills",
+      "this key, and a hand-authored descriptor may still carry it. Empty the list to",
+      "send the whole schema again."
+    ]
+  },
+  "target": {
+    "_comment": [
+      "The UI technology being generated for. This is the seam that keeps the spec",
+      "descriptor target-neutral (T-16).",
+      "",
+      "pageTypes are the CLASSES OF SCREEN the target platform recognises. Everything",
+      "else in the descriptor is generic UI vocabulary — entity, columns, forms, grids,",
+      "actionButtons, filters, joins — but `Cluster` and `Step` are CMF page classes,",
+      "not universal concepts, and they were written into src/descriptor.ts as a fixed",
+      "enum. That was the last CMF-specific term in the neutral layer.",
+      "",
+      "For CMF these are the four the platform defines, and platform.ts maps each to",
+      "its numeric UIType code (0 Page, 1 Step, 2 Wizard, 3 Cluster) measured across",
+      "the 66 live pages. A different target declares its own list here and supplies",
+      "its own platform module; the descriptor needs no code change.",
+      "",
+      "Remove this block and the descriptor falls back to the CMF four, so an older",
+      "config still loads."
+    ],
+    "pageTypes": [
+      "Page",
+      "Wizard",
+      "Cluster",
+      "Step"
+    ]
+  },
+  "actionIds": {
+    "_comment": [
+      "Where the client REGISTERS their custom actions (T-31).",
+      "",
+      "An action button needs an actionId and an actionButtonId, and a requirement",
+      "document almost never names them. But they are not unknowable: the Angular",
+      "customization registers every one, with its button id, title and icon.",
+      "",
+      "This is transcription, not inference. Their own registry holds",
+      "Custom.ChangePriorityAction next to CustomActionTransfer.Id next to",
+      "Material.Rework - three shapes, no derivable rule. A guessed actionId gives",
+      "a button that renders and does nothing when clicked.",
+      "",
+      "Remove this block and the generator falls back to reporting UNKNOWN, exactly",
+      "as it did before."
+    ],
+    "_note": "build-time source removed: not read while serving"
+  },
+  "harvestAudit": {
+    "_comment": [
+      "Harvested sources that are DELIBERATELY not read, each with the reason.",
+      "",
+      "scripts/audit-harvest.ts --check fails on any file under liveSources.roots",
+      "that nothing consumes and nothing here explains. The point is not that every",
+      "file must be read - it is that no harvested file should be one nobody has",
+      "thought about. cmf-UIPage.json sat unread for a day holding 325 labelled",
+      "sites, and a run asked the client a question our own harvest answered.",
+      "",
+      "A new pull lands in the directory, the gate goes red, somebody decides."
+    ],
+    "unused": [
+      {
+        "file": "chunk-6019.js",
+        "why": "A webpack bundle from the running client, pulled to read the widget catalogue out of it. It is COMPILED JAVASCRIPT, not vocabulary; what was learned from it is written up in WIDGET-CATALOGUE.md. Nothing should parse it at build time."
+      },
+      {
+        "file": "chunk-7714.js",
+        "why": "As chunk-6019.js - the second half of the same bundle."
+      },
+      {
+        "file": "render-probe.json",
+        "why": "A capture of the running designer's CSS variables, used once to derive CMF-THEME.json for the preview. The theme file is the product; this is its working."
+      },
+      {
+        "file": "cmf-uipage-StepView_Materials-loc.json",
+        "why": "One page pulled twice for a localisation comparison. The same page is already in cmf-UIPage.json, so livePages dedupes it away and it contributes nothing new."
+      },
+      {
+        "file": "cmf-uipage-StepView_Materials-raw.json",
+        "why": "The unlocalised half of the same comparison - see the -loc entry."
+      },
+      {
+        "file": "ENTITY-PROPERTIES.md",
+        "why": "Human analysis notes written while reading the harvest. The machine-readable form is cmf-EntityTypes-full.json, which IS consumed."
+      },
+      {
+        "file": "PAGE-SHAPE-SURVEY.md",
+        "why": "Analysis notes. What they concluded lives in WIDGET-SHAPES.json and platform.ts."
+      },
+      {
+        "file": "QUERY-BODY-SCHEMA.md",
+        "why": "Analysis notes behind the query builder. The rules they state are implemented in query-checks.ts."
+      },
+      {
+        "file": "QUERY-IMPORT-VALIDATION.md",
+        "why": "The record of a one-off import test against the portal. A result, not a source."
+      },
+      {
+        "file": "REDERIVED-2026-08-19.txt",
+        "why": "The output of rederive_page_shape.mjs on that date - a derivation record kept for provenance."
+      },
+      {
+        "file": "WIDGET-CATALOGUE.md",
+        "why": "What was read out of the webpack bundles, written up by hand. Prose for a human; the generator reads WIDGET-SHAPES.json."
+      }
+    ]
+  },
+  "liveSources": {
+    "_comment": [
+      "The read-only harvest from the CMF portal (base tenant CriticalManufacturing).",
+      "Kept apart from querySources because those are the CLIENT's delivered .xml and",
+      "this is a different tenant's JSON. A base-tenant label proves a name is valid",
+      "CMF; it does NOT prove the client uses it, so delivered evidence always wins.",
+      "",
+      "Harvested 2026-08-27 and read by nothing until 2026-08-28: 66 pages, 325",
+      "labelled sites, 102 paths the label assets had never seen."
+    ],
+    "_note": "build-time source removed: not read while serving"
+  },
+  "stories": {
+    "_comment": [
+      "The .txt copies of the requirement documents are DERIVED, not authored.",
+      "scripts/extract-stories.ts writes them through the same documentText() the",
+      "application uses, and --check fails when one drifts from its .docx.",
+      "",
+      "They HAD drifted: 14 of 18 were short, by up to 2,748 characters, and what",
+      "they were missing was the Word review comments. On US-455386_New those",
+      "comments carry two accepted decisions - the Product filter field and the",
+      "Traveler Print button - that appear nowhere in the body text. A grep of the",
+      ".txt answered a question about them confidently and wrongly.",
+      "",
+      "Roots are searched in order and the first match wins, so put the delivered",
+      "originals ahead of any working copy. A .txt with no .docx anywhere is left",
+      "alone and reported: several stories were delivered as plain text."
+    ],
+    "sources": [
+      "../CLIENT SRC"
+    ],
+    "_note": "build-time source removed: not read while serving"
+  },
+  "querySources": {
+    "_comment": [
+      "Where to look for query exports the client has ALREADY delivered, so a story",
+      "that merely names a query can still produce one (T-21).",
+      "",
+      "This is transcription, not inference. A query's joins cannot be derived from",
+      "its name: ProductionOrder -> Product joins ProductId -> DefinitionId (F-125).",
+      "A run that inferred a query body would produce one that executes and returns",
+      "the wrong rows — the worst outcome available.",
+      "",
+      "Matching is on the query's OWN <Name>, never on the filename: exports carry",
+      "load-order prefixes (100_CustomRetrieveProductionOrders.xml) and the same",
+      "query appears under several feature folders.",
+      "",
+      "Empty this list to disable transcription; a story-named query then reports as",
+      "a gap exactly as it did before."
+    ],
+    "roots": [
+      "corpus/root0",
+      "corpus/root1"
+    ],
+    "excludeContaining": [
+      "Aug 27th InpNOut",
+      "VERIFIED PAIRS"
+    ],
+    "_auditNote": [
+      "The exclusion above is the FIX for a contamination we found. scripts/audit-evidence.ts",
+      "is the DETECTOR, and it runs over every root rather than the one that failed:",
+      "it hashes each page's Settings blob and compares it against every artifact this",
+      "pipeline has written. See evidenceAudit below for what counts as ours."
+    ],
+    "_excludeComment": [
+      "Paths inside the roots that are TEST MATERIAL, not evidence.",
+      "",
+      "Athena send a requirement document and its delivered output as a PAIR for us to",
+      "test against, and those land inside CLIENT SRC — which is an evidence root. So",
+      "within a single `npm test` the extractors had absorbed the answer: delivered page",
+      "count 32 -> 33, form-field message references 33 -> 35, and",
+      "AttachConsumablesToResource suddenly sourced from the test pair's own output file.",
+      "",
+      "That is circular. A pair exists to answer 'could we have produced this?', and it",
+      "cannot answer that once its answer is in the dictionary the generator reads.",
+      "",
+      "Excluded here rather than by moving their folder: the files stay where Athena put",
+      "them, and the reason lives in config where a diff shows it rather than in",
+      "somebody's memory. The staleness gates are what caught this within minutes — a",
+      "silent version would have shown up as a suspiciously good score."
+    ]
+  },
+  "evidenceAudit": {
+    "_comment": [
+      "What counts as OUR OWN output, for scripts/audit-evidence.ts (item 4, F-169).",
+      "",
+      "Three of the pages being counted as client evidence were pages WE generated,",
+      "and one of them was sitting under a folder called `input\\` reading as a",
+      "perfectly legitimate before-the-change baseline. So the audit identifies our",
+      "work by CONTENT, not by where it sits.",
+      "",
+      "ourOutputFiles is the load-bearing half. A run directory holds both the",
+      "artifacts we wrote and the client files we ran against — a first version of",
+      "the audit swept everything under _working/experiment and flagged two of",
+      "Athena's own delivered samples as ours, because they sit in experiment/inputs/.",
+      "Only the filenames this pipeline WRITES are ours.",
+      "",
+      "Remove this block and the audit falls back to the same four roots and two",
+      "filenames, so an older config still behaves identically."
+    ],
+    "ourOutputRoots": [
+      "runs",
+      "run1",
+      "run2",
+      "../_working/experiment"
+    ],
+    "ourOutputFiles": [
+      "GENERATED.xml",
+      "MODIFIED.xml"
+    ]
+  },
+  "limits": {
+    "_comment": [
+      "Input guards. Without these a runaway document reaches the model and comes",
+      "back as an opaque API error instead of a message the user can act on (T-23).",
+      "",
+      "storyChars MEASURED against the real corpus: Athena's user stories extract to",
+      "905 and 1,854 characters, and the largest document they have sent — the",
+      "961-paragraph step-by-step build document — is 42,614. 500,000 leaves more",
+      "than ten times the headroom over the largest real input while still catching",
+      "a 4.5 MB paste, which would be roughly 1.1 million tokens and cannot be sent.",
+      "",
+      "Raise it if a genuine story is ever refused; that is a config edit, not a",
+      "code change."
+    ],
+    "storyChars": 500000
+  },
+  "flow": {
+    "_comment": [
+      "THE INTAKE SEQUENCE, ENFORCED. Requirement document -> the model asks",
+      "what it cannot settle -> a PRD the engineer can argue with -> and only",
+      "then code.",
+      "",
+      "THIS REVERSES A RECORDED DECISION, and that is deliberate rather than a",
+      "drift. LEDGER §8 and §13.9 both say the PRD was put before generation",
+      "'without making it a gate', so an engineer who said 'just build it' got",
+      "that. The client asked for the flow to be enforced, because a run that",
+      "skipped straight to generation produced a page nobody had agreed the",
+      "shape of, and the PRD is where the disagreement is supposed to be cheap.",
+      "",
+      "requirePrdBeforeGenerate  generate_artifact is refused until a PRD exists.",
+      "requirePrdReview          ...and until the engineer has said something",
+      "                          after it was written. That is a proxy for",
+      "                          'reviewed', and an honest one: it proves they",
+      "                          had the document in front of them and replied.",
+      "",
+      "Set either to false to restore the old behaviour. Remove the block",
+      "entirely and the gates are off, so a config written before this still",
+      "loads and still behaves as it did."
+    ],
+    "requirePrdBeforeGenerate": true,
+    "requirePrdReview": true
+  },
+  "loop": {
+    "maxAttempts": 3,
+    "_attemptsNote": "attempt 1 plus up to 2 regenerations. Only FAIL findings are fed back; WARN never triggers a retry."
+  },
+  "page": {
+    "layoutColumns": 6,
+    "layoutWidth": 1024,
+    "titleFollowsName": true,
+    "_layoutNote": [
+      "Page-specific values the skeleton leaves open — NOT platform facts.",
+      "columns genuinely varies: 20 / 6 / 10 across Athena's three samples, and",
+      "6 (54 pages), 8 (6), 24 (3), 18 (2), 16 (1) across the 66 live pages. 6 is",
+      "the mode, so it is the default, but a page that needs another value must say",
+      "so (--columns). width is 1024 in all three samples; live pages split",
+      "1025 (44) / 1024 (19) / 425 (3).",
+      "titleFollowsName: definition.title equals the page Name in all three samples",
+      "and in 40 of 66 live pages — so it is the default, not a rule. Override",
+      "with --title. Every value used is printed on each run; none is applied silently."
+    ]
+  },
+  "postProcess": {
+    "assignIds": true,
+    "_idsNote": "$id is a deterministic function of the JSON structure, so our code assigns it rather than the model. Round 2 emitted 3 markers for 207 objects; arithmetic over 200+ objects is not a judgement task."
+  }
+}

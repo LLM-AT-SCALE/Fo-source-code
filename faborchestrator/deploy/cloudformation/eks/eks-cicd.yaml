@@ -1,0 +1,220 @@
+AWSTemplateFormatVersion: '2010-09-09'
+# =============================================================================
+# CI/CD for EKS — what the GitHub Actions workflows (.github/workflows/deploy.yml,
+# rollback.yml) need in AWS:
+#
+#   GitHub (OIDC role fo-dev-github-actions, Terraform-owned)
+#     ├─ build  → CodeBuild fo-dev-eks-images   (eks-build.yaml)
+#     └─ deploy → CodeBuild fo-dev-eks-deploy   (this stack) → helm → EKS
+#
+# The deploy project runs inside the VPC and reaches the cluster on its PRIVATE
+# endpoint (the public one only allows admins' IPs). Its role gets an EKS access
+# entry; GitHub itself never talks to the cluster.
+# =============================================================================
+Description: >-
+  FabOrchestrator EKS CI/CD: in-VPC CodeBuild deploy project (helm) with an EKS
+  access entry, plus the permissions the GitHub Actions role needs.
+
+Parameters:
+  EnvName:
+    Type: String
+    Default: fo-dev
+  ClusterName:
+    Type: String
+    Default: fo-dev-eks
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Default: vpc-0755aa657acaf5889
+  PrivateSubnetIds:
+    Type: List<AWS::EC2::Subnet::Id>
+    Default: subnet-034bde507954cb9e9,subnet-0c4bf393f88595751
+    Description: Subnets with a NAT route (helm/kubectl downloads, CloudFront smoke test).
+  ClusterSecurityGroupId:
+    Type: AWS::EC2::SecurityGroup::Id
+    Default: sg-0b9aefffd8d636fdf
+    Description: The EKS-managed cluster security group (private endpoint).
+  ArtifactBucket:
+    Type: String
+    Default: fo-dev-pipeline-artifacts-358982197923
+  EcrRepositoryPrefix:
+    Type: String
+    Default: fo-dev
+  GitHubActionsRoleName:
+    Type: String
+    Default: fo-dev-github-actions
+    Description: Existing OIDC role the workflows assume (trust owned by Terraform).
+
+Resources:
+  DeployLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/codebuild/${EnvName}-eks-deploy'
+      RetentionInDays: 60
+
+  DeploySecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub '${EnvName}-eks-deploy'
+      GroupDescription: CodeBuild helm deploys (outbound only)
+      VpcId: !Ref VpcId
+      SecurityGroupEgress:
+        - { IpProtocol: '-1', CidrIp: 0.0.0.0/0 }
+      Tags:
+        - { Key: Name, Value: !Sub '${EnvName}-eks-deploy' }
+
+  ClusterApiFromDeploy:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref ClusterSecurityGroupId
+      IpProtocol: tcp
+      FromPort: 443
+      ToPort: 443
+      SourceSecurityGroupId: !Ref DeploySecurityGroup
+      Description: CodeBuild helm deploys to the EKS private endpoint
+
+  DeployRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${EnvName}-eks-deploy'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: { Service: codebuild.amazonaws.com }
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: deploy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: Logs
+                Effect: Allow
+                Action: [logs:CreateLogStream, logs:PutLogEvents]
+                Resource: !Sub '${DeployLogGroup.Arn}:*'
+              - Sid: SourceZip
+                Effect: Allow
+                Action: [s3:GetObject, s3:GetObjectVersion]
+                Resource: !Sub 'arn:aws:s3:::${ArtifactBucket}/eks-source/*'
+              - Sid: SourceBucket
+                Effect: Allow
+                Action: [s3:GetBucketAcl, s3:GetBucketLocation]
+                Resource: !Sub 'arn:aws:s3:::${ArtifactBucket}'
+              - Sid: Kubeconfig
+                Effect: Allow
+                Action: eks:DescribeCluster
+                Resource: !Sub 'arn:aws:eks:${AWS::Region}:${AWS::AccountId}:cluster/${ClusterName}'
+              # CodeBuild inside a VPC creates its own network interfaces.
+              - Sid: VpcNetworking
+                Effect: Allow
+                Action:
+                  - ec2:CreateNetworkInterface
+                  - ec2:DeleteNetworkInterface
+                  - ec2:DescribeNetworkInterfaces
+                  - ec2:DescribeDhcpOptions
+                  - ec2:DescribeSubnets
+                  - ec2:DescribeSecurityGroups
+                  - ec2:DescribeVpcs
+                Resource: '*'
+              - Sid: VpcNetworkInterfacePermission
+                Effect: Allow
+                Action: ec2:CreateNetworkInterfacePermission
+                Resource: !Sub 'arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:network-interface/*'
+                Condition:
+                  StringEquals: { 'ec2:AuthorizedService': codebuild.amazonaws.com }
+
+  # Helm manages a cluster-scoped PersistentVolume (runs volume) as well as the
+  # namespaced objects, so the deploy role needs cluster admin.
+  DeployAccessEntry:
+    Type: AWS::EKS::AccessEntry
+    Properties:
+      ClusterName: !Ref ClusterName
+      PrincipalArn: !GetAtt DeployRole.Arn
+      Type: STANDARD
+      AccessPolicies:
+        - PolicyArn: arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy
+          AccessScope: { Type: cluster }
+
+  DeployProject:
+    Type: AWS::CodeBuild::Project
+    DependsOn: [DeployAccessEntry, ClusterApiFromDeploy]
+    Properties:
+      Name: !Sub '${EnvName}-eks-deploy'
+      Description: helm upgrade / rollback of the FabOrchestrator release (started by GitHub Actions).
+      ServiceRole: !GetAtt DeployRole.Arn
+      Source:
+        Type: S3
+        # Overridden on every run with the zip of the commit being deployed.
+        Location: !Sub '${ArtifactBucket}/eks-source/faborchestrator.zip'
+        BuildSpec: |
+          version: 0.2
+          phases:
+            install:
+              commands:
+                - curl -fsSL -o /tmp/get-helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+                - bash /tmp/get-helm.sh >/dev/null && helm version --short
+                - curl -fsSL -o /usr/local/bin/kubectl "https://dl.k8s.io/release/$(curl -fsSL https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+                - chmod +x /usr/local/bin/kubectl && kubectl version --client
+            build:
+              commands:
+                - bash faborchestrator/deploy/scripts/ci-deploy.sh
+      Artifacts:
+        Type: NO_ARTIFACTS
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/amazonlinux-x86_64-standard:5.0
+        EnvironmentVariables:
+          - { Name: CLUSTER, Value: !Ref ClusterName }
+          - { Name: ENV_NAME, Value: !Ref EnvName }
+          - { Name: NAMESPACE, Value: faborchestrator }
+          - { Name: RELEASE, Value: faborchestrator }
+      VpcConfig:
+        VpcId: !Ref VpcId
+        Subnets: !Ref PrivateSubnetIds
+        SecurityGroupIds: [!Ref DeploySecurityGroup]
+      TimeoutInMinutes: 30
+      ConcurrentBuildLimit: 1
+      LogsConfig:
+        CloudWatchLogs:
+          Status: ENABLED
+          GroupName: !Ref DeployLogGroup
+
+  # Added to the existing OIDC role as a separate managed policy, so the role's
+  # Terraform-owned inline policy is left alone.
+  GitHubActionsPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: !Sub '${EnvName}-github-actions-eks'
+      Description: GitHub Actions deploy.yml / rollback.yml - build images, run helm deploys.
+      Roles: [!Ref GitHubActionsRoleName]
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: SourceZip
+            Effect: Allow
+            Action: s3:PutObject
+            Resource: !Sub 'arn:aws:s3:::${ArtifactBucket}/eks-source/*'
+          - Sid: BuildImages
+            Effect: Allow
+            Action: [codebuild:StartBuildBatch, codebuild:BatchGetBuildBatches, codebuild:StopBuildBatch]
+            Resource: !Sub 'arn:aws:codebuild:${AWS::Region}:${AWS::AccountId}:project/${EnvName}-eks-images'
+          - Sid: RunDeploy
+            Effect: Allow
+            Action: [codebuild:StartBuild, codebuild:BatchGetBuilds, codebuild:StopBuild]
+            Resource: !GetAtt DeployProject.Arn
+          - Sid: ReadBuildLogs
+            Effect: Allow
+            Action: logs:GetLogEvents
+            Resource:
+              - !Sub '${DeployLogGroup.Arn}:*'
+              - !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/codebuild/${EnvName}-eks-images:*'
+          - Sid: SkipBuiltImages
+            Effect: Allow
+            Action: ecr:DescribeImages
+            Resource: !Sub 'arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/${EcrRepositoryPrefix}/*'
+
+Outputs:
+  DeployProjectName:
+    Value: !Ref DeployProject
+  DeployRoleArn:
+    Value: !GetAtt DeployRole.Arn

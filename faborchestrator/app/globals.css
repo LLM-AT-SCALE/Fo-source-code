@@ -1,0 +1,2618 @@
+/* Inter — used by the FabOrch login page to match the approved design exactly.
+   Must precede the Tailwind import (Tailwind v4 inlines its CSS in place, and
+   @import rules must come before all other rules). */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+/* Plus Jakarta Sans — V2 design system (login, cockpit, chat). */
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
+@import "tailwindcss";
+@import "lenis/dist/lenis.css";
+
+@plugin "../node_modules/tailwindcss-animate";
+@plugin "@tailwindcss/typography";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* V2 login input fields — highlight on focus (overrides inline base styles). */
+.login-field:focus-within {
+  background: #ffffff !important;
+  border-color: #5b54e8 !important;
+  box-shadow: 0 0 0 4px rgba(91, 84, 232, 0.12);
+}
+/* Suppress the global 2px focus-visible outline on login fields — the HTML
+   mockup has no hard outline, only the soft border/glow above. */
+.login-field input:focus-visible,
+.login-field button:focus-visible {
+  outline: none;
+}
+/* V2 landing domain chips — blue border + text on hover. */
+.login-chip:hover {
+  border-color: #c9d0f5 !important;
+  color: #5566e8 !important;
+}
+/* V2 cockpit — recolor the page accent to the design indigo. */
+.cockpit-v2 {
+  --primary: #5b54e8;
+  --primary-foreground: #ffffff;
+  --accent: #edecfd;
+  --accent-foreground: #4842d4;
+  --ring: #5b54e8;
+}
+.cockpit-v2 .open-link:hover { color: #4842d4; }
+.cockpit-v2 .open-link:hover svg { transform: translateX(3px); }
+/* V2 cockpit — ask bar focus glow + chip hover (matches 2_Cockpit.html). */
+.cockpit-v2 .cockpit-askbar:focus-within {
+  border-color: #c5c8f5 !important;
+  box-shadow: 0 14px 40px rgba(91, 84, 232, 0.14) !important;
+}
+.cockpit-v2 .cockpit-chip:hover {
+  border-color: #c5c8f5 !important;
+  color: #5b54e8 !important;
+}
+.cockpit-v2 article:hover {
+  border-color: #c5c8f5 !important;
+  box-shadow: 0 14px 34px rgba(22, 28, 52, 0.1) !important;
+}
+
+/* ============================================================================
+   CLAUDE THEME - Scale-Level Production Ready
+   Source: https://tweakcn.com/r/themes/claude.json
+   ============================================================================ */
+
+:root {
+  /* Core Colors - Chat UI background #FAF9F5 */
+  --background: #FAF9F5;
+  --foreground: oklch(0.3438 0.0269 95.7226);
+  --card: #FAF9F5;
+  --card-foreground: oklch(0.1908 0.0020 106.5859);
+  --popover: oklch(1.0000 0 0);
+  --popover-foreground: oklch(0.2671 0.0196 98.9390);
+
+  /* Brand Colors */
+  --primary: oklch(0.6171 0.1375 39.0427);
+  --primary-foreground: oklch(1.0000 0 0);
+  --secondary: oklch(0.9245 0.0138 92.9892);
+  --secondary-foreground: oklch(0.4334 0.0177 98.6048);
+
+  /* UI Element Colors */
+  --muted: oklch(0.9341 0.0153 90.2390);
+  --muted-foreground: oklch(0.6059 0.0075 97.4233);
+  --accent: #D97757;
+  --accent-foreground: #FFFFFF;
+  --destructive: oklch(0.1908 0.0020 106.5859);
+  --destructive-foreground: oklch(1.0000 0 0);
+
+  /* Form Colors */
+  --border: oklch(0.8847 0.0069 97.3627);
+  --input: oklch(0.7621 0.0156 98.3528);
+  --ring: oklch(0.6171 0.1375 39.0427);
+
+  /* Chart Colors */
+  --chart-1: oklch(0.5583 0.1276 42.9956);
+  --chart-2: oklch(0.6898 0.1581 290.4107);
+  --chart-3: oklch(0.8816 0.0276 93.1280);
+  --chart-4: oklch(0.8822 0.0403 298.1792);
+  --chart-5: oklch(0.5608 0.1348 42.0584);
+
+  /* Sidebar Colors - Sidebar background #F9F8F3 */
+  --sidebar: #F9F8F3;
+  --sidebar-foreground: oklch(0.3590 0.0051 106.6524);
+  --sidebar-primary: oklch(0.6171 0.1375 39.0427);
+  --sidebar-primary-foreground: oklch(0.9881 0 0);
+  --sidebar-accent: oklch(0.9245 0.0138 92.9892);
+  --sidebar-accent-foreground: oklch(0.3250 0 0);
+  --sidebar-border: oklch(0.9401 0 0);
+  --sidebar-ring: oklch(0.7731 0 0);
+
+  /* Admin Console brand palette (login/register gradient, admin sidebar, dividers) */
+  --auth-grad-from: #5b21b6;
+  --auth-grad-via: #7c3aed;
+  --auth-grad-to: #c026d3;
+  --auth-grad-from-2: #4c1d95;
+  --auth-grad-via-2: #6d28d9;
+  --auth-grad-to-2: #a21caf;
+  --sidebar-active-navy: #1e2545;
+  --divider-cool: #E7EAF2;
+  --chat-heading-ink: #1E233A;
+  --chat-subtle-ink: #6B7185;
+
+  /* Typography */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
+  /* Border Radius */
+  --radius: 0.5rem;
+
+  /* Shadows */
+  --shadow-x: 0;
+  --shadow-y: 1px;
+  --shadow-blur: 3px;
+  --shadow-spread: 0px;
+  --shadow-opacity: 0.1;
+  --shadow-color: oklch(0 0 0);
+  --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
+  --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
+  --shadow-sm: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 1px 2px -1px hsl(0 0% 0% / 0.10);
+  --shadow: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 1px 2px -1px hsl(0 0% 0% / 0.10);
+  --shadow-md: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 2px 4px -1px hsl(0 0% 0% / 0.10);
+  --shadow-lg: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 4px 6px -1px hsl(0 0% 0% / 0.10);
+  --shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 8px 10px -1px hsl(0 0% 0% / 0.10);
+  --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
+
+  /* Spacing & Typography */
+  --tracking-normal: 0em;
+  --spacing: 0.25rem;
+
+  /* Claude-style input component vars */
+  --bg-0: #FAF9F5;
+  --bg-000: #FAF9F5;
+  --bg-100: #FFFFFF;
+  --bg-200: #F0EEE6;
+  --bg-300: #DDDDDD;
+  --text-100: #1F1E1D;
+  --text-200: #3D3D3A;
+  --text-300: #73726C;
+  --text-400: #888888;
+  --text-500: #999999;
+  --accent-hover: #C6613F;
+
+  /* Hover & Message Backgrounds */
+  --bg-hover: #F5F4EF;
+  --bg-message-user: #F0EEE6;
+  --input-border: #c5c5c5;
+
+  /* Brand */
+  --brand-logo: #D46B4F;
+
+  /* Code */
+  --code-line-number: #9ca3af;
+
+  /* Status Colors */
+  --status-info: #3b82f6;
+  --status-info-foreground: #1d4ed8;
+  --status-info-muted: #dbeafe;
+  --status-success: #22c55e;
+  --status-success-foreground: #15803d;
+  --status-success-muted: #dcfce7;
+  --status-warning: #f59e0b;
+  --status-warning-foreground: #b45309;
+  --status-warning-muted: #fef3c7;
+  --status-error: #ef4444;
+  --status-error-foreground: #b91c1c;
+  --status-error-muted: #fee2e2;
+
+  /* Status Indicators */
+  --status-connected: #22c55e;
+  --status-disconnected: #9ca3af;
+
+  /* File Type Icons */
+  --icon-presentation: #f97316;
+  --icon-spreadsheet: #16a34a;
+  --icon-document: #3b82f6;
+  --icon-image: #a855f7;
+  --icon-code: #ca8a04;
+
+  /* Time-of-Day Greeting Icons */
+  --icon-morning: #f59e0b;
+  --icon-afternoon: #f97316;
+  --icon-evening: #a855f7;
+  --icon-night: #818cf8;
+
+  /* ==========================================================================
+     Brand / cockpit / login palette (tokenized from components)
+     Fixed brand colours lifted verbatim from login-page, cockpit/* and
+     full-chat-app. Single value by design (they were hardcoded, identical in
+     light/dark), so no theme/dark variants — relocated, never re-valued.
+     ========================================================================== */
+  /* Indigo family */
+  --brand-indigo: #5b54e8;
+  --cockpit-indigo: #4842d4;
+  --brand-indigo-light: #6f73ff;
+  --brand-indigo-soft: #7d82ff;
+  --brand-indigo-pale: #aeb2ff;
+  --chat-indigo: #5566e8;
+  --brand-indigo-bg: #edecfd;
+  /* Login navy branding panel */
+  --login-navy-1: #1d2660;
+  --login-navy-2: #161d4a;
+  --login-navy-3: #10153a;
+  --cockpit-nav-active: #1a2150;
+  /* Surfaces & borders */
+  --cockpit-surface: #f2f3fb;
+  --login-sso-bg: #f3f4fb;
+  --page-surface: #f6f7fc;
+  --login-field-bg: #eef0fa;
+  --border-light: #e7e9f4;
+  --chat-chip-border: #e7eaf5;
+  /* Ink / dark text */
+  --text-ink: #161c34;
+  --chat-ink: #1a2240;
+  /* Muted text */
+  --text-subtle: #8b93b0;
+  --text-muted-cool: #5d6680;
+  --text-muted-login: #6b7185;
+  --chat-text-muted: #6b7596;
+  --chat-text-copyright: #9aa3c0;
+  --chat-chevron: #8a96c4;
+  /* Login brand-panel text (on navy) */
+  --login-brand-label: #aab2dd;
+  --login-brand-body: #c3c9e8;
+  --login-brand-prop: #e6e9f7;
+  --login-brand-copyright: #7f88b8;
+  /* Chat sidebar brand blues */
+  --chat-brand-blue: #5b8cff;
+  --chat-avatar-blue: #3a5fd9;
+  /* Neutral */
+  --pure-white: #fff;
+  /* Status accents */
+  --status-green: #1fa971;
+  --status-green-bg: #e7f7ef;
+  --status-amber: #d6841f;
+  --status-amber-bg: #fdf3e3;
+  --status-red: #d9403a;
+  --status-red-bg: #fdecec;
+  --status-grey: #8b93b0;
+  --status-grey-bg: #eef0f6;
+  --cockpit-error-bg: #fef2f2;
+  --cockpit-error-border: #fecaca;
+}
+
+.dark {
+  /* Core Colors - Chat UI background #262624 */
+  --background: #262624;
+  --foreground: #e8e6e3;
+  --card: #262624;
+  --card-foreground: #e8e6e3;
+  --popover: #2a2a28;
+  --popover-foreground: #e8e6e3;
+
+  /* Brand Colors */
+  --primary: oklch(0.6724 0.1308 38.7559);
+  --primary-foreground: #ffffff;
+  --secondary: #2a2a28;
+  --secondary-foreground: #e8e6e3;
+
+  /* UI Element Colors */
+  --muted: #1e1e1d;
+  --muted-foreground: #a0a0a0;
+  --accent: #D2996E;
+  --accent-foreground: #FFFFFF;
+  --destructive: oklch(0.6368 0.2078 25.3313);
+  --destructive-foreground: oklch(1.0000 0 0);
+
+  /* Form Colors */
+  --border: oklch(0.3618 0.0101 106.8928);
+  --input: oklch(0.4336 0.0113 100.2195);
+  --ring: oklch(0.6724 0.1308 38.7559);
+
+  /* Chart Colors */
+  --chart-1: oklch(0.5583 0.1276 42.9956);
+  --chart-2: oklch(0.6898 0.1581 290.4107);
+  --chart-3: oklch(0.2130 0.0078 95.4245);
+  --chart-4: oklch(0.3074 0.0516 289.3230);
+  --chart-5: oklch(0.5608 0.1348 42.0584);
+
+  /* Sidebar Colors - #242423 */
+  --sidebar: #242423;
+  --sidebar-foreground: #e8e6e3;
+  --sidebar-primary: oklch(0.6724 0.1308 38.7559);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #2e2e2c;
+  --sidebar-accent-foreground: #e8e6e3;
+  --sidebar-border: #363634;
+  --sidebar-ring: oklch(0.6724 0.1308 38.7559);
+
+  /* Claude-style input component vars */
+  --bg-0: #212121;
+  --bg-000: #212121;
+  --bg-100: #262624;
+  --bg-200: #30302E;
+  --bg-300: #454540;
+  --text-100: #ECECEC;
+  --text-200: #E1E1E0;
+  --text-300: #B4B4B4;
+  --text-400: #8A8A88;
+  --text-500: #6B6B65;
+  --accent-hover: #E5AA7F;
+
+  /* Hover & Message Backgrounds */
+  --bg-hover: #353533;
+  --bg-message-user: #141413;
+  --input-border: var(--border);
+
+  /* Brand */
+  --brand-logo: #D46B4F;
+
+  /* Code */
+  --code-line-number: #636d83;
+
+  /* Status Colors */
+  --status-info: #60a5fa;
+  --status-info-foreground: #60a5fa;
+  --status-info-muted: rgba(59,130,246,0.12);
+  --status-success: #4ade80;
+  --status-success-foreground: #4ade80;
+  --status-success-muted: rgba(34,197,94,0.12);
+  --status-warning: #fbbf24;
+  --status-warning-foreground: #fbbf24;
+  --status-warning-muted: rgba(245,158,11,0.12);
+  --status-error: #f87171;
+  --status-error-foreground: #f87171;
+  --status-error-muted: rgba(239,68,68,0.12);
+
+  /* Status Indicators */
+  --status-connected: #4ade80;
+  --status-disconnected: #6b7280;
+
+  /* File Type Icons */
+  --icon-presentation: #f97316;
+  --icon-spreadsheet: #16a34a;
+  --icon-document: #60a5fa;
+  --icon-image: #c084fc;
+  --icon-code: #facc15;
+
+  /* Time-of-Day Greeting Icons */
+  --icon-morning: #fbbf24;
+  --icon-afternoon: #fb923c;
+  --icon-evening: #c084fc;
+  --icon-night: #818cf8;
+
+  /* Typography */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
+  /* Border Radius */
+  --radius: 0.5rem;
+
+  /* Shadows */
+  --shadow-x: 0;
+  --shadow-y: 1px;
+  --shadow-blur: 3px;
+  --shadow-spread: 0px;
+  --shadow-opacity: 0.1;
+  --shadow-color: oklch(0 0 0);
+  --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
+  --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
+  --shadow-sm: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 1px 2px -1px hsl(0 0% 0% / 0.10);
+  --shadow: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 1px 2px -1px hsl(0 0% 0% / 0.10);
+  --shadow-md: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 2px 4px -1px hsl(0 0% 0% / 0.10);
+  --shadow-lg: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 4px 6px -1px hsl(0 0% 0% / 0.10);
+  --shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 8px 10px -1px hsl(0 0% 0% / 0.10);
+  --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
+}
+
+/* ============================================================================
+   COLOR THEMES - Vercel
+   ============================================================================ */
+
+:root[data-theme="vercel"] {
+  --background: oklch(0.9900 0 0);
+  --foreground: oklch(0 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0 0 0);
+  --popover: oklch(0.9900 0 0);
+  --popover-foreground: oklch(0 0 0);
+  --primary: oklch(0 0 0);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.9400 0 0);
+  --secondary-foreground: oklch(0 0 0);
+  --muted: oklch(0.9700 0 0);
+  --muted-foreground: oklch(0.4400 0 0);
+  --accent: oklch(0.9400 0 0);
+  --accent-foreground: oklch(0 0 0);
+  --destructive: oklch(0.6300 0.1900 23.0300);
+  --destructive-foreground: oklch(1 0 0);
+  --border: oklch(0.9200 0 0);
+  --input: oklch(0.9400 0 0);
+  --ring: oklch(0 0 0);
+  --chart-1: oklch(0.8100 0.1700 75.3500);
+  --chart-2: oklch(0.5500 0.2200 264.5300);
+  --chart-3: oklch(0.7200 0 0);
+  --chart-4: oklch(0.9200 0 0);
+  --chart-5: oklch(0.5600 0 0);
+  --sidebar: oklch(0.9900 0 0);
+  --sidebar-foreground: oklch(0 0 0);
+  --sidebar-primary: oklch(0 0 0);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.9400 0 0);
+  --sidebar-accent-foreground: oklch(0 0 0);
+  --sidebar-border: oklch(0.9400 0 0);
+  --sidebar-ring: oklch(0 0 0);
+  --font-sans: Geist, ui-sans-serif, system-ui, sans-serif;
+  --radius: 0.5rem;
+  --bg-0: oklch(0.9900 0 0);
+  --bg-000: oklch(0.9900 0 0);
+  --bg-100: oklch(1 0 0);
+  --bg-200: oklch(0.9400 0 0);
+  --bg-300: oklch(0.9200 0 0);
+  --text-100: oklch(0 0 0);
+  --text-200: oklch(0.2000 0 0);
+  --text-300: oklch(0.4400 0 0);
+  --text-400: oklch(0.5600 0 0);
+  --text-500: oklch(0.6400 0 0);
+  --accent-hover: oklch(0.1500 0 0);
+  --bg-hover: oklch(0.9600 0 0);
+  --bg-message-user: oklch(0.9400 0 0);
+  --input-border: oklch(0.8500 0 0);
+  --brand-logo: oklch(0 0 0);
+}
+
+:root[data-theme="vercel"].dark,
+:root[data-theme="vercel"] .dark {
+  --background: oklch(0 0 0);
+  --foreground: oklch(1 0 0);
+  --card: oklch(0.1400 0 0);
+  --card-foreground: oklch(1 0 0);
+  --popover: oklch(0.1800 0 0);
+  --popover-foreground: oklch(1 0 0);
+  --primary: oklch(1 0 0);
+  --primary-foreground: oklch(0 0 0);
+  --secondary: oklch(0.2500 0 0);
+  --secondary-foreground: oklch(1 0 0);
+  --muted: oklch(0.2300 0 0);
+  --muted-foreground: oklch(0.7200 0 0);
+  --accent: oklch(0.3200 0 0);
+  --accent-foreground: oklch(1 0 0);
+  --destructive: oklch(0.6900 0.2000 23.9100);
+  --destructive-foreground: oklch(0 0 0);
+  --border: oklch(0.2600 0 0);
+  --input: oklch(0.3200 0 0);
+  --ring: oklch(0.7200 0 0);
+  --chart-1: oklch(0.8100 0.1700 75.3500);
+  --chart-2: oklch(0.5800 0.2100 260.8400);
+  --chart-3: oklch(0.5600 0 0);
+  --chart-4: oklch(0.4400 0 0);
+  --chart-5: oklch(0.9200 0 0);
+  --sidebar: oklch(0.1800 0 0);
+  --sidebar-foreground: oklch(1 0 0);
+  --sidebar-primary: oklch(1 0 0);
+  --sidebar-primary-foreground: oklch(0 0 0);
+  --sidebar-accent: oklch(0.3200 0 0);
+  --sidebar-accent-foreground: oklch(1 0 0);
+  --sidebar-border: oklch(0.3200 0 0);
+  --sidebar-ring: oklch(0.7200 0 0);
+  --bg-0: oklch(0 0 0);
+  --bg-000: oklch(0 0 0);
+  --bg-100: oklch(0.1400 0 0);
+  --bg-200: oklch(0.2000 0 0);
+  --bg-300: oklch(0.2600 0 0);
+  --text-100: oklch(1 0 0);
+  --text-200: oklch(0.9200 0 0);
+  --text-300: oklch(0.7200 0 0);
+  --text-400: oklch(0.5600 0 0);
+  --text-500: oklch(0.4400 0 0);
+  --accent-hover: oklch(0.9000 0 0);
+  --bg-hover: oklch(0.2000 0 0);
+  --bg-message-user: oklch(0.1200 0 0);
+  --input-border: oklch(0.3200 0 0);
+  --brand-logo: oklch(1 0 0);
+}
+
+/* ============================================================================
+   COLOR THEMES - Solar Dusk
+   ============================================================================ */
+
+:root[data-theme="solar-dusk"] {
+  --background: oklch(0.9885 0.0057 84.5659);
+  --foreground: oklch(0.3660 0.0251 49.6085);
+  --card: oklch(0.9686 0.0091 78.2818);
+  --card-foreground: oklch(0.3660 0.0251 49.6085);
+  --popover: oklch(0.9686 0.0091 78.2818);
+  --popover-foreground: oklch(0.3660 0.0251 49.6085);
+  --primary: oklch(0.5553 0.1455 48.9975);
+  --primary-foreground: oklch(1.0000 0 0);
+  --secondary: oklch(0.8276 0.0752 74.4400);
+  --secondary-foreground: oklch(0.4444 0.0096 73.6390);
+  --muted: oklch(0.9363 0.0218 83.2637);
+  --muted-foreground: oklch(0.5534 0.0116 58.0708);
+  --accent: oklch(0.9000 0.0500 74.9889);
+  --accent-foreground: oklch(0.4444 0.0096 73.6390);
+  --destructive: oklch(0.4437 0.1613 26.8994);
+  --destructive-foreground: oklch(1.0000 0 0);
+  --border: oklch(0.8866 0.0404 89.6994);
+  --input: oklch(0.8866 0.0404 89.6994);
+  --ring: oklch(0.5553 0.1455 48.9975);
+  --chart-1: oklch(0.5553 0.1455 48.9975);
+  --chart-2: oklch(0.5534 0.0116 58.0708);
+  --chart-3: oklch(0.5538 0.1207 66.4416);
+  --chart-4: oklch(0.5534 0.0116 58.0708);
+  --chart-5: oklch(0.6806 0.1423 75.8340);
+  --sidebar: oklch(0.9363 0.0218 83.2637);
+  --sidebar-foreground: oklch(0.3660 0.0251 49.6085);
+  --sidebar-primary: oklch(0.5553 0.1455 48.9975);
+  --sidebar-primary-foreground: oklch(1.0000 0 0);
+  --sidebar-accent: oklch(0.5538 0.1207 66.4416);
+  --sidebar-accent-foreground: oklch(1.0000 0 0);
+  --sidebar-border: oklch(0.8866 0.0404 89.6994);
+  --sidebar-ring: oklch(0.5553 0.1455 48.9975);
+  --radius: 0.3rem;
+  --bg-0: oklch(0.9885 0.0057 84.5659);
+  --bg-000: oklch(0.9885 0.0057 84.5659);
+  --bg-100: oklch(0.9686 0.0091 78.2818);
+  --bg-200: oklch(0.9363 0.0218 83.2637);
+  --bg-300: oklch(0.8866 0.0404 89.6994);
+  --text-100: oklch(0.3660 0.0251 49.6085);
+  --text-200: oklch(0.4444 0.0096 73.6390);
+  --text-300: oklch(0.5534 0.0116 58.0708);
+  --text-400: oklch(0.6500 0.0100 58.0000);
+  --text-500: oklch(0.7200 0.0080 58.0000);
+  --accent-hover: oklch(0.4800 0.1300 48.0000);
+  --bg-hover: oklch(0.9500 0.0150 83.0000);
+  --bg-message-user: oklch(0.9363 0.0218 83.2637);
+  --input-border: oklch(0.8200 0.0350 89.0000);
+  --brand-logo: oklch(0.5553 0.1455 48.9975);
+}
+
+:root[data-theme="solar-dusk"].dark,
+:root[data-theme="solar-dusk"] .dark {
+  --background: oklch(0.2161 0.0061 56.0434);
+  --foreground: oklch(0.9699 0.0013 106.4238);
+  --card: oklch(0.2685 0.0063 34.2976);
+  --card-foreground: oklch(0.9699 0.0013 106.4238);
+  --popover: oklch(0.2685 0.0063 34.2976);
+  --popover-foreground: oklch(0.9699 0.0013 106.4238);
+  --primary: oklch(0.7049 0.1867 47.6044);
+  --primary-foreground: oklch(1.0000 0 0);
+  --secondary: oklch(0.4444 0.0096 73.6390);
+  --secondary-foreground: oklch(0.9232 0.0026 48.7171);
+  --muted: oklch(0.2330 0.0073 67.4563);
+  --muted-foreground: oklch(0.7161 0.0091 56.2590);
+  --accent: oklch(0.3598 0.0497 229.3202);
+  --accent-foreground: oklch(0.9232 0.0026 48.7171);
+  --destructive: oklch(0.5771 0.2152 27.3250);
+  --destructive-foreground: oklch(1.0000 0 0);
+  --border: oklch(0.3741 0.0087 67.5582);
+  --input: oklch(0.3741 0.0087 67.5582);
+  --ring: oklch(0.7049 0.1867 47.6044);
+  --chart-1: oklch(0.7049 0.1867 47.6044);
+  --chart-2: oklch(0.6847 0.1479 237.3225);
+  --chart-3: oklch(0.7952 0.1617 86.0468);
+  --chart-4: oklch(0.7161 0.0091 56.2590);
+  --chart-5: oklch(0.5534 0.0116 58.0708);
+  --sidebar: oklch(0.2685 0.0063 34.2976);
+  --sidebar-foreground: oklch(0.9699 0.0013 106.4238);
+  --sidebar-primary: oklch(0.7049 0.1867 47.6044);
+  --sidebar-primary-foreground: oklch(1.0000 0 0);
+  --sidebar-accent: oklch(0.6847 0.1479 237.3225);
+  --sidebar-accent-foreground: oklch(0.2839 0.0734 254.5378);
+  --sidebar-border: oklch(0.3741 0.0087 67.5582);
+  --sidebar-ring: oklch(0.7049 0.1867 47.6044);
+  --bg-0: oklch(0.2000 0.0050 56.0000);
+  --bg-000: oklch(0.2000 0.0050 56.0000);
+  --bg-100: oklch(0.2685 0.0063 34.2976);
+  --bg-200: oklch(0.3200 0.0070 50.0000);
+  --bg-300: oklch(0.3741 0.0087 67.5582);
+  --text-100: oklch(0.9699 0.0013 106.4238);
+  --text-200: oklch(0.9232 0.0026 48.7171);
+  --text-300: oklch(0.7161 0.0091 56.2590);
+  --text-400: oklch(0.5534 0.0116 58.0708);
+  --text-500: oklch(0.4444 0.0096 73.6390);
+  --accent-hover: oklch(0.7800 0.1600 47.0000);
+  --bg-hover: oklch(0.3000 0.0060 40.0000);
+  --bg-message-user: oklch(0.1800 0.0050 56.0000);
+  --input-border: oklch(0.3741 0.0087 67.5582);
+  --brand-logo: oklch(0.7049 0.1867 47.6044);
+}
+
+/* ============================================================================
+   COLOR THEMES - Twitter
+   ============================================================================ */
+
+:root[data-theme="twitter"] {
+  --background: oklch(1.0000 0 0);
+  --foreground: oklch(0.1884 0.0128 248.5103);
+  --card: oklch(0.9784 0.0011 197.1387);
+  --card-foreground: oklch(0.1884 0.0128 248.5103);
+  --popover: oklch(1.0000 0 0);
+  --popover-foreground: oklch(0.1884 0.0128 248.5103);
+  --primary: oklch(0.6723 0.1606 244.9955);
+  --primary-foreground: oklch(1.0000 0 0);
+  --secondary: oklch(0.1884 0.0128 248.5103);
+  --secondary-foreground: oklch(1.0000 0 0);
+  --muted: oklch(0.9222 0.0013 286.3737);
+  --muted-foreground: oklch(0.1884 0.0128 248.5103);
+  --accent: oklch(0.9392 0.0166 250.8453);
+  --accent-foreground: oklch(0.6723 0.1606 244.9955);
+  --destructive: oklch(0.6188 0.2376 25.7658);
+  --destructive-foreground: oklch(1.0000 0 0);
+  --border: oklch(0.9317 0.0118 231.6594);
+  --input: oklch(0.9809 0.0025 228.7836);
+  --ring: oklch(0.6818 0.1584 243.3540);
+  --chart-1: oklch(0.6723 0.1606 244.9955);
+  --chart-2: oklch(0.6907 0.1554 160.3454);
+  --chart-3: oklch(0.8214 0.1600 82.5337);
+  --chart-4: oklch(0.7064 0.1822 151.7125);
+  --chart-5: oklch(0.5919 0.2186 10.5826);
+  --sidebar: oklch(0.9784 0.0011 197.1387);
+  --sidebar-foreground: oklch(0.1884 0.0128 248.5103);
+  --sidebar-primary: oklch(0.6723 0.1606 244.9955);
+  --sidebar-primary-foreground: oklch(1.0000 0 0);
+  --sidebar-accent: oklch(0.9392 0.0166 250.8453);
+  --sidebar-accent-foreground: oklch(0.6723 0.1606 244.9955);
+  --sidebar-border: oklch(0.9271 0.0101 238.5177);
+  --sidebar-ring: oklch(0.6818 0.1584 243.3540);
+  --radius: 1.3rem;
+  --bg-0: oklch(1.0000 0 0);
+  --bg-000: oklch(1.0000 0 0);
+  --bg-100: oklch(0.9784 0.0011 197.1387);
+  --bg-200: oklch(0.9392 0.0166 250.8453);
+  --bg-300: oklch(0.9317 0.0118 231.6594);
+  --text-100: oklch(0.1884 0.0128 248.5103);
+  --text-200: oklch(0.3000 0.0100 248.0000);
+  --text-300: oklch(0.4500 0.0090 248.0000);
+  --text-400: oklch(0.5600 0.0080 248.0000);
+  --text-500: oklch(0.6500 0.0060 248.0000);
+  --accent-hover: oklch(0.5800 0.1500 244.0000);
+  --bg-hover: oklch(0.9600 0.0050 230.0000);
+  --bg-message-user: oklch(0.9392 0.0166 250.8453);
+  --input-border: oklch(0.8800 0.0100 231.0000);
+  --brand-logo: oklch(0.6723 0.1606 244.9955);
+}
+
+:root[data-theme="twitter"].dark,
+:root[data-theme="twitter"] .dark {
+  --background: oklch(0 0 0);
+  --foreground: oklch(0.9328 0.0025 228.7857);
+  --card: oklch(0.2097 0.0080 274.5332);
+  --card-foreground: oklch(0.8853 0 0);
+  --popover: oklch(0 0 0);
+  --popover-foreground: oklch(0.9328 0.0025 228.7857);
+  --primary: oklch(0.6692 0.1607 245.0110);
+  --primary-foreground: oklch(1.0000 0 0);
+  --secondary: oklch(0.9622 0.0035 219.5331);
+  --secondary-foreground: oklch(0.1884 0.0128 248.5103);
+  --muted: oklch(0.2090 0 0);
+  --muted-foreground: oklch(0.5637 0.0078 247.9662);
+  --accent: oklch(0.1928 0.0331 242.5459);
+  --accent-foreground: oklch(0.6692 0.1607 245.0110);
+  --destructive: oklch(0.6188 0.2376 25.7658);
+  --destructive-foreground: oklch(1.0000 0 0);
+  --border: oklch(0.2674 0.0047 248.0045);
+  --input: oklch(0.3020 0.0288 244.8244);
+  --ring: oklch(0.6818 0.1584 243.3540);
+  --chart-1: oklch(0.6723 0.1606 244.9955);
+  --chart-2: oklch(0.6907 0.1554 160.3454);
+  --chart-3: oklch(0.8214 0.1600 82.5337);
+  --chart-4: oklch(0.7064 0.1822 151.7125);
+  --chart-5: oklch(0.5919 0.2186 10.5826);
+  --sidebar: oklch(0.2097 0.0080 274.5332);
+  --sidebar-foreground: oklch(0.8853 0 0);
+  --sidebar-primary: oklch(0.6818 0.1584 243.3540);
+  --sidebar-primary-foreground: oklch(1.0000 0 0);
+  --sidebar-accent: oklch(0.1928 0.0331 242.5459);
+  --sidebar-accent-foreground: oklch(0.6692 0.1607 245.0110);
+  --sidebar-border: oklch(0.3795 0.0220 240.5943);
+  --sidebar-ring: oklch(0.6818 0.1584 243.3540);
+  --bg-0: oklch(0 0 0);
+  --bg-000: oklch(0 0 0);
+  --bg-100: oklch(0.2097 0.0080 274.5332);
+  --bg-200: oklch(0.1928 0.0331 242.5459);
+  --bg-300: oklch(0.2674 0.0047 248.0045);
+  --text-100: oklch(0.9328 0.0025 228.7857);
+  --text-200: oklch(0.8853 0 0);
+  --text-300: oklch(0.5637 0.0078 247.9662);
+  --text-400: oklch(0.4500 0.0060 248.0000);
+  --text-500: oklch(0.3500 0.0050 248.0000);
+  --accent-hover: oklch(0.7500 0.1500 244.0000);
+  --bg-hover: oklch(0.2500 0.0100 274.0000);
+  --bg-message-user: oklch(0.1200 0.0050 248.0000);
+  --input-border: oklch(0.3020 0.0288 244.8244);
+  --brand-logo: oklch(0.6692 0.1607 245.0110);
+}
+
+/* ============================================================================
+   COLOR THEMES - Violet Bloom
+   ============================================================================ */
+
+:root[data-theme="violet-bloom"] {
+  --background: oklch(0.9940 0 0);
+  --foreground: oklch(0 0 0);
+  --card: oklch(0.9940 0 0);
+  --card-foreground: oklch(0 0 0);
+  --popover: oklch(0.9911 0 0);
+  --popover-foreground: oklch(0 0 0);
+  --primary: oklch(0.5393 0.2713 286.7462);
+  --primary-foreground: oklch(1.0000 0 0);
+  --secondary: oklch(0.9540 0.0063 255.4755);
+  --secondary-foreground: oklch(0.1344 0 0);
+  --muted: oklch(0.9702 0 0);
+  --muted-foreground: oklch(0.4386 0 0);
+  --accent: oklch(0.9393 0.0288 266.3680);
+  --accent-foreground: oklch(0.5445 0.1903 259.4848);
+  --destructive: oklch(0.6290 0.1902 23.0704);
+  --destructive-foreground: oklch(1.0000 0 0);
+  --border: oklch(0.9300 0.0094 286.2156);
+  --input: oklch(0.9401 0 0);
+  --ring: oklch(0 0 0);
+  --chart-1: oklch(0.7459 0.1483 156.4499);
+  --chart-2: oklch(0.5393 0.2713 286.7462);
+  --chart-3: oklch(0.7336 0.1758 50.5517);
+  --chart-4: oklch(0.5828 0.1809 259.7276);
+  --chart-5: oklch(0.5590 0 0);
+  --sidebar: oklch(0.9777 0.0051 247.8763);
+  --sidebar-foreground: oklch(0 0 0);
+  --sidebar-primary: oklch(0 0 0);
+  --sidebar-primary-foreground: oklch(1.0000 0 0);
+  --sidebar-accent: oklch(0.9401 0 0);
+  --sidebar-accent-foreground: oklch(0 0 0);
+  --sidebar-border: oklch(0.9401 0 0);
+  --sidebar-ring: oklch(0 0 0);
+  --radius: 1.4rem;
+  --bg-0: oklch(0.9940 0 0);
+  --bg-000: oklch(0.9940 0 0);
+  --bg-100: oklch(0.9911 0 0);
+  --bg-200: oklch(0.9540 0.0063 255.4755);
+  --bg-300: oklch(0.9300 0.0094 286.2156);
+  --text-100: oklch(0 0 0);
+  --text-200: oklch(0.1344 0 0);
+  --text-300: oklch(0.4386 0 0);
+  --text-400: oklch(0.5590 0 0);
+  --text-500: oklch(0.6500 0 0);
+  --accent-hover: oklch(0.4600 0.2500 286.0000);
+  --bg-hover: oklch(0.9700 0.0040 255.0000);
+  --bg-message-user: oklch(0.9540 0.0063 255.4755);
+  --input-border: oklch(0.8800 0.0080 286.0000);
+  --brand-logo: oklch(0.5393 0.2713 286.7462);
+}
+
+:root[data-theme="violet-bloom"].dark,
+:root[data-theme="violet-bloom"] .dark {
+  --background: oklch(0.2223 0.0060 271.1393);
+  --foreground: oklch(0.9551 0 0);
+  --card: oklch(0.2568 0.0076 274.6528);
+  --card-foreground: oklch(0.9551 0 0);
+  --popover: oklch(0.2568 0.0076 274.6528);
+  --popover-foreground: oklch(0.9551 0 0);
+  --primary: oklch(0.6132 0.2294 291.7437);
+  --primary-foreground: oklch(1.0000 0 0);
+  --secondary: oklch(0.2940 0.0130 272.9312);
+  --secondary-foreground: oklch(0.9551 0 0);
+  --muted: oklch(0.2940 0.0130 272.9312);
+  --muted-foreground: oklch(0.7058 0 0);
+  --accent: oklch(0.2795 0.0368 260.0310);
+  --accent-foreground: oklch(0.7857 0.1153 246.6596);
+  --destructive: oklch(0.7106 0.1661 22.2162);
+  --destructive-foreground: oklch(1.0000 0 0);
+  --border: oklch(0.3289 0.0092 268.3843);
+  --input: oklch(0.3289 0.0092 268.3843);
+  --ring: oklch(0.6132 0.2294 291.7437);
+  --chart-1: oklch(0.8003 0.1821 151.7110);
+  --chart-2: oklch(0.6132 0.2294 291.7437);
+  --chart-3: oklch(0.8077 0.1035 19.5706);
+  --chart-4: oklch(0.6691 0.1569 260.1063);
+  --chart-5: oklch(0.7058 0 0);
+  --sidebar: oklch(0.2011 0.0039 286.0396);
+  --sidebar-foreground: oklch(0.9551 0 0);
+  --sidebar-primary: oklch(0.6132 0.2294 291.7437);
+  --sidebar-primary-foreground: oklch(1.0000 0 0);
+  --sidebar-accent: oklch(0.2940 0.0130 272.9312);
+  --sidebar-accent-foreground: oklch(0.6132 0.2294 291.7437);
+  --sidebar-border: oklch(0.3289 0.0092 268.3843);
+  --sidebar-ring: oklch(0.6132 0.2294 291.7437);
+  --bg-0: oklch(0.2000 0.0050 271.0000);
+  --bg-000: oklch(0.2000 0.0050 271.0000);
+  --bg-100: oklch(0.2568 0.0076 274.6528);
+  --bg-200: oklch(0.2940 0.0130 272.9312);
+  --bg-300: oklch(0.3289 0.0092 268.3843);
+  --text-100: oklch(0.9551 0 0);
+  --text-200: oklch(0.9000 0 0);
+  --text-300: oklch(0.7058 0 0);
+  --text-400: oklch(0.5500 0 0);
+  --text-500: oklch(0.4300 0 0);
+  --accent-hover: oklch(0.7000 0.2100 291.0000);
+  --bg-hover: oklch(0.2800 0.0100 274.0000);
+  --bg-message-user: oklch(0.1800 0.0050 271.0000);
+  --input-border: oklch(0.3289 0.0092 268.3843);
+  --brand-logo: oklch(0.6132 0.2294 291.7437);
+}
+
+/* ============================================================================
+   COLOR THEMES - Fab Blue (default)
+   Deep navy sidebar + white-blue body + blue accents app-wide.
+   Light-only for now: there is no [data-theme="fab-blue"].dark block, and
+   because this attribute selector outranks `.dark` in specificity and we
+   override the full variable set, Fab Blue keeps its light palette even when
+   dark mode is toggled. A dark variant is a future follow-up.
+   ============================================================================ */
+
+:root[data-theme="fab-blue"] {
+  --background: #f7faff;            /* white-blue chat body */
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+  --primary: #2563eb;               /* blue primary buttons */
+  --primary-foreground: #ffffff;
+  --secondary: #eff4ff;
+  --secondary-foreground: #1e3a8a;
+  --muted: #eef2f9;
+  --muted-foreground: #5b6577;
+  --accent: #e6efff;                /* subtle blue hover bg */
+  --accent-foreground: #1d4ed8;     /* deep blue text-on-accent */
+  --destructive: oklch(0.6188 0.2376 25.7658);
+  --destructive-foreground: #ffffff;
+  --border: #dbe6f5;
+  --input: #cfe0f5;
+  --ring: #3b82f6;
+  --chart-1: #2563eb;
+  --chart-2: #0ea5e9;
+  --chart-3: #6366f1;
+  --chart-4: #14b8a6;
+  --chart-5: #f59e0b;
+  /* sidebar — exact values lifted from the previous hard-coded theme */
+  --sidebar: #0c1844;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #60a5fa;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #1e3a8a;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #1e293b;
+  --sidebar-ring: #60a5fa;
+  --bg-0: #f7faff;
+  --bg-000: #ffffff;
+  --bg-100: #ffffff;
+  --bg-200: #eef4ff;
+  --bg-300: #dbe6f5;
+  --text-100: #0f172a;
+  --text-200: #1e293b;
+  --text-300: #475569;
+  --text-400: #64748b;
+  --text-500: #94a3b8;
+  --accent-hover: #1d4ed8;
+  --bg-hover: #eef4ff;
+  --bg-message-user: #e6efff;
+  --input-border: #cfe0f5;
+  --brand-logo: #2563eb;
+}
+
+/* White → sky → white body gradient under Fab Blue. SidebarInset renders
+   <main data-slot="sidebar-inset">, so this paints the chat surface without a
+   hard-coded Tailwind class on the element. */
+:root[data-theme="fab-blue"] [data-slot="sidebar-inset"] {
+  background: linear-gradient(to bottom, #ffffff, rgba(240, 249, 255, 0.4), #ffffff);
+}
+
+/* Chat sidebar uses the exact login-page navy gradient (#141C4A → #0D1236),
+   so the chat shell matches the sign-in screen. Applied to the visible inner
+   container and the mobile sheet surface. */
+:root[data-theme="fab-blue"] [data-slot="sidebar-inner"],
+:root[data-theme="fab-blue"] [data-slot="sidebar"][data-mobile="true"] {
+  background: linear-gradient(180deg, #141d47 0%, #10193f 40%, #0b1230 100%);
+  font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+/* ============================================================================
+   V2 chat sidebar — replicate 4_Sidebar_Expanded.html exactly.
+   ============================================================================ */
+/* widths: 264px expanded · 60px collapsed (mockup .sb / .sb.collapsed) */
+:root[data-theme="fab-blue"] [data-slot="sidebar-wrapper"] {
+  --sidebar-width: 265px !important;
+  --sidebar-width-icon: 60px !important;
+}
+/* scroll region (mockup .scroll { padding:0 10px }) */
+:root[data-theme="fab-blue"] [data-sidebar="content"] {
+  padding: 0 10px;
+  gap: 0;
+}
+:root[data-theme="fab-blue"] [data-sidebar="group"] {
+  padding: 0;
+  margin-top: 14px;
+}
+/* the first group (New chat / Projects) sits flush under the brand */
+:root[data-theme="fab-blue"] [data-sidebar="content"] > [data-sidebar="group"]:first-child {
+  margin-top: 0;
+}
+
+/* nav item (mockup .item) */
+:root[data-theme="fab-blue"] [data-sidebar="menu-button"] {
+  height: 38px !important;
+  gap: 12px;
+  padding: 0 11px !important;
+  margin: 2px 0;
+  border-radius: 9px;
+  color: #e8ecfb;
+  font-size: 13.5px;
+  font-weight: 500;
+}
+:root[data-theme="fab-blue"] [data-sidebar="menu-button"] > svg {
+  width: 18px !important;
+  height: 18px !important;
+  color: #8a96c4;
+  transition: color 0.15s;
+}
+:root[data-theme="fab-blue"] [data-sidebar="menu-button"]:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #e8ecfb;
+}
+:root[data-theme="fab-blue"] [data-sidebar="menu-button"]:hover > svg {
+  color: #e8ecfb;
+}
+:root[data-theme="fab-blue"] [data-sidebar="menu-button"][data-active="true"] {
+  position: relative;
+  background: rgba(91, 140, 255, 0.14);
+  color: #ffffff;
+  font-weight: 600;
+}
+:root[data-theme="fab-blue"] [data-sidebar="menu-button"][data-active="true"] > svg {
+  color: #5b8cff !important;
+}
+/* blue left-accent bar on the active item */
+:root[data-theme="fab-blue"] [data-sidebar="menu-button"][data-active="true"]::before {
+  content: "";
+  position: absolute;
+  left: -10px;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: #5b8cff;
+}
+
+/* group header (mockup .ghead) */
+:root[data-theme="fab-blue"] [data-sidebar="group-label"] {
+  height: auto !important;
+  padding: 6px 12px 5px;
+  font-size: 10.5px !important;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #5b67a0;
+}
+
+/* brand header (mockup .brand { padding:18px 16px 16px }) */
+:root[data-theme="fab-blue"] [data-sidebar="header"] {
+  padding: 18px 16px 16px;
+}
+/* collapse toggle — muted like the other nav icons by default, white on hover
+   (mockup .brand .toggle { color: var(--mute) } → :hover { color: var(--ink) }). */
+:root[data-theme="fab-blue"] [data-sidebar="trigger"] {
+  color: #8a96c4 !important;
+}
+:root[data-theme="fab-blue"] [data-sidebar="trigger"]:hover {
+  color: #e8ecfb !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+
+/* footer user row (mockup .user — border-top divider) */
+:root[data-theme="fab-blue"] [data-sidebar="footer"] {
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  padding: 6px 8px;
+}
+:root[data-theme="fab-blue"] [data-sidebar="footer"] [data-sidebar="menu-button"] {
+  height: 48px !important;
+}
+
+/* collapsed: full-width, 38px-tall, centered icons (mockup .sb.collapsed .item
+   { justify-content:center; padding:0 }) — shadcn forces a 32px left-aligned
+   box, which pushes the glyph off-centre, so override width/height/padding. */
+:root[data-theme="fab-blue"] [data-collapsible="icon"] [data-sidebar="menu-button"] {
+  height: 38px !important;
+  padding: 0 !important;
+  gap: 0;
+  justify-content: center;
+  /* shadcn pins the collapsed button to a fixed 32px box; margin:auto centres
+     that box in the 60px rail so the icons form a straight, centred column.
+     Vertical margin sets the gap between icons. */
+  margin: 5px auto !important;
+}
+/* collapsed: center the brand toggle (mockup .sb.collapsed .brand) */
+:root[data-theme="fab-blue"] [data-collapsible="icon"] [data-sidebar="header"] {
+  padding: 18px 0 16px;
+}
+/* collapsed: tighten group spacing + show divider lines instead of text
+   headers (mockup .sb.collapsed .group { margin-top:4px } + .gdiv) */
+:root[data-theme="fab-blue"] [data-collapsible="icon"] [data-sidebar="group"] {
+  margin-top: 4px;
+}
+:root[data-theme="fab-blue"] [data-collapsible="icon"] [data-sidebar="content"] > [data-sidebar="group"]:not(:first-child)::before {
+  content: "";
+  display: block;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.12);
+  margin: 10px 12px 8px;
+}
+/* collapsed: footer shows only the avatar, centered (mockup .sb.collapsed .user) */
+:root[data-theme="fab-blue"] [data-collapsible="icon"] [data-sidebar="footer"] [data-sidebar="menu-button"] {
+  justify-content: center;
+  gap: 0;
+}
+:root[data-theme="fab-blue"] [data-collapsible="icon"] [data-sidebar="footer"] [data-sidebar="menu-button"] > span.truncate,
+:root[data-theme="fab-blue"] [data-collapsible="icon"] [data-sidebar="footer"] [data-sidebar="menu-button"] > svg {
+  display: none !important;
+}
+
+/* Cockpit headline accent. Solid theme primary by default; a sky→blue gradient
+   only under Fab Blue (a gradient can't follow an arbitrary theme's single
+   accent, so it's scoped to this theme). */
+.cockpit-accent-text {
+  color: var(--primary);
+}
+:root[data-theme="fab-blue"] .cockpit-accent-text {
+  background: linear-gradient(120deg, #6f73ff, #4842d4);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Fab Blue cockpit accents — restore the deep-navy buttons (Launch + active nav)
+   and the sky→blue gradient icon tiles from the reference design. The elements
+   keep `bg-primary` as the base so every OTHER theme recolors via tokens; these
+   higher-specificity rules only apply under Fab Blue. */
+:root[data-theme="fab-blue"] .cockpit-surface-dark {
+  background-image: linear-gradient(to bottom right, #1e3a8a, #0c1844);
+  color: #ffffff;
+}
+:root[data-theme="fab-blue"] .cockpit-surface-dark:hover {
+  background-image: linear-gradient(to bottom right, #24449c, #16245a);
+}
+:root[data-theme="fab-blue"] .cockpit-icon-gradient {
+  background-image: linear-gradient(135deg, #5b54e8, #4842d4);
+  color: #ffffff;
+}
+
+/* ── Login page theme accents ──────────────────────────────────────────
+   Base uses theme tokens so every theme adapts (branding panel = primary,
+   submit button = primary). Fab Blue gets the reference look: a deep-navy
+   gradient branding panel, a sky-gradient "orchestration" word, and a
+   navy→blue gradient Sign-in button. */
+.login-brand-panel {
+  background-color: var(--primary);
+}
+:root[data-theme="fab-blue"] .login-brand-panel {
+  background-image: linear-gradient(to bottom right, #0b1640, #0f1e4d 55%, #16265c);
+}
+.login-brand-accent {
+  color: rgba(255, 255, 255, 0.72);
+}
+:root[data-theme="fab-blue"] .login-brand-accent {
+  background: linear-gradient(to right, #7dd3fc, #3b82f6);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.login-submit-btn {
+  background-color: var(--primary);
+}
+:root[data-theme="fab-blue"] .login-submit-btn {
+  background-image: linear-gradient(to right, #1e3a8a, #2563eb);
+}
+:root[data-theme="fab-blue"] .login-submit-btn:hover {
+  background-image: linear-gradient(to right, #24449c, #2f6ef0);
+}
+
+/* ============================================================================
+   TAILWIND CSS V4 THEME CONFIGURATION
+   ============================================================================ */
+
+@theme inline {
+  /* Colors */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Admin Console brand palette */
+  --color-auth-grad-from: var(--auth-grad-from);
+  --color-auth-grad-via: var(--auth-grad-via);
+  --color-auth-grad-to: var(--auth-grad-to);
+  --color-auth-grad-from-2: var(--auth-grad-from-2);
+  --color-auth-grad-via-2: var(--auth-grad-via-2);
+  --color-auth-grad-to-2: var(--auth-grad-to-2);
+  --color-sidebar-active-navy: var(--sidebar-active-navy);
+  --color-divider-cool: var(--divider-cool);
+
+  /* Claude-style input vars */
+  --color-bg-0: var(--bg-0);
+  --color-bg-000: var(--bg-000);
+  --color-bg-100: var(--bg-100);
+  --color-bg-200: var(--bg-200);
+  --color-bg-300: var(--bg-300);
+  --color-text-100: var(--text-100);
+  --color-text-200: var(--text-200);
+  --color-text-300: var(--text-300);
+  --color-text-400: var(--text-400);
+  --color-text-500: var(--text-500);
+  --color-accent-hover: var(--accent-hover);
+
+  /* Hover & Message Backgrounds */
+  --color-bg-hover: var(--bg-hover);
+  --color-bg-message-user: var(--bg-message-user);
+  --color-input-border: var(--input-border);
+
+  /* Brand */
+  --color-brand-logo: var(--brand-logo);
+
+  /* Code */
+  --color-code-line-number: var(--code-line-number);
+
+  /* Status Colors */
+  --color-status-info: var(--status-info);
+  --color-status-info-foreground: var(--status-info-foreground);
+  --color-status-info-muted: var(--status-info-muted);
+  --color-status-success: var(--status-success);
+  --color-status-success-foreground: var(--status-success-foreground);
+  --color-status-success-muted: var(--status-success-muted);
+  --color-status-warning: var(--status-warning);
+  --color-status-warning-foreground: var(--status-warning-foreground);
+  --color-status-warning-muted: var(--status-warning-muted);
+  --color-status-error: var(--status-error);
+  --color-status-error-foreground: var(--status-error-foreground);
+  --color-status-error-muted: var(--status-error-muted);
+
+  /* Status Indicators */
+  --color-status-connected: var(--status-connected);
+  --color-status-disconnected: var(--status-disconnected);
+
+  /* File Type Icons */
+  --color-icon-presentation: var(--icon-presentation);
+  --color-icon-spreadsheet: var(--icon-spreadsheet);
+  --color-icon-document: var(--icon-document);
+  --color-icon-image: var(--icon-image);
+  --color-icon-code: var(--icon-code);
+
+  /* Time-of-Day Greeting Icons */
+  --color-icon-morning: var(--icon-morning);
+  --color-icon-afternoon: var(--icon-afternoon);
+  --color-icon-evening: var(--icon-evening);
+  --color-icon-night: var(--icon-night);
+
+  /* Typography */
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --font-serif: var(--font-serif);
+
+  /* Border Radius */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  /* Shadows */
+  --shadow-2xs: var(--shadow-2xs);
+  --shadow-xs: var(--shadow-xs);
+  --shadow-sm: var(--shadow-sm);
+  --shadow: var(--shadow);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-xl: var(--shadow-xl);
+  --shadow-2xl: var(--shadow-2xl);
+
+  /* Collapsible Animations - smoother easing with snappy open, quick close */
+  --animate-collapsible-down: collapsible-down 0.25s cubic-bezier(0.33, 1, 0.68, 1);
+  --animate-collapsible-up: collapsible-up 0.2s cubic-bezier(0.33, 0, 0.67, 0);
+}
+
+/* ============================================================================
+   BASE STYLES - Production Ready
+   ============================================================================ */
+
+* {
+  border-color: var(--color-border);
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  height: 100%;
+  max-height: 100vh;
+  overflow: hidden !important;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+html::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+  width: 0;
+  height: 0;
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+  line-height: 1.6;
+  font-feature-settings: "rlig" 1, "calt" 1;
+  transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  height: 100%;
+  max-height: 100vh;
+  overflow: hidden !important;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+body::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+  width: 0;
+  height: 0;
+}
+
+/* Prevent any scrollbar on the main app wrapper */
+#__next,
+[data-slot="sidebar-wrapper"] {
+  overflow: hidden !important;
+  max-height: 100vh;
+}
+
+/* ============================================================================
+   SCROLLBAR STYLES - Cross-browser
+   ============================================================================ */
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-muted);
+  border-radius: var(--radius-sm);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-muted-foreground);
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--color-muted);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-foreground);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-muted-foreground) var(--color-muted);
+}
+
+/* Dark sidebar scrollbar — narrower and tinted so it doesn't break the navy
+   column. Scoped to the Fab Blue theme only (the white thumb would be invisible
+   on the light Claude sidebar); other themes fall back to the default
+   scrollbar styling above. */
+:root[data-theme="fab-blue"] [data-sidebar="content"]::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+:root[data-theme="fab-blue"] [data-sidebar="content"]::-webkit-scrollbar-track {
+  background: transparent;
+}
+:root[data-theme="fab-blue"] [data-sidebar="content"]::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 3px;
+}
+:root[data-theme="fab-blue"] [data-sidebar="content"]::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+:root[data-theme="fab-blue"] [data-sidebar="content"] {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+}
+
+/* ============================================================================
+   FOCUS STYLES - Accessibility
+   ============================================================================ */
+
+:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
+}
+
+/* Textarea has custom focus styles, no global outline */
+textarea:focus-visible {
+  outline: none;
+}
+
+/* ============================================================================
+   SELECTION STYLES
+   ============================================================================ */
+
+::selection {
+  background-color: var(--color-primary);
+  color: var(--color-primary-foreground);
+}
+
+::-moz-selection {
+  background-color: var(--color-primary);
+  color: var(--color-primary-foreground);
+}
+
+/* ============================================================================
+   TYPOGRAPHY UTILITIES - Scale Level
+   ============================================================================ */
+
+.text-balance {
+  text-wrap: balance;
+}
+
+.text-pretty {
+  text-wrap: pretty;
+}
+
+/* ============================================================================
+   COLLAPSIBLE ANIMATIONS - Radix UI Collapsible
+   ============================================================================ */
+
+@keyframes collapsible-down {
+  from { height: 0; opacity: 0; }
+  to { height: var(--radix-collapsible-content-height); opacity: 1; }
+}
+
+@keyframes collapsible-up {
+  from { height: var(--radix-collapsible-content-height); opacity: 1; }
+  to { height: 0; opacity: 0; }
+}
+
+/* Fix #3: Collapsible animation selectors for Radix UI data attributes */
+[data-slot="collapsible-content"][data-state="open"] {
+  animation: collapsible-down 200ms ease-out;
+}
+[data-slot="collapsible-content"][data-state="closed"] {
+  animation: collapsible-up 200ms ease-out;
+}
+
+/* ============================================================================
+   ANIMATION UTILITIES - Enhanced with Delight
+   ============================================================================ */
+
+.transition-base {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+.transition-transform {
+  transition-property: transform;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 200ms;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* Fix #1: GPU hint added to fadeIn */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateZ(0);
+  }
+  to {
+    opacity: 1;
+    transform: translateZ(0);
+  }
+}
+
+@keyframes fadeInBlur {
+  from { opacity: 0; transform: translateY(8px) scale(0.98) translateZ(0); filter: blur(4px); }
+  to { opacity: 1; transform: translateY(0) scale(1) translateZ(0); filter: blur(0); }
+}
+
+.animate-fade-in-blur {
+  animation: fadeInBlur 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+  will-change: transform, opacity, filter;
+}
+
+/* Fix #4: fadeOut keyframe for streaming pulse dot exit */
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: translateZ(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateZ(0);
+  }
+}
+
+.animate-slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+/* Fix #1: GPU hint added to slideIn */
+@keyframes slideIn {
+  from {
+    transform: translateY(10px) translateZ(0);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) translateZ(0);
+    opacity: 1;
+  }
+}
+
+/* Delightful entrance animations */
+.animate-slide-up-fade {
+  animation: slideUpFade 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+  will-change: transform, opacity;
+}
+
+@keyframes slideUpFade {
+  from {
+    opacity: 0;
+    transform: translateY(10px) translateZ(0);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) translateZ(0);
+  }
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Fix #1: GPU hint added to scaleIn */
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateZ(0);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateZ(0);
+  }
+}
+
+.animate-pop {
+  animation: pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Fix #1: GPU hint added to pop */
+@keyframes pop {
+  0% {
+    transform: scale(0.95) translateZ(0);
+  }
+  50% {
+    transform: scale(1.02) translateZ(0);
+  }
+  100% {
+    transform: scale(1) translateZ(0);
+  }
+}
+
+/* Subtle float animation for icons - organic asymmetric motion */
+.animate-float {
+  animation: float 3s cubic-bezier(0.37, 0, 0.63, 1) infinite;
+  will-change: transform;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-4px) rotate(0.5deg);
+  }
+  50% {
+    transform: translateY(-7px) rotate(0deg);
+  }
+  75% {
+    transform: translateY(-3px) rotate(-0.5deg);
+  }
+}
+
+/* Gentle pulse for attention */
+.animate-gentle-pulse {
+  animation: gentlePulse 2s ease-in-out infinite;
+}
+
+@keyframes gentlePulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Success celebration */
+.animate-success {
+  animation: success 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Fix #1: GPU hint added to success */
+@keyframes success {
+  0% {
+    transform: scale(1) translateZ(0);
+  }
+  25% {
+    transform: scale(1.1) translateZ(0);
+  }
+  50% {
+    transform: scale(0.95) translateZ(0);
+  }
+  100% {
+    transform: scale(1) translateZ(0);
+  }
+}
+
+/* ============================================================================
+   LAYOUT UTILITIES - Production Scale
+   ============================================================================ */
+
+.container {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  .container {
+    max-width: 640px;
+  }
+}
+
+@media (min-width: 768px) {
+  .container {
+    max-width: 768px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    max-width: 1024px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .container {
+    max-width: 1280px;
+  }
+}
+
+@media (min-width: 1536px) {
+  .container {
+    max-width: 1536px;
+  }
+}
+
+/* ============================================================================
+   CARD VARIANTS - Consistent Design System with Hover Delight
+   ============================================================================ */
+
+/* Fix #2: will-change moved from permanent to :hover for card-hover */
+.card-hover {
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-hover:hover {
+  transform: translateY(-3px) translateZ(0);
+  box-shadow: var(--shadow-lg);
+  will-change: transform;
+}
+
+/* Fix #2: will-change moved from permanent to :hover for card-interactive */
+.card-interactive {
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s ease;
+  cursor: pointer;
+}
+
+.card-interactive:hover {
+  transform: translateY(-2px) scale(1.01) translateZ(0);
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-primary);
+  will-change: transform;
+}
+
+.card-interactive:active {
+  transform: translateY(0) scale(0.99) translateZ(0);
+}
+
+/* ============================================================================
+   SOLUTION-SPECIFIC COLORS - Manufacturing Solutions
+   ============================================================================ */
+
+.solution-manufacturing {
+  --solution-color: oklch(0.5583 0.1276 42.9956);
+}
+
+.solution-maintenance {
+  --solution-color: oklch(0.6898 0.1581 290.4107);
+}
+
+.solution-support {
+  --solution-color: oklch(0.8822 0.0403 298.1792);
+}
+
+.solution-change-management {
+  --solution-color: oklch(0.5608 0.1348 42.0584);
+}
+
+.solution-impact-analysis {
+  --solution-color: oklch(0.8816 0.0276 93.1280);
+}
+
+.solution-requirements {
+  --solution-color: oklch(0.3074 0.0516 289.3230);
+}
+
+/* ============================================================================
+   PRINT STYLES
+   ============================================================================ */
+
+@media print {
+  body {
+    background: white;
+    color: black;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+}
+
+/* ============================================================================
+   ACCESSIBILITY - Screen Reader Only
+   ============================================================================ */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Skip-to-content link: hidden until focused via keyboard (WCAG 2.4.1). */
+.skip-link {
+  position: absolute;
+  left: 0.5rem;
+  top: -3rem;
+  z-index: 100;
+  border-radius: var(--radius-md, 0.5rem);
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: top 0.15s ease;
+}
+
+.skip-link:focus,
+.skip-link:focus-visible {
+  top: 0.5rem;
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
+}
+
+/* ============================================================================
+   LOADING STATES - Enhanced with Personality
+   ============================================================================ */
+
+/* spin keyframe kept for inline usage in loader.tsx */
+@keyframes spin {
+  0% { transform: rotate(0deg) translateZ(0); }
+  100% { transform: rotate(360deg) translateZ(0); }
+}
+
+/* ============================================================================
+   SKELETON LOADER - With Shimmer Delight
+   ============================================================================ */
+
+/* Premium skeleton with glow effect - GPU accelerated */
+.skeleton-glow {
+  position: relative;
+  overflow: hidden;
+  background: var(--color-muted);
+}
+
+.skeleton-glow::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in oklch, var(--color-primary) 15%, transparent),
+    transparent
+  );
+  animation: skeleton-glow 2s ease-in-out infinite;
+  will-change: transform;
+}
+
+@keyframes skeleton-glow {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* ============================================================================
+   KATEX MATH RENDERING STYLES
+   ============================================================================ */
+
+/* Display math (block equations) */
+.katex-display {
+  margin: 1rem 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.5rem 0;
+}
+
+.katex {
+  font-size: 1.05em;
+}
+
+/* Math in prose context */
+.prose .katex-display {
+  margin: 1.25rem 0;
+}
+
+.prose .katex {
+  color: var(--color-foreground);
+}
+
+/* Dark mode adjustments for KaTeX */
+.dark .katex {
+  color: var(--color-foreground);
+}
+
+/* Mobile responsiveness for math */
+@media (max-width: 640px) {
+  .katex-display {
+    font-size: 0.95em;
+  }
+}
+
+/* ============================================================================
+   SYNTAX HIGHLIGHTER OVERRIDES
+   ============================================================================ */
+
+/* Code block container styling -- strip all inline backgrounds from
+   react-syntax-highlighter so the parent container controls the BG. */
+.not-prose pre {
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+}
+
+.not-prose pre code,
+.not-prose pre code > span,
+.not-prose pre span.linenumber {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+/* Artifact preview code view -- same treatment for syntax highlighter
+   that lives outside .not-prose (e.g. artifact panel code view). */
+pre[class*="language-"] code,
+pre[class*="language-"] code > span,
+pre[class*="language-"] span.linenumber {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+/* Line numbers styling */
+.linenumber {
+  min-width: 2.5em !important;
+  padding-right: 1em !important;
+  text-align: right;
+  user-select: none;
+  opacity: 0.5;
+}
+
+/* Code block horizontal scrollbar */
+.code-block-wrapper::-webkit-scrollbar {
+  height: 6px;
+}
+
+.code-block-wrapper::-webkit-scrollbar-track {
+  background: var(--color-muted);
+  border-radius: 3px;
+}
+
+.code-block-wrapper::-webkit-scrollbar-thumb {
+  background: var(--color-muted-foreground);
+  border-radius: 3px;
+}
+
+/* ============================================================================
+   MESSAGE CONTENT IMPROVEMENTS
+   ============================================================================ */
+
+/* Dark mode prose text colors - ensure good contrast */
+.dark .prose {
+  --tw-prose-body: var(--color-foreground);
+  --tw-prose-headings: var(--color-foreground);
+  --tw-prose-lead: var(--color-foreground);
+  --tw-prose-bold: var(--color-foreground);
+  --tw-prose-counters: var(--color-muted-foreground);
+  --tw-prose-bullets: var(--color-muted-foreground);
+  --tw-prose-quotes: var(--color-foreground);
+  --tw-prose-code: var(--color-foreground);
+  color: var(--color-foreground);
+}
+
+.dark .prose p,
+.dark .prose li,
+.dark .prose span,
+.dark .prose strong,
+.dark .prose em {
+  color: var(--color-foreground);
+}
+
+.dark .prose h1,
+.dark .prose h2,
+.dark .prose h3,
+.dark .prose h4,
+.dark .prose h5,
+.dark .prose h6 {
+  color: var(--color-foreground);
+}
+
+/* ============================================================================
+   CHAT MESSAGE STYLES - Light & Dark Mode
+   ============================================================================ */
+
+/* User message */
+.message-user {
+  background-color: var(--bg-message-user);
+  color: var(--color-foreground);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Assistant message — no bubble background; blends with the main chat background */
+.message-assistant {
+  background-color: transparent;
+  color: var(--color-foreground);
+}
+
+/* System message */
+.message-system {
+  background-color: var(--color-muted);
+  color: var(--color-muted-foreground);
+  font-style: italic;
+  border: 1px solid var(--color-border);
+}
+
+/* Dark mode message styles */
+.dark .message-user {
+  background-color: var(--bg-message-user);
+  color: var(--color-foreground);
+}
+
+.dark .message-assistant {
+  background-color: transparent;
+  color: var(--color-foreground);
+}
+
+.dark .message-system {
+  background-color: var(--color-muted);
+  color: var(--color-muted-foreground);
+  border-color: var(--sidebar-border);
+}
+
+/* Prompt Input */
+.dark .prompt-input {
+  background-color: var(--bg-200) !important;
+}
+
+.prompt-input {
+  background-color: var(--bg-100) !important;
+  border: 1.5px solid var(--input-border) !important;
+}
+
+/* ============================================================================
+   ARTIFACT TILE STYLES - Light & Dark Mode
+   ============================================================================ */
+
+
+/* Better spacing for message content */
+.prose > :first-child {
+  margin-top: 0 !important;
+}
+
+.prose > :last-child {
+  margin-bottom: 0 !important;
+}
+
+/* Inline code in prose */
+.prose code:not(pre code) {
+  background: var(--color-muted);
+  padding: 0.15rem 0.35rem;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+  font-weight: 500;
+}
+
+/* Blockquote styling */
+.prose blockquote {
+  border-left: 3px solid var(--color-primary);
+  padding-left: 1rem;
+  font-style: italic;
+  color: var(--color-muted-foreground);
+}
+
+/* Table wrapper for horizontal scroll */
+.prose .table-wrapper {
+  overflow-x: auto;
+  margin: 1rem 0;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Table styling in prose */
+.prose table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1rem 0;
+}
+
+.prose th,
+.prose td {
+  border: 1px solid var(--color-border);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+}
+
+.prose th {
+  background: var(--color-muted);
+  font-weight: 600;
+}
+
+.prose tr:nth-child(even) {
+  background: color-mix(in oklch, var(--color-muted) 30%, transparent);
+}
+
+/* Horizontal rule styling */
+.prose hr {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin: 1.5rem 0;
+}
+
+/* Link styling in prose */
+.prose a {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: text-decoration-thickness 0.15s ease;
+}
+
+.prose a:hover {
+  text-decoration-thickness: 2px;
+}
+
+/* List styling improvements */
+.prose ul,
+.prose ol {
+  padding-left: 1.25rem;
+}
+
+.prose li {
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.prose li::marker {
+  color: var(--color-muted-foreground);
+}
+
+/* ============================================================================
+   LOADER ANIMATIONS - PromptKit Components
+   ============================================================================ */
+
+@keyframes loading-dots {
+  0%, 80%, 100% { opacity: 0.2; }
+  40% { opacity: 1; }
+}
+
+/* Fix #1: GPU hint added to bounce */
+@keyframes bounce {
+  0%, 80%, 100% {
+    transform: scale(0.2) translateZ(0);
+    opacity: 0.3;
+  }
+  40% {
+    transform: scale(1) translateZ(0);
+    opacity: 1;
+  }
+}
+
+/* Fix #1: GPU hint added to typing */
+@keyframes typing {
+  0%, 100% {
+    transform: translateY(0) scale(1) translateZ(0);
+    opacity: 0.4;
+  }
+  50% {
+    transform: translateY(-5px) scale(1.1) translateZ(0);
+    opacity: 1;
+  }
+}
+
+@keyframes wave {
+  0%, 100% {
+    transform: scaleY(0.5);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes bars {
+  0%, 100% {
+    transform: scaleY(0.4);
+    opacity: 0.4;
+  }
+  35% {
+    transform: scaleY(1.05);
+    opacity: 1;
+  }
+  50% {
+    transform: scaleY(0.95);
+    opacity: 0.9;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  will-change: background-position;
+}
+
+/* Smooth cursor - holds "off" state briefly for realistic feel */
+@keyframes smooth-blink {
+  0%, 100% {
+    opacity: 1;
+  }
+  40% {
+    opacity: 0.15;
+  }
+  60% {
+    opacity: 0.15;
+  }
+}
+
+.animate-smooth-blink {
+  animation: smooth-blink 1s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  will-change: opacity;
+}
+
+/* ============================================================================
+   MESSAGE BUBBLE ANIMATIONS
+   ============================================================================ */
+
+@keyframes message-appear {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98) translateZ(0);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1) translateZ(0);
+  }
+}
+
+.animate-message-appear {
+  animation: message-appear 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+  will-change: transform, opacity;
+}
+
+/* ============================================================================
+   ARTIFACT PREVIEW ANIMATIONS
+   ============================================================================ */
+
+@keyframes panel-slide-in {
+  0% {
+    opacity: 0;
+    transform: translateX(40px) translateZ(0);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) translateZ(0);
+  }
+}
+
+.animate-panel-slide-in {
+  animation: panel-slide-in 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+  will-change: transform, opacity;
+}
+
+@keyframes panel-slide-out {
+  0% {
+    opacity: 1;
+    transform: translateX(0) translateZ(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(40px) translateZ(0);
+  }
+}
+
+.animate-panel-slide-out {
+  animation: panel-slide-out 0.2s cubic-bezier(0.32, 0, 0.67, 0);
+  will-change: transform, opacity;
+}
+
+/* Artifact panel transition-based animations (used by artifact-preview.tsx) */
+.artifact-panel-container {
+  transform: translateX(0) translateZ(0);
+  opacity: 1;
+  transition: transform 250ms cubic-bezier(0.32, 0.72, 0, 1), opacity 200ms ease-out;
+}
+
+.artifact-panel-enter {
+  transform: translateX(30px) translateZ(0);
+  opacity: 0;
+}
+
+.artifact-panel-exit {
+  transform: translateX(30px) translateZ(0);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.mobile-artifact-panel-container {
+  transform: translateX(0) translateZ(0);
+  opacity: 1;
+  transition: transform 300ms cubic-bezier(0.32, 0.72, 0, 1), opacity 250ms ease-out;
+}
+
+.mobile-artifact-panel-enter {
+  transform: translateX(100%) translateZ(0);
+  opacity: 0;
+}
+
+.mobile-artifact-panel-exit {
+  transform: translateX(100%) translateZ(0);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Smooth panel resize transitions for artifact open/close */
+.panel-resize-transition [data-panel] {
+  transition: flex-grow 300ms cubic-bezier(0.32, 0.72, 0, 1),
+              flex-shrink 300ms cubic-bezier(0.32, 0.72, 0, 1);
+  will-change: flex-grow, flex-shrink;
+}
+
+/* Also animate the resize handle appearance */
+.panel-resize-transition [data-resize-handle] {
+  transition: opacity 200ms ease-out;
+}
+
+/* Disable panel transitions during manual user drag */
+.panel-resize-transition.panel-dragging [data-panel] {
+  transition: none !important;
+  will-change: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel-resize-transition [data-panel] {
+    transition: none !important;
+    will-change: auto;
+  }
+}
+
+/* ============================================================================
+   COPY BUTTON SUCCESS ANIMATION
+   ============================================================================ */
+
+@keyframes copy-success {
+  0% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(1.2);
+  }
+  50% {
+    transform: scale(0.9);
+  }
+  75% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-copy-success {
+  animation: copy-success 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ============================================================================
+   PULSE DOT LOADER - Heartbeat Effect
+   ============================================================================ */
+
+@keyframes pulse-dot {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  15% {
+    transform: scale(0.9);
+    opacity: 0.4;
+  }
+  50% {
+    transform: scale(1.6);
+    opacity: 1;
+  }
+  70% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+/* Inline streaming pulse dot - follows the edge of the last text */
+.streaming-pulse-dot > *:last-child::after {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  margin-left: 6px;
+  vertical-align: middle;
+  animation: pulse-dot 1.2s ease-in-out infinite;
+}
+
+/* Fix #4: Streaming pulse dot fade-out transition */
+.streaming-pulse-dot-exit {
+  animation: fadeOut 300ms ease-out forwards;
+}
+
+/* ============================================================================
+   HOVER EFFECTS - Micro-Interactions
+   ============================================================================ */
+
+/* Fix #2: will-change moved from permanent to :hover for hover-lift */
+.hover-lift {
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px) translateZ(0);
+  box-shadow: 0 4px 12px color-mix(in oklch, var(--color-foreground) 10%, transparent);
+  will-change: transform;
+}
+
+/* Fix #2: will-change moved from permanent to :hover for hover-scale */
+.hover-scale {
+  transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hover-scale:hover {
+  transform: scale(1.03) translateZ(0);
+  will-change: transform;
+}
+
+.hover-scale:active {
+  transform: scale(0.98) translateZ(0);
+}
+
+/* ============================================================================
+   REDUCED MOTION - Accessibility
+   ============================================================================ */
+
+/* Fix #6: Expanded reduced-motion exception list */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+    will-change: auto !important;
+  }
+
+  /* Allow essential hover state changes and interactive elements at minimal speed */
+  .card-hover,
+  .card-interactive,
+  .hover-lift,
+  .hover-scale,
+  button, [role="button"], input, select, textarea,
+  [data-slot="switch"], [data-slot="sidebar-gap"],
+  [data-slot="sidebar-container"] {
+    transition-duration: 100ms !important;
+  }
+}
+
+/* ============================================================================
+   SANDPACK - Full Container Rendering
+   Forces the Sandpack preview iframe to fill its parent container completely.
+   ============================================================================ */
+
+.sandpack-container {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sandpack-container > div {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.sandpack-container .sp-wrapper {
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.sandpack-container .sp-layout {
+  height: 100% !important;
+  flex: 1 !important;
+  min-height: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+}
+
+.sandpack-container .sp-stack {
+  height: 100% !important;
+}
+
+.sandpack-container .sp-preview-container {
+  height: 100% !important;
+  flex: 1 !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+.sandpack-container .sp-preview-iframe {
+  height: 100% !important;
+  width: 100% !important;
+  border: none !important;
+}
+
+.sandpack-container .sp-preview-actions {
+  display: none !important;
+}
+
+.sandpack-container .sp-overlay {
+  background: var(--color-muted) !important;
+}
+
+.sandpack-container .sp-cube-wrapper {
+  color: var(--color-muted-foreground) !important;
+}
+
+/* ============================================================================
+   VALIDATION PROGRESS ANIMATIONS - Master Data Loader
+   ============================================================================ */
+
+/* Indeterminate sliding bar — used for the template (structure) check. */
+@keyframes validate-slide {
+  0%   { left: -40%; width: 40%; }
+  50%  { left: 25%;  width: 55%; }
+  100% { left: 100%; width: 40%; }
+}
+.validate-track {
+  position: relative;
+  height: 3px;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 9999px;
+  background: color-mix(in oklab, var(--color-primary) 15%, transparent);
+}
+.validate-track > span {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 9999px;
+  background: var(--color-primary);
+  animation: validate-slide 1.15s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+
+/* Equalizer bars — used for CMF's server-side dry-run (feels like "work over
+   the wire", distinct from the local structure check above). */
+@keyframes validate-eq {
+  0%, 100% { transform: scaleY(0.35); }
+  50%      { transform: scaleY(1); }
+}
+.validate-eq {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 14px;
+}
+.validate-eq > i {
+  display: block;
+  width: 2.5px;
+  height: 100%;
+  border-radius: 9999px;
+  background: var(--color-primary);
+  transform-origin: center;
+  animation: validate-eq 0.9s ease-in-out infinite;
+}
+.validate-eq > i:nth-child(2) { animation-delay: 0.15s; }
+.validate-eq > i:nth-child(3) { animation-delay: 0.3s; }
+.validate-eq > i:nth-child(4) { animation-delay: 0.45s; }
+.validate-eq > i:nth-child(5) { animation-delay: 0.6s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .validate-track > span,
+  .validate-eq > i { animation-duration: 0.001ms; animation-iteration-count: 1; }
+}
+
+/* ==========================================================================
+   FabInsight data-visualisation palette
+   --------------------------------------------------------------------------
+   Slots below are the validated categorical order — the ordering itself is the
+   colourblind-safety mechanism, so DO NOT reorder or cycle it. Verified with
+   the palette validator against this app's own surfaces:
+     light (#ffffff): worst adjacent CVD dE 9.1, normal-vision dE 19.6
+     dark  (#171719): same eight hues re-stepped for the dark band
+   Three light slots sit under 3:1 on white, so every chart ships visible direct
+   labels ("relief rule") and never leans on colour alone.
+   ========================================================================== */
+.fabviz {
+  color-scheme: light;
+
+  /* Categorical — fixed order, never cycled */
+  --fabviz-s1: #2a78d6;  /* blue    */
+  --fabviz-s2: #eb6834;  /* orange  */
+  --fabviz-s3: #1baf7a;  /* aqua    */
+  --fabviz-s4: #eda100;  /* yellow  */
+  --fabviz-s5: #e87ba4;  /* magenta */
+  --fabviz-s6: #008300;  /* green   */
+  --fabviz-s7: #4a3aa7;  /* violet  */
+  --fabviz-s8: #e34948;  /* red     */
+
+  /* Sequential — ONE hue, light to dark, for magnitude (heat map) */
+  --fabviz-seq-100: #cde2fb;
+  --fabviz-seq-200: #9ec5f4;
+  --fabviz-seq-300: #6da7ec;
+  --fabviz-seq-400: #3987e5;
+  --fabviz-seq-500: #256abf;
+  --fabviz-seq-600: #184f95;
+  --fabviz-seq-700: #0d366b;
+
+  /* Status — reserved, never reused as a series colour; always with a label */
+  --fabviz-good: #0ca30c;
+  --fabviz-warning: #fab219;
+  --fabviz-serious: #ec835a;
+  --fabviz-critical: #d03b3b;
+
+  /* Chrome & ink */
+  --fabviz-surface: #ffffff;
+  --fabviz-plane: #f7f8fc;
+  --fabviz-ink: #16192e;
+  --fabviz-secondary: #4b5270;
+  --fabviz-muted: #838aa6;
+  --fabviz-grid: #eceef6;
+  --fabviz-axis: #c9cddd;
+  --fabviz-border: #e6e9f4;
+  --fabviz-track: #f0f2f9;
+}
+
+.dark .fabviz {
+  color-scheme: dark;
+
+  --fabviz-s1: #3987e5;
+  --fabviz-s2: #d95926;
+  --fabviz-s3: #199e70;
+  --fabviz-s4: #c98500;
+  --fabviz-s5: #d55181;
+  --fabviz-s6: #008300;
+  --fabviz-s7: #9085e9;
+  --fabviz-s8: #e66767;
+
+  --fabviz-seq-100: #0d366b;
+  --fabviz-seq-200: #104281;
+  --fabviz-seq-300: #184f95;
+  --fabviz-seq-400: #256abf;
+  --fabviz-seq-500: #2a78d6;
+  --fabviz-seq-600: #3987e5;
+  --fabviz-seq-700: #6da7ec;
+
+  --fabviz-surface: #1c1d21;
+  --fabviz-plane: #141416;
+  --fabviz-ink: #f4f5fa;
+  --fabviz-secondary: #b9bdcc;
+  --fabviz-muted: #8b90a3;
+  --fabviz-grid: #2b2c31;
+  --fabviz-axis: #3a3c43;
+  --fabviz-border: #2e3036;
+  --fabviz-track: #26272c;
+}
+
+/* ─────────────────────────────────────────────────────────
+ * LOADING STATE — pixel-grid tool loader
+ * (components/prompt-kit/loading-state.tsx)
+ *
+ * The component binds straight to --text-* / --bg-*, so it tracks light/dark
+ * through the existing tokens (.dark already redefines them).
+ *
+ * An alias layer (--ink, --tooltip-bg, …) lived here briefly and was removed:
+ * an unresolved var() invalidates background-color and gradients outright, so
+ * the grid and label rendered invisible while the timer — a `color`, which
+ * falls back to inherit — kept showing. One less indirection to get wrong.
+ *
+ * Only the keyframes and shadow-overlay belong here now.
+ * ───────────────────────────────────────────────────────── */
+@theme inline {
+  --shadow-overlay: 0 8px 24px -6px hsl(0 0% 0% / 0.18), 0 2px 6px -2px hsl(0 0% 0% / 0.12);
+}
+
+/* Cell lights up as the wavefront passes. */
+@keyframes pixel-on {
+  0%, 100% { opacity: 0.15; }
+  35%      { opacity: 1; }
+}
+
+/* Sweeps the highlight across the clipped label text. */
+@keyframes shimmer-text {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Context card entrance for the Surfer variant. */
+@keyframes pop-in {
+  from { opacity: 0; transform: scale(0.94); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* Documented behaviour: reduced motion freezes the grid to its dim state and
+ * drops the shimmer. The elapsed timer keeps ticking — it is information, not
+ * decoration. Enforced here so the component stays declarative. */
+@media (prefers-reduced-motion: reduce) {
+  [role="status"] [style*="pixel-on"],
+  [role="status"] [style*="shimmer-text"],
+  [role="status"] [style*="pop-in"] {
+    animation: none !important;
+  }
+  /* 0.15 is the dim half of a pulse; frozen there the grid reads as blank, so
+   * rest somewhere actually visible. The timer keeps ticking regardless. */
+  [role="status"] [style*="pixel-on"] {
+    opacity: 0.4 !important;
+  }
+}

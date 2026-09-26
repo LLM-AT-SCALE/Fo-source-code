@@ -1,0 +1,17 @@
+{
+  "$note": "Curated master-data dependency graph, keyed by canonical object type. `required` = other top-level objects that MUST exist (be loaded) BEFORE this object — the authoritative load-order prerequisites from the CMF Business-Data user guide's 'Sequence Of Steps' section (see masterdata_docs/guide-dependencies.md). `optional` = soft/optional prerequisites the user may include (the guide's optional 'Sequence' steps + notable references). Composition SUB-SHEETS (BOMProducts, DataCollectionParameters, StorageBin, FlowStructures, the *Context tables, ...) are NOT here — they come from composition-overrides.json via getComposition(). EXCLUDED by design: Change Set (versioning, not a loadable row) and Material (transactional/runtime, not master data). The 9 MVP objects (Step, Service, Resource, DataCollection, Product, BOM, Checklist, Document, ShiftDefinition) are guide-sourced; Flow + the location hierarchy (Area/Facility/Site) are retained from the earlier docs-seeded model.",
+  "Step": { "required": ["Service", "Area"], "optional": ["Reason", "SortRuleSet"] },
+  "Service": { "required": ["Resource"], "optional": [] },
+  "Resource": { "required": ["Area"], "optional": ["StateModel"] },
+  "DataCollection": { "required": ["Parameter"], "optional": [] },
+  "Product": { "required": [], "optional": ["Flow", "ProductGroup"] },
+  "BOM": { "required": [], "optional": ["Product"] },
+  "Checklist": { "required": [], "optional": [] },
+  "Document": { "required": [], "optional": ["Role"] },
+  "ShiftDefinition": { "required": ["Calendar"], "optional": [] },
+
+  "Flow": { "required": ["Area", "Service", "Step", "DataCollection"], "optional": [] },
+  "Area": { "required": ["Facility"], "optional": [] },
+  "Facility": { "required": ["Site"], "optional": [] },
+  "Site": { "required": [], "optional": [] }
+}

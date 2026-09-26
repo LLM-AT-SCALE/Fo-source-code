@@ -1,0 +1,139 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+# =============================================================================
+# IAM — cmf-loader-access permissions for the CMF data loader.
+#
+# This template owns the "cmf-loader-access"
+# permissions that grant the Fab/CMF app (running on EC2 under the Elastic
+# Beanstalk instance role) access to the CMF upload S3 buckets and the CMF MES
+# token secret.
+#
+# Account 628203515088, region us-west-2.
+#
+# -----------------------------------------------------------------------------
+# INLINE vs MANAGED — why this is a ManagedPolicy:
+#   The live permissions exist today as an INLINE policy named
+#   "cmf-loader-access" embedded in the role "aws-elasticbeanstalk-ec2-role".
+#   Inline role policies are NOT a standalone, importable CloudFormation
+#   resource type (AWS::IAM::Policy cannot be targeted by resource import).
+#   The cleanest importable equivalent is a customer-managed policy
+#   (AWS::IAM::ManagedPolicy) attached to the same role. This template models it
+#   that way.
+#
+#   Behavioural difference from the current inline policy: a ManagedPolicy is a
+#   separate, standalone object (its own ARN, reusable, versioned) that is
+#   ATTACHED to the role, whereas the inline policy is embedded in the role and
+#   deleted with it. The effective permissions are identical. To fully cut over,
+#   attach this managed policy and then delete the old inline "cmf-loader-access"
+#   policy from the role to avoid duplicate grants:
+#     aws iam delete-role-policy \
+#       --role-name aws-elasticbeanstalk-ec2-role \
+#       --policy-name cmf-loader-access
+#
+# -----------------------------------------------------------------------------
+# IMPORT MAPPING — logical resource  ->  existing physical ID
+#   CmfLoaderAccessPolicy            ->  (new managed policy; the current grant
+#                                         is an inline policy and cannot be
+#                                         imported directly — see note above)
+#
+#   AWS::IAM::ManagedPolicy IS import-supported. If a managed policy with this
+#   ManagedPolicyName already exists, import it via:
+#     aws cloudformation create-change-set --change-set-type IMPORT \
+#       --resources-to-import \
+#         '[{"ResourceType":"AWS::IAM::ManagedPolicy",
+#            "LogicalResourceId":"CmfLoaderAccessPolicy",
+#            "ResourceIdentifier":{"PolicyArn":
+#              "arn:aws:iam::628203515088:policy/cmf-loader-access"}}]' \
+#       --capabilities CAPABILITY_NAMED_IAM
+#   Otherwise deploy normally (create) to add the managed policy and attach it.
+# =============================================================================
+
+Description: >-
+  IAM managed policy "cmf-loader-access" for the CMF data loader
+  (account 628203515088, us-west-2). Grants the Elastic Beanstalk EC2 instance
+  role read/write access to the CMF upload S3 buckets and read access to the
+  CMF MES token secret. CloudFormation port of the inline role policy currently
+  attached to aws-elasticbeanstalk-ec2-role (see header for the inline-vs-managed
+  difference). Importable as AWS::IAM::ManagedPolicy or deployable fresh.
+
+Parameters:
+  RoleName:
+    Type: String
+    Default: aws-elasticbeanstalk-ec2-role
+    Description: >-
+      Name of the existing IAM role (the Elastic Beanstalk EC2 instance role)
+      that this managed policy is attached to.
+
+  ManagedPolicyName:
+    Type: String
+    Default: cmf-loader-access
+    Description: Name of the customer-managed policy.
+
+  AccountId:
+    Type: String
+    Default: '628203515088'
+    Description: AWS account ID (used to build the S3 and Secrets Manager ARNs).
+
+  Region:
+    Type: String
+    Default: us-west-2
+    Description: AWS region (used to build the Secrets Manager ARN).
+
+  CmfLoaderBucketName:
+    Type: String
+    Default: cmf-loader-uploads-628203515088
+    Description: Primary CMF loader uploads S3 bucket.
+
+  UserUploadsBucketName:
+    Type: String
+    Default: faborch-user-uploads
+    Description: Fab user-uploads S3 bucket.
+
+  MesTokenSecretName:
+    Type: String
+    Default: cmf/mes-token
+    Description: >-
+      Secrets Manager secret name (without the random 6-char suffix) for the CMF
+      MES token. The policy grants GetSecretValue on cmf/mes-token-* to cover the
+      suffix.
+
+Resources:
+  CmfLoaderAccessPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: !Ref ManagedPolicyName
+      Description: >-
+        CMF data loader access: R/W on the CMF upload buckets and read of the
+        CMF MES token secret. Attached to the EB EC2 instance role.
+      Roles:
+        - !Ref RoleName
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: CmfLoaderS3Access
+            Effect: Allow
+            Action:
+              - s3:GetObject
+              - s3:PutObject
+              - s3:DeleteObject
+              - s3:ListBucket
+            Resource:
+              - !Sub 'arn:aws:s3:::${CmfLoaderBucketName}'
+              - !Sub 'arn:aws:s3:::${CmfLoaderBucketName}/*'
+              - !Sub 'arn:aws:s3:::${UserUploadsBucketName}'
+              - !Sub 'arn:aws:s3:::${UserUploadsBucketName}/*'
+          - Sid: CmfMesTokenSecretRead
+            Effect: Allow
+            Action:
+              - secretsmanager:GetSecretValue
+            Resource:
+              - !Sub 'arn:aws:secretsmanager:${Region}:${AccountId}:secret:${MesTokenSecretName}-*'
+
+Outputs:
+  PolicyArn:
+    Description: ARN of the cmf-loader-access managed policy.
+    Value: !Ref CmfLoaderAccessPolicy
+
+  PolicyName:
+    Description: Name of the cmf-loader-access managed policy.
+    Value: !Ref ManagedPolicyName

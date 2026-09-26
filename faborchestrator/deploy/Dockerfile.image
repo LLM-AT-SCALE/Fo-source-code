@@ -1,0 +1,71 @@
+# syntax=docker/dockerfile:1
+# One Dockerfile for every module image. Build from the app root:
+#
+#   docker build -f deploy/Dockerfile.image --build-arg IMAGE=chat -t faborchestrator/chat .
+#
+# IMAGE is a key of deploy/modules.json. The builder stage prunes the copy down
+# to that image's routes (deploy/scripts/prune-for-image.mjs) and builds it with
+# its static assets under /_fab/<image>/, so the six builds can share one origin.
+#
+# Settings carried over from the single-instance deployment (for the AWS pass):
+#   - load balancer idle timeout 600 s (long SSE chat responses)
+#   - proxy: buffering off, read/send timeout 600 s, client_max_body_size 50m
+#     (master-data .xlsx uploads)
+#   - health check GET /api/health (no DB, no render), 15 s interval
+ARG NODE_IMAGE=public.ecr.aws/docker/library/node:22-alpine
+
+# ---- deps: identical for every image, so Docker caches it across the six builds
+FROM ${NODE_IMAGE} AS deps
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+COPY package.json package-lock.json prisma.config.ts ./
+COPY prisma ./prisma/
+RUN npm ci
+
+# ---- builder: prune to one image, generate Prisma, next build
+FROM ${NODE_IMAGE} AS builder
+WORKDIR /app
+ARG IMAGE
+# 3 GB heap for next build: enough for the largest image, and small enough that
+# several images can build side by side on an 8 GB Docker VM.
+ENV FAB_IMAGE=${IMAGE} NEXT_TELEMETRY_DISABLED=1 NODE_OPTIONS=--max-old-space-size=3072
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+RUN node deploy/scripts/prune-for-image.mjs "${IMAGE}" \
+ && npx prisma generate \
+ && npm run build
+
+# ---- runner
+FROM ${NODE_IMAGE} AS runner
+WORKDIR /app
+ARG IMAGE
+ENV NODE_ENV=production HOSTNAME=0.0.0.0 PORT=3000 FAB_IMAGE=${IMAGE} \
+    NEXT_TELEMETRY_DISABLED=1 PO_UI_RUNS_DIR=/data/po-ui-runs
+RUN addgroup --system --gid 1001 nodejs \
+ && adduser --system --uid 1001 nextjs \
+ && mkdir -p /data/po-ui-runs && chown nextjs:nodejs /data/po-ui-runs
+# Headless Chromium for the in-app CMF token refresher (the CMF portal login is a
+# browser flow — modules/master-data-load/lib/cmf/portal-login.ts). Only the images
+# that log in carry it: fabinsight (scheduled refresh) and admin (fetch on save /
+# "Refresh token now"). playwright-core drives this system Chromium; nothing is
+# downloaded at build time.
+RUN if [ "${IMAGE}" = "fabinsight" ] || [ "${IMAGE}" = "admin" ]; then \
+      apk add --no-cache chromium nss freetype harfbuzz ca-certificates ttf-freefont; \
+    fi
+ENV CMF_CHROMIUM_PATH=/usr/bin/chromium-browser
+COPY --from=builder /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+# playwright-core reads files at runtime that the standalone trace leaves out
+# (browsers.json); ship the whole package over the traced partial copy.
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/playwright-core ./node_modules/playwright-core
+# Prisma client is generated outside the traced bundle; runtime asset folders
+# are read from process.cwd() (pruned to an empty dir when the image doesn't own them).
+COPY --from=builder --chown=nextjs:nodejs /app/lib/generated ./lib/generated
+COPY --from=builder --chown=nextjs:nodejs /app/templates ./templates
+COPY --from=builder --chown=nextjs:nodejs /app/po-ui-assets ./po-ui-assets
+USER nextjs
+EXPOSE 3000
+HEALTHCHECK --interval=15s --timeout=10s --start-period=20s --retries=5 \
+  CMD wget -qO- "http://127.0.0.1:${PORT}/api/health" >/dev/null 2>&1 || exit 1
+CMD ["node", "server.js"]

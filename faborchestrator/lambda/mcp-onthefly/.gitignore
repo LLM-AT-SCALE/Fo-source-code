@@ -1,0 +1,9 @@
+# Build artifacts for the on-the-fly MCP runtimes
+runtime/dist/
+runtime/node_modules/
+runtime-mssql/dist/
+runtime-mssql/node_modules/
+discovery/dist/
+discovery/node_modules/
+runtime-base-*.zip
+discovery-*.zip

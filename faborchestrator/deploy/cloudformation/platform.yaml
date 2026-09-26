@@ -1,0 +1,295 @@
+AWSTemplateFormatVersion: '2010-09-09'
+# =============================================================================
+# Platform — everything the six module services SHARE (deploy once per env).
+#
+#   - ECS cluster (Fargate) with Container Insights
+#   - Application Load Balancer in the shared VPC, HTTPS listener (+ HTTP → HTTPS
+#     redirect), idle timeout 600 s for long SSE chat responses
+#   - the listener's default action is a 404; every module's service stack
+#     (service.yaml) attaches its own target group and path rules, and the
+#     `home` stack adds the catch-all `/*` rule at the lowest priority
+#   - task EXECUTION role (pull from ECR, read the app secret, write logs)
+#   - the one Secrets Manager secret every task reads its env from
+#     (JSON: DATABASE_URL, ANTHROPIC_API_KEY, KEY_ENCRYPTION_SECRET, SMTP_*, ...)
+#   - EFS file system for the Coding Agent's run output (PO_UI_RUNS_DIR)
+#   - security groups: ALB (443/80 from the internet) and tasks (3000/8080 from
+#     the ALB only; egress open so tasks reach RDS, Anthropic, MCP Lambdas)
+#
+# ALB targets may live in the CMF VPC (master-data-load): the two VPCs are peered
+# by networking.yaml and Fargate tasks register as IP targets, which the ALB
+# supports across a peering connection. Pass the CMF subnets/SG to that
+# service stack and open 3000 on the CMF egress SG from the ALB SG.
+#
+# Deploy:
+#   aws cloudformation deploy --stack-name faborchestrator-platform \
+#     --template-file deploy/cloudformation/platform.yaml \
+#     --capabilities CAPABILITY_NAMED_IAM \
+#     --parameter-overrides VpcId=vpc-… PublicSubnetIds=subnet-a,subnet-b \
+#       PrivateSubnetIds=subnet-c,subnet-d CertificateArn=arn:aws:acm:… \
+#       RdsSecurityGroupId=sg-…
+# =============================================================================
+Description: >-
+  Shared runtime for the FabOrchestrator per-module deployment: ECS cluster,
+  ALB + HTTPS listener, task execution role, app secret, EFS for Coding Agent
+  runs, security groups.
+
+Parameters:
+  NamePrefix:
+    Type: String
+    Default: faborchestrator
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: Shared (Athena) VPC that holds the ALB and most services.
+  PublicSubnetIds:
+    Type: List<AWS::EC2::Subnet::Id>
+    Description: Two or more public subnets for the ALB.
+  PrivateSubnetIds:
+    Type: List<AWS::EC2::Subnet::Id>
+    Description: Private subnets (shared VPC) for tasks and the EFS mount targets.
+  CertificateArn:
+    Type: String
+    Description: ACM certificate (same region) for the HTTPS listener.
+  RdsSecurityGroupId:
+    Type: AWS::EC2::SecurityGroup::Id
+    Description: RDS security group; port 5432 is opened from the task SG.
+  AppSecretName:
+    Type: String
+    Default: faborchestrator/app
+    Description: >-
+      Secrets Manager secret (JSON) holding the app env. Created empty here;
+      fill it with `aws secretsmanager put-secret-value` (see DEPLOYMENT.md §6).
+
+Resources:
+  # ---------------------------------------------------------------- cluster
+  Cluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Sub '${NamePrefix}-cluster'
+      ClusterSettings:
+        - Name: containerInsights
+          Value: enabled
+      CapacityProviders: [FARGATE, FARGATE_SPOT]
+      DefaultCapacityProviderStrategy:
+        - CapacityProvider: FARGATE
+          Weight: 1
+
+  # -------------------------------------------------------- security groups
+  AlbSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub '${NamePrefix}-alb'
+      GroupDescription: Public entry for the FabOrchestrator ALB
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - { IpProtocol: tcp, FromPort: 443, ToPort: 443, CidrIp: 0.0.0.0/0, Description: HTTPS }
+        - { IpProtocol: tcp, FromPort: 80, ToPort: 80, CidrIp: 0.0.0.0/0, Description: HTTP redirect }
+      Tags: [{ Key: Name, Value: !Sub '${NamePrefix}-alb' }]
+
+  TaskSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub '${NamePrefix}-tasks'
+      GroupDescription: Module tasks; reachable only from the ALB
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3000
+          ToPort: 3000
+          SourceSecurityGroupId: !Ref AlbSecurityGroup
+          Description: web images from the ALB
+        - IpProtocol: tcp
+          FromPort: 8080
+          ToPort: 8080
+          SourceSecurityGroupId: !Ref AlbSecurityGroup
+          Description: worker health from the ALB (optional)
+      Tags: [{ Key: Name, Value: !Sub '${NamePrefix}-tasks' }]
+
+  TaskToTaskIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref TaskSecurityGroup
+      IpProtocol: tcp
+      FromPort: 2049
+      ToPort: 2049
+      SourceSecurityGroupId: !Ref TaskSecurityGroup
+      Description: EFS (NFS) between tasks and mount targets
+
+  RdsIngressFromTasks:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref RdsSecurityGroupId
+      IpProtocol: tcp
+      FromPort: 5432
+      ToPort: 5432
+      SourceSecurityGroupId: !Ref TaskSecurityGroup
+      Description: FabOrchestrator module tasks
+
+  # -------------------------------------------------------------- load balancer
+  LoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: !Sub '${NamePrefix}-alb'
+      Type: application
+      Scheme: internet-facing
+      IpAddressType: ipv4
+      Subnets: !Ref PublicSubnetIds
+      SecurityGroups: [!Ref AlbSecurityGroup]
+      LoadBalancerAttributes:
+        # Long SSE chat responses and slow VPN-backed queries: same 600 s the
+        # single-instance deployment used.
+        - { Key: idle_timeout.timeout_seconds, Value: '600' }
+        - { Key: routing.http2.enabled, Value: 'true' }
+        - { Key: routing.http.drop_invalid_header_fields.enabled, Value: 'true' }
+
+  HttpsListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref LoadBalancer
+      Port: 443
+      Protocol: HTTPS
+      SslPolicy: ELBSecurityPolicy-TLS13-1-2-2021-06
+      Certificates: [{ CertificateArn: !Ref CertificateArn }]
+      DefaultActions:
+        # Replaced in practice by the home stack's `/*` rule (priority 1000).
+        - Type: fixed-response
+          FixedResponseConfig:
+            StatusCode: '404'
+            ContentType: text/plain
+            MessageBody: No module owns this path.
+
+  HttpListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref LoadBalancer
+      Port: 80
+      Protocol: HTTP
+      DefaultActions:
+        - Type: redirect
+          RedirectConfig: { Protocol: HTTPS, Port: '443', StatusCode: HTTP_301 }
+
+  # -------------------------------------------------------------- app secret
+  AppSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: !Ref AppSecretName
+      Description: FabOrchestrator env (JSON). Every module task reads its variables from here.
+      SecretString: '{"DATABASE_URL":"","ANTHROPIC_API_KEY":"","KEY_ENCRYPTION_SECRET":""}'
+
+  # ------------------------------------------------------ task execution role
+  TaskExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${NamePrefix}-task-execution'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: { Service: ecs-tasks.amazonaws.com }
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+      Policies:
+        - PolicyName: read-app-secret
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: secretsmanager:GetSecretValue
+                Resource: !Ref AppSecret
+
+  # ----------------------------------------- invoke MCP servers (chat, worker)
+  # Chat and the FabInsight worker call registry servers of the form
+  # lambda-invoke://<functionName> (deploy/../modules/mcp/lib/mcp-lambda.ts).
+  # Invoke only — creating or changing functions stays with the admin image's
+  # mcp-otf-admin-deploy policy (mcp-onthefly.yaml).
+  McpInvokePolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: !Sub '${NamePrefix}-mcp-invoke'
+      Description: Invoke MCP server Lambdas (lambda-invoke:// registry entries) and read their bearer secrets.
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action: lambda:InvokeFunction
+            Resource: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:*'
+          - Effect: Allow
+            Action: secretsmanager:GetSecretValue
+            Resource: !Sub 'arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:mcp/onthefly/*'
+
+  # ------------------------------------------------ EFS for Coding Agent runs
+  RunsFileSystem:
+    Type: AWS::EFS::FileSystem
+    Properties:
+      Encrypted: true
+      PerformanceMode: generalPurpose
+      ThroughputMode: elastic
+      FileSystemTags: [{ Key: Name, Value: !Sub '${NamePrefix}-po-ui-runs' }]
+
+  RunsMountTargetA:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref RunsFileSystem
+      SubnetId: !Select [0, !Ref PrivateSubnetIds]
+      SecurityGroups: [!Ref TaskSecurityGroup]
+
+  RunsMountTargetB:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref RunsFileSystem
+      SubnetId: !Select [1, !Ref PrivateSubnetIds]
+      SecurityGroups: [!Ref TaskSecurityGroup]
+
+  RunsAccessPoint:
+    Type: AWS::EFS::AccessPoint
+    Properties:
+      FileSystemId: !Ref RunsFileSystem
+      # uid/gid 1001 = the `nextjs` user in deploy/Dockerfile.image
+      PosixUser: { Uid: '1001', Gid: '1001' }
+      RootDirectory:
+        Path: /po-ui-runs
+        CreationInfo: { OwnerUid: '1001', OwnerGid: '1001', Permissions: '0750' }
+
+Outputs:
+  VpcId:
+    Value: !Ref VpcId
+    Export: { Name: !Sub '${AWS::StackName}-VpcId' }
+  McpInvokePolicyArn:
+    Value: !Ref McpInvokePolicy
+    Export: { Name: !Sub '${AWS::StackName}-McpInvokePolicyArn' }
+  ClusterName:
+    Value: !Ref Cluster
+    Export: { Name: !Sub '${AWS::StackName}-ClusterName' }
+  ClusterArn:
+    Value: !GetAtt Cluster.Arn
+    Export: { Name: !Sub '${AWS::StackName}-ClusterArn' }
+  HttpsListenerArn:
+    Value: !Ref HttpsListener
+    Export: { Name: !Sub '${AWS::StackName}-HttpsListenerArn' }
+  LoadBalancerDnsName:
+    Value: !GetAtt LoadBalancer.DNSName
+    Export: { Name: !Sub '${AWS::StackName}-AlbDnsName' }
+  LoadBalancerHostedZoneId:
+    Value: !GetAtt LoadBalancer.CanonicalHostedZoneID
+    Export: { Name: !Sub '${AWS::StackName}-AlbHostedZoneId' }
+  AlbSecurityGroupId:
+    Value: !Ref AlbSecurityGroup
+    Export: { Name: !Sub '${AWS::StackName}-AlbSecurityGroupId' }
+  TaskSecurityGroupId:
+    Value: !Ref TaskSecurityGroup
+    Export: { Name: !Sub '${AWS::StackName}-TaskSecurityGroupId' }
+  TaskExecutionRoleArn:
+    Value: !GetAtt TaskExecutionRole.Arn
+    Export: { Name: !Sub '${AWS::StackName}-TaskExecutionRoleArn' }
+  AppSecretArn:
+    Value: !Ref AppSecret
+    Export: { Name: !Sub '${AWS::StackName}-AppSecretArn' }
+  RunsFileSystemId:
+    Value: !Ref RunsFileSystem
+    Export: { Name: !Sub '${AWS::StackName}-RunsFileSystemId' }
+  RunsAccessPointId:
+    Value: !Ref RunsAccessPoint
+    Export: { Name: !Sub '${AWS::StackName}-RunsAccessPointId' }
+  PrivateSubnetIds:
+    Value: !Join [',', !Ref PrivateSubnetIds]
+    Export: { Name: !Sub '${AWS::StackName}-PrivateSubnetIds' }

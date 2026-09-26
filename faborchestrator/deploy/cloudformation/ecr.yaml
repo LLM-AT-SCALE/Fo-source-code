@@ -1,0 +1,111 @@
+AWSTemplateFormatVersion: '2010-09-09'
+# =============================================================================
+# ECR — one repository per module image (deploy/modules.json).
+#
+# Deploy once per account/region:
+#   aws cloudformation deploy --stack-name faborchestrator-ecr \
+#     --template-file deploy/cloudformation/ecr.yaml
+#
+# Images are pushed by deploy/scripts/aws-deploy.sh as
+#   <account>.dkr.ecr.<region>.amazonaws.com/faborchestrator/<image>:<tag>
+# Untagged layers are expired after 7 days; the last 20 tagged builds are kept.
+# =============================================================================
+Description: >-
+  ECR repositories for the six FabOrchestrator module images (home, support-engineer,
+  master-data-load, coding-agent, admin, fabinsight).
+
+Parameters:
+  NamePrefix:
+    Type: String
+    Default: faborchestrator
+    Description: Repository name prefix (<prefix>/<image>).
+  KeepTaggedImages:
+    Type: Number
+    Default: 20
+    Description: How many tagged images to keep per repository.
+
+Resources:
+  HomeRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Sub '${NamePrefix}/home'
+      ImageScanningConfiguration: { ScanOnPush: true }
+      ImageTagMutability: MUTABLE
+      LifecyclePolicy:
+        LifecyclePolicyText: !Sub |
+          {"rules":[
+            {"rulePriority":1,"description":"expire untagged","selection":{"tagStatus":"untagged","countType":"sinceImagePushed","countUnit":"days","countNumber":7},"action":{"type":"expire"}},
+            {"rulePriority":2,"description":"keep last builds","selection":{"tagStatus":"any","countType":"imageCountMoreThan","countNumber":${KeepTaggedImages}},"action":{"type":"expire"}}
+          ]}
+  SupportEngineerRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Sub '${NamePrefix}/support-engineer'
+      ImageScanningConfiguration: { ScanOnPush: true }
+      ImageTagMutability: MUTABLE
+      LifecyclePolicy:
+        LifecyclePolicyText: !Sub |
+          {"rules":[
+            {"rulePriority":1,"description":"expire untagged","selection":{"tagStatus":"untagged","countType":"sinceImagePushed","countUnit":"days","countNumber":7},"action":{"type":"expire"}},
+            {"rulePriority":2,"description":"keep last builds","selection":{"tagStatus":"any","countType":"imageCountMoreThan","countNumber":${KeepTaggedImages}},"action":{"type":"expire"}}
+          ]}
+  MasterDataLoadRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Sub '${NamePrefix}/master-data-load'
+      ImageScanningConfiguration: { ScanOnPush: true }
+      ImageTagMutability: MUTABLE
+      LifecyclePolicy:
+        LifecyclePolicyText: !Sub |
+          {"rules":[
+            {"rulePriority":1,"description":"expire untagged","selection":{"tagStatus":"untagged","countType":"sinceImagePushed","countUnit":"days","countNumber":7},"action":{"type":"expire"}},
+            {"rulePriority":2,"description":"keep last builds","selection":{"tagStatus":"any","countType":"imageCountMoreThan","countNumber":${KeepTaggedImages}},"action":{"type":"expire"}}
+          ]}
+  CodingAgentRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Sub '${NamePrefix}/coding-agent'
+      ImageScanningConfiguration: { ScanOnPush: true }
+      ImageTagMutability: MUTABLE
+      LifecyclePolicy:
+        LifecyclePolicyText: !Sub |
+          {"rules":[
+            {"rulePriority":1,"description":"expire untagged","selection":{"tagStatus":"untagged","countType":"sinceImagePushed","countUnit":"days","countNumber":7},"action":{"type":"expire"}},
+            {"rulePriority":2,"description":"keep last builds","selection":{"tagStatus":"any","countType":"imageCountMoreThan","countNumber":${KeepTaggedImages}},"action":{"type":"expire"}}
+          ]}
+  AdminRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Sub '${NamePrefix}/admin'
+      ImageScanningConfiguration: { ScanOnPush: true }
+      ImageTagMutability: MUTABLE
+      LifecyclePolicy:
+        LifecyclePolicyText: !Sub |
+          {"rules":[
+            {"rulePriority":1,"description":"expire untagged","selection":{"tagStatus":"untagged","countType":"sinceImagePushed","countUnit":"days","countNumber":7},"action":{"type":"expire"}},
+            {"rulePriority":2,"description":"keep last builds","selection":{"tagStatus":"any","countType":"imageCountMoreThan","countNumber":${KeepTaggedImages}},"action":{"type":"expire"}}
+          ]}
+  FabinsightRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Sub '${NamePrefix}/fabinsight'
+      ImageScanningConfiguration: { ScanOnPush: true }
+      ImageTagMutability: MUTABLE
+      LifecyclePolicy:
+        LifecyclePolicyText: !Sub |
+          {"rules":[
+            {"rulePriority":1,"description":"expire untagged","selection":{"tagStatus":"untagged","countType":"sinceImagePushed","countUnit":"days","countNumber":7},"action":{"type":"expire"}},
+            {"rulePriority":2,"description":"keep last builds","selection":{"tagStatus":"any","countType":"imageCountMoreThan","countNumber":${KeepTaggedImages}},"action":{"type":"expire"}}
+          ]}
+
+Outputs:
+  RegistryHost:
+    Description: Docker registry host to push to.
+    Value: !Sub '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com'
+    Export:
+      Name: !Sub '${AWS::StackName}-RegistryHost'
+  RepositoryPrefix:
+    Description: Repository name prefix.
+    Value: !Ref NamePrefix
+    Export:
+      Name: !Sub '${AWS::StackName}-RepositoryPrefix'

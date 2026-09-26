@@ -1,0 +1,9 @@
+{
+  "$note": "M:N 'list' TEMPLATE columns whose value is a separator-joined list of related object Names, sourced from a CMF Source/Target relationship table (T_<relTable>: SourceEntityId -> parent entity, TargetEntityId -> target entity). Unlike a single FK these can't be resolved by resolveRefJoins, so they are filled separately. Consumed by lib/chat-cmf/junction-list.ts: (1) fetchTemplateRows fills the parent's column with the joined Names; (2) the dependency walk splits the column on `separator` to discover the target records (so the Area object sheet is pulled). Key = `ParentObjectType.Column`.",
+  "Step.Areas": {
+    "note": "A Step is linked to its Area(s) via T_StepArea (SourceEntityId->Step, TargetEntityId->Area); the loader carries them in the Step sheet's plural `Areas` column. Confirmed live: T_StepArea Source=Step, Target=Area. `separator`=';' is a provisional default (KSP data has <=1 area/step, so it isn't exercised there) — confirm the exact list separator the CMF loader expects before relying on multi-area steps.",
+    "relTable": "StepArea",
+    "targetType": "Area",
+    "separator": ";"
+  }
+}

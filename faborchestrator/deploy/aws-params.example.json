@@ -1,0 +1,31 @@
+{
+  "$comment": "Copy to deploy/aws-params.json (git-ignored) and fill in. Account 628203515088, us-west-2. Subnet/SG ids for the CMF VPC come from the networking stack outputs; the task SG and private subnets from the platform stack outputs.",
+  "region": "us-west-2",
+  "repositoryPrefix": "faborchestrator",
+  "platformStackName": "faborchestrator-platform",
+  "appUrl": "https://app.example.com",
+  "privateSubnetIds": ["subnet-06faf688f0ea464ac", "subnet-0e0f6ddda096487f3"],
+  "taskSecurityGroupId": "sg-PLATFORM-TASKS",
+  "services": {
+    "home": { "cpu": 512, "memory": 1024, "desiredCount": 1, "maxCount": 3 },
+    "support-engineer": {
+      "cpu": 2048, "memory": 8192, "desiredCount": 1, "maxCount": 4,
+      "managedPolicyArns": ["arn:aws:iam::628203515088:policy/faborchestrator-mcp-invoke"]
+    },
+    "master-data-load": {
+      "cpu": 1024, "memory": 2048,
+      "subnetIds": ["subnet-0cfc26eb17af33330", "subnet-03de8d1716947ddfb"],
+      "securityGroupIds": ["sg-PLATFORM-TASKS", "sg-0dc3bdccf1d97f2c3"],
+      "managedPolicyArns": ["arn:aws:iam::628203515088:policy/cmf-loader-access"]
+    },
+    "coding-agent": { "cpu": 1024, "memory": 4096, "desiredCount": 1, "maxCount": 1 },
+    "admin": {
+      "cpu": 1024, "memory": 2048,
+      "managedPolicyArns": ["arn:aws:iam::628203515088:policy/mcp-otf-admin-deploy"]
+    },
+    "fabinsight": {
+      "cpu": 1024, "memory": 4096, "desiredCount": 1,
+      "managedPolicyArns": ["arn:aws:iam::628203515088:policy/faborchestrator-mcp-invoke"]
+    }
+  }
+}

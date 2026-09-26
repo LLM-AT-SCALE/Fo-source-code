@@ -1,0 +1,51 @@
+# Rebuild the environment's RDS database from scratch, from inside the VPC.
+# Runs scripts/db/fresh-database.sh through the environment's CodeBuild
+# migration project (it sits in the private subnets and may read the DB
+# password secret). The committed code is the source (the same git-archive zip
+# the image build uses), so the DDL comes from the committed prisma/schema.prisma.
+#
+#   deploy/scripts/aws-build-images.sh            # (or just the upload step) refreshes eks-source/faborchestrator.zip
+#   aws codebuild start-build --project-name <env>-migrate \
+#     --source-type-override S3 --source-location-override <bucket>/eks-source/faborchestrator.zip \
+#     --buildspec-override "$(cat faborchestrator/scripts/db/fresh-database.buildspec.yml)" \
+#     --environment-variables-override name=DB_NAME,value=claude_ai_athena name=DB_USER,value=fab_admin \
+#        name=DB_PASSWORD_SECRET,value=<env>/app/db-password name=BACKUP_BUCKET,value=<bucket> \
+#        name=ADMIN_EMAIL,value=<email> name=ADMIN_NAME,value=<name> name=CONFIRM,value=REBUILD
+#
+# A pg_dump of the database is written to s3://$BACKUP_BUCKET/db-backups/ BEFORE
+# anything is dropped. The seeded admin gets a random password that is never
+# printed: sign in through "Forgot password" and set a new one.
+version: 0.2
+env:
+  shell: bash
+phases:
+  install:
+    runtime-versions:
+      nodejs: 20
+    commands:
+      # The client must match the server major version or pg_dump refuses to run
+      # ("aborting because of server version mismatch"); Ubuntu's default client is older.
+      - apt-get update -qq && apt-get install -y -qq curl ca-certificates gnupg lsb-release > /dev/null
+      - curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /usr/share/keyrings/pgdg.gpg
+      - echo "deb [signed-by=/usr/share/keyrings/pgdg.gpg] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list
+      - apt-get update -qq && apt-get install -y -qq postgresql-client-16 > /dev/null
+      - pg_dump --version
+  pre_build:
+    commands:
+      - test "$CONFIRM" = "REBUILD" || { echo "CONFIRM is not REBUILD — refusing"; exit 1; }
+      - cd faborchestrator
+      - export PGPASSWORD="$(aws secretsmanager get-secret-value --secret-id "$DB_PASSWORD_SECRET" --query SecretString --output text)"
+      - export DATABASE_URL="postgresql://${DB_USER}:$(node -e 'process.stdout.write(encodeURIComponent(process.env.PGPASSWORD))')@${DB_HOST}:5432/${DB_NAME}"
+      - psql "$DATABASE_URL" -At -c "select 'connected to '||current_database()||' at '||inet_server_addr()"
+      # A failed dump must stop the build BEFORE anything is dropped: pipefail makes
+      # pg_dump's exit status count, and the size check refuses an empty archive.
+      - set -o pipefail; stamp="$(date -u +%Y%m%dT%H%M%SZ)"; f="/tmp/${DB_NAME}-before-rebuild-${stamp}.sql.gz"; pg_dump "$DATABASE_URL" --no-owner --no-privileges | gzip > "$f"; size=$(stat -c %s "$f"); echo "backup size ${size} bytes"; test "$size" -gt 4096 || { echo "backup is empty — refusing to continue"; exit 1; }
+      - aws s3 cp "$f" "s3://${BACKUP_BUCKET}/db-backups/" --only-show-errors && echo "backup written to s3://${BACKUP_BUCKET}/db-backups/$(basename "$f")"
+      - npm ci --no-audit --no-fund --ignore-scripts > /dev/null && npx prisma generate > /dev/null
+  build:
+    commands:
+      - export ADMIN_PASSWORD="$(openssl rand -base64 30)"
+      - scripts/db/fresh-database.sh --yes
+  post_build:
+    commands:
+      - echo "rebuild finished; sign in as $ADMIN_EMAIL through Forgot password"

@@ -1,0 +1,157 @@
+{{- /*
+One ServiceAccount + Deployment (+ Service, TargetGroupBinding, HPA for web
+modules) per image in .Values.modules. ServiceAccount names match the Pod
+Identity associations in eks-workload-iam.yaml (fab-<module>).
+*/ -}}
+{{- range $name, $m := .Values.modules }}
+{{- if $m.enabled }}
+{{- $labels := dict "app.kubernetes.io/name" "faborchestrator" "app.kubernetes.io/instance" $.Release.Name "app.kubernetes.io/component" $name }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: fab-{{ $name }}
+  namespace: {{ $.Release.Namespace }}
+  labels: {{- toYaml $labels | nindent 4 }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $name }}
+  namespace: {{ $.Release.Namespace }}
+  labels: {{- toYaml $labels | nindent 4 }}
+spec:
+  {{- if not (and $m.autoscaling $m.autoscaling.enabled) }}
+  replicas: {{ $m.replicas }}
+  {{- end }}
+  revisionHistoryLimit: 5
+  selector:
+    matchLabels: {{- toYaml $labels | nindent 6 }}
+  strategy:
+    {{- if $m.recreate }}
+    type: Recreate
+    {{- else }}
+    type: RollingUpdate
+    rollingUpdate: { maxUnavailable: 0, maxSurge: 1 }
+    {{- end }}
+  template:
+    metadata:
+      labels: {{- toYaml $labels | nindent 8 }}
+      annotations:
+        # Roll pods when the secret mapping changes.
+        checksum/secrets: {{ toYaml $.Values.secrets | sha256sum | trunc 16 }}
+    spec:
+      serviceAccountName: fab-{{ $name }}
+      terminationGracePeriodSeconds: {{ $m.terminationGracePeriodSeconds | default 60 }}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        fsGroup: 1001
+      containers:
+        - name: app
+          # modules.<name>.tag deploys one module on its own; image.tag is the fallback.
+          image: "{{ $.Values.image.registry }}/{{ $.Values.image.repositoryPrefix }}/{{ $name }}:{{ $m.tag | default $.Values.image.tag }}"
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ $m.port }}
+          env:
+            - { name: PORT, value: {{ $m.port | quote }} }
+            - { name: FAB_IMAGE, value: {{ $name | quote }} }
+            - { name: APP_URL, value: {{ $.Values.appUrl | quote }} }
+            - { name: AWS_REGION, value: {{ $.Values.awsRegion | quote }} }
+            - { name: NODE_OPTIONS, value: "--max-old-space-size={{ $m.heapMb }}" }
+            {{- if not (hasKey ($m.env | default dict) "REPORT_SCHEDULER_ENABLED") }}
+            - { name: REPORT_SCHEDULER_ENABLED, value: "false" }
+            {{- end }}
+            {{- range $k, $v := $.Values.env }}
+            - { name: {{ $k }}, value: {{ $v | quote }} }
+            {{- end }}
+            {{- range $k, $v := ($m.env | default dict) }}
+            - { name: {{ $k }}, value: {{ $v | quote }} }
+            {{- end }}
+          envFrom:
+            - secretRef:
+                name: fab-app-secrets
+          readinessProbe:
+            httpGet: { path: /api/health, port: http }
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          livenessProbe:
+            httpGet: { path: /api/health, port: http }
+            initialDelaySeconds: 30
+            periodSeconds: 20
+            timeoutSeconds: 10
+            failureThreshold: 5
+          resources: {{- toYaml $m.resources | nindent 12 }}
+          {{- if $m.runsVolume }}
+          volumeMounts:
+            - name: po-ui-runs
+              mountPath: /data/po-ui-runs
+          {{- end }}
+      {{- if $m.runsVolume }}
+      volumes:
+        - name: po-ui-runs
+          persistentVolumeClaim:
+            claimName: po-ui-runs
+      {{- end }}
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels: {{- toYaml $labels | nindent 14 }}
+{{- if $m.targetGroupArn }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $name }}
+  namespace: {{ $.Release.Namespace }}
+  labels: {{- toYaml $labels | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector: {{- toYaml $labels | nindent 4 }}
+  ports:
+    - name: http
+      port: {{ $m.port }}
+      targetPort: http
+---
+# Registers this module's pod IPs in its ALB target group (eks-edge.yaml).
+apiVersion: elbv2.k8s.aws/v1beta1
+kind: TargetGroupBinding
+metadata:
+  name: {{ $name }}
+  namespace: {{ $.Release.Namespace }}
+  labels: {{- toYaml $labels | nindent 4 }}
+spec:
+  targetGroupARN: {{ $m.targetGroupArn }}
+  targetType: ip
+  serviceRef:
+    name: {{ $name }}
+    port: {{ $m.port }}
+{{- end }}
+{{- if and $m.autoscaling $m.autoscaling.enabled }}
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ $name }}
+  namespace: {{ $.Release.Namespace }}
+  labels: {{- toYaml $labels | nindent 4 }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ $name }}
+  minReplicas: {{ $m.replicas }}
+  maxReplicas: {{ $m.autoscaling.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target: { type: Utilization, averageUtilization: 65 }
+{{- end }}
+{{- end }}
+{{- end }}

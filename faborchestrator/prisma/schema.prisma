@@ -1,0 +1,910 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Role {
+  id                          String          @id @default(uuid())
+  name                        String          @unique
+  description                 String?
+  isSystemRole                Boolean         @default(false) @map("is_system_role")
+  permissions                 Json            @default("[]")
+  allowedModels               Json            @default("[]") @map("allowed_models")
+  systemInstructions          String?         @map("system_instructions")
+  customInstructionsEnabled   Boolean         @default(true) @map("custom_instructions_enabled")
+  customInstructionsMaxLength Int             @default(1000) @map("custom_instructions_max_length")
+  personalMcpEnabled          Boolean         @default(false) @map("personal_mcp_enabled")
+  personalMcpMaxCount         Int             @default(3) @map("personal_mcp_max_count")
+  dailyRequestLimit           Int?            @map("daily_request_limit")
+  dailyTokenLimit             Int?            @map("daily_token_limit")
+  /// Ordered prompt_chips ids shown above the composer for this role (Dashboard Scheduling).
+  promptChipIds               Json            @default("[]") @map("prompt_chip_ids")
+  createdAt                   DateTime        @default(now()) @map("created_at")
+  updatedAt                   DateTime        @updatedAt @map("updated_at")
+  invitations                 Invitation[]
+  mcpConnections              McpConnection[]
+  users                       User[]
+
+  @@map("roles")
+}
+
+model User {
+  id                                                   String              @id @default(uuid())
+  email                                                String              @unique
+  passwordHash                                         String              @map("password_hash")
+  name                                                 String?
+  avatarUrl                                            String?             @map("avatar_url")
+  anthropicApiKeyEncrypted                             String?             @map("anthropic_api_key_encrypted")
+  preferences                                          Json                @default("{\"theme\": \"system\", \"fontSize\": 16, \"codeTheme\": \"github-dark\", \"messageDensity\": \"comfortable\"}")
+  createdAt                                            DateTime            @default(now()) @map("created_at")
+  lastLogin                                            DateTime?           @map("last_login")
+  forcePasswordChange                                  Boolean             @default(false) @map("force_password_change")
+  isAdmin                                              Boolean             @default(false) @map("is_admin")
+  passwordChangedAt                                    DateTime?           @map("password_changed_at")
+  roleId                                               String?             @map("role_id")
+  status                                               String              @default("ACTIVE")
+  artifacts                                            Artifact[]
+  auditLogs                                            AuditLog[]
+  cmfPackages                                          Package[]
+  cmfRuns                                              Run[]
+  cmfStagedUploads                                     StagedUpload[]
+  conversations                                        Conversation[]
+  error_audit_logs_error_audit_logs_resolved_byTousers error_audit_logs[]  @relation("error_audit_logs_resolved_byTousers")
+  error_audit_logs_error_audit_logs_user_idTousers     error_audit_logs[]  @relation("error_audit_logs_user_idTousers")
+  invitationsSent                                      Invitation[]        @relation("InvitedByUser")
+  mcpConnections                                       McpConnection[]
+  memoryFiles                                          MemoryFile[]
+  pinnedDashboards                                     PinnedDashboard[]
+  dashboardRequests                                    DashboardRequest[]
+  prompt_audit_logs                                    prompt_audit_logs[]
+  sessions                                             Session[]
+  usageRecords                                         UsageRecord[]
+  sessionLogs                                          UserSessionLog[]
+  role                                                 Role?               @relation(fields: [roleId], references: [id])
+
+  @@map("users")
+}
+
+model Session {
+  id         String    @id @default(uuid())
+  userId     String    @map("user_id")
+  token      String    @unique
+  expiresAt  DateTime  @map("expires_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  ipAddress  String?   @map("ip_address")
+  userAgent  String?   @map("user_agent")
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model Conversation {
+  id                   String     @id @default(uuid())
+  userId               String     @map("user_id")
+  title                String     @default("New Conversation")
+  model                String
+  activeMcpIds         Json       @default("[]") @map("active_mcp_ids")
+  /// MCP connection the user chose when asked "which server?" (multi-server rules); sticky per conversation.
+  selectedConnectionId String?    @map("selected_connection_id")
+  isPinned             Boolean    @default(false) @map("is_pinned")
+  isShared             Boolean    @default(false) @map("is_shared")
+  createdAt            DateTime   @default(now()) @map("created_at")
+  updatedAt            DateTime   @updatedAt @map("updated_at")
+  lastMessageAt        DateTime?  @map("last_message_at")
+  deletedAt            DateTime?  @map("deleted_at")
+  agent                String     @default("chat")
+  artifacts            Artifact[]
+  user                 User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages             Message[]
+
+  @@index([userId, updatedAt(sort: Desc)])
+  @@index([userId, deletedAt])
+  @@map("conversations")
+}
+
+model Message {
+  id             String       @id @default(uuid())
+  conversationId String       @map("conversation_id")
+  role           String
+  content        String
+  parts          Json?
+  metadata       Json         @default("{}")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  editedAt       DateTime?    @map("edited_at")
+  artifacts      Artifact[]
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+  @@map("messages")
+}
+
+model Artifact {
+  id             String       @id @default(uuid())
+  conversationId String       @map("conversation_id")
+  messageId      String       @map("message_id")
+  userId         String       @map("user_id")
+  type           String       @default("html")
+  title          String
+  content        String
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  message        Message      @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@index([messageId])
+  @@map("artifacts")
+}
+
+model McpConnection {
+  id                       String    @id @default(uuid())
+  userId                   String?   @map("user_id")
+  name                     String
+  serverUrl                String    @map("server_url")
+  authType                 String    @default("none") @map("auth_type")
+  authCredentialsEncrypted String?   @map("auth_credentials_encrypted")
+  availableTools           Json      @default("[]") @map("available_tools")
+  isActive                 Boolean   @default(true) @map("is_active")
+  status                   String    @default("disconnected")
+  lastError                String?   @map("last_error")
+  sessionId                String?   @map("session_id")
+  createdAt                DateTime  @default(now()) @map("created_at")
+  updatedAt                DateTime  @updatedAt @map("updated_at")
+  lastConnectedAt          DateTime? @map("last_connected_at")
+  roleId                   String?   @map("role_id")
+  registryId               String?   @map("registry_id")
+  /** Which agent may use this connection (see shared/lib/agents.ts). Existing rows defaulted to FabInsight. */
+  agent                    String    @default("fabinsight")
+  role                     Role?     @relation(fields: [roleId], references: [id])
+  user                     User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([registryId])
+  @@index([agent])
+  @@map("mcp_connections")
+}
+
+model MemoryFile {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  path      String
+  content   String
+  scope     String   @default("user")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, path])
+  @@unique([scope, path])
+  @@map("memory_files")
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid())
+  email     String
+  token     String    @unique
+  expiresAt DateTime  @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  @@index([email])
+  @@map("password_reset_tokens")
+}
+
+model Invitation {
+  id          String    @id @default(uuid())
+  email       String
+  roleId      String    @map("role_id")
+  invitedById String    @map("invited_by_id")
+  token       String    @unique
+  status      String    @default("PENDING")
+  expiresAt   DateTime  @map("expires_at")
+  acceptedAt  DateTime? @map("accepted_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  invitedBy   User      @relation("InvitedByUser", fields: [invitedById], references: [id])
+  role        Role      @relation(fields: [roleId], references: [id])
+
+  @@index([email])
+  @@map("invitations")
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  userId     String?  @map("user_id")
+  action     String
+  targetType String?  @map("target_type")
+  targetId   String?  @map("target_id")
+  metadata   Json     @default("{}")
+  ipAddress  String?  @map("ip_address")
+  createdAt  DateTime @default(now()) @map("created_at")
+  user       User?    @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model UserSessionLog {
+  id                 String        @id @default(uuid())
+  userId             String        @map("user_id")
+  sessionTokenHash   String?       @unique @map("session_token_hash")
+  loginTime          DateTime      @default(now()) @map("login_time") @db.Timestamptz(6)
+  logoutTime         DateTime?     @map("logout_time") @db.Timestamptz(6)
+  lastActivityAt     DateTime      @default(now()) @map("last_activity_at") @db.Timestamptz(6)
+  idleSeconds        Int           @default(0) @map("idle_seconds")
+  sessionStatus      SessionStatus @default(ACTIVE) @map("session_status")
+  closedReason       String?       @map("closed_reason")
+  loginIp            String?       @map("login_ip")
+  loginUserAgent     String?       @map("login_user_agent")
+  createdAt          DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  idle_episodes      Json          @default("[]")
+  idle_episode_count Int           @default(0)
+  user               User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, loginTime(sort: Desc)])
+  @@index([sessionStatus])
+  @@index([loginTime])
+  @@map("user_session_logs")
+}
+
+model UsageRecord {
+  id                  String   @id @default(uuid())
+  userId              String   @map("user_id")
+  model               String
+  inputTokens         Int      @map("input_tokens")
+  outputTokens        Int      @map("output_tokens")
+  thinkingTokens      Int      @default(0) @map("thinking_tokens")
+  cacheCreationTokens Int      @default(0) @map("cache_creation_tokens")
+  cacheReadTokens     Int      @default(0) @map("cache_read_tokens")
+  conversationId      String?  @map("conversation_id")
+  requestDurationMs   Int?     @map("request_duration_ms")
+  createdAt           DateTime @default(now()) @map("created_at")
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([createdAt])
+  @@index([userId, createdAt])
+  @@index([model])
+  @@map("usage_records")
+}
+
+model PlatformSettings {
+  id                 String   @id
+  colorTheme         String   @default("fab-blue") @map("color_theme")
+  updatedById        String?  @map("updated_by_id")
+  updatedAt          DateTime @default(now()) @updatedAt @map("updated_at")
+  auditRetentionDays Int      @default(90) @map("audit_retention_days")
+
+  @@map("platform_settings")
+}
+
+model ModelRegistry {
+  id                  String   @id @default(uuid())
+  modelId             String   @unique @map("model_id")
+  displayName         String   @map("display_name")
+  description         String?
+  inputCostPer1M      Float    @default(0) @map("input_cost_per_1m")
+  outputCostPer1M     Float    @default(0) @map("output_cost_per_1m")
+  cacheReadCostPer1M  Float    @default(0) @map("cache_read_cost_per_1m")
+  cacheWriteCostPer1M Float    @default(0) @map("cache_write_cost_per_1m")
+  thinkingType        String   @default("adaptive") @map("thinking_type")
+  thinkingBudget      Int?     @map("thinking_budget")
+  isActive            Boolean  @default(true) @map("is_active")
+  isDefault           Boolean  @default(false) @map("is_default")
+  sortOrder           Int      @default(0) @map("sort_order")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@index([isActive])
+  @@index([sortOrder])
+  @@map("model_registry")
+}
+
+model Package {
+  id                String             @id @default(cuid())
+  cmfId             String             @unique @map("cmf_id")
+  name              String
+  filename          String
+  checksum          String
+  sizeBytes         BigInt             @map("size_bytes")
+  contentType       String             @map("content_type")
+  createdByUserId   String             @map("created_by_user_id")
+  lastResult        Int?               @map("last_result")
+  lastOperation     Operation?         @map("last_operation")
+  lastRunAt         DateTime?          @map("last_run_at")
+  createdAt         DateTime           @default(now()) @map("created_at")
+  file              PackageFile?
+  createdBy         User               @relation(fields: [createdByUserId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  runs              Run[]
+
+  @@index([createdAt])
+  @@map("cmf_packages")
+}
+
+model StagedUpload {
+  id              String   @id @default(cuid())
+  userId          String   @map("user_id")
+  filename        String
+  s3Key           String   @map("s3_key")
+  status          String   @default("UPLOADED")
+  packageName     String?  @map("package_name")
+  packageCmfId    String?  @map("package_cmf_id")
+  selectedTypes   Json?    @map("selected_types")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at")
+  packageCmfDbKey String?  @map("package_cmf_db_key")
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([userId])
+  @@index([status])
+  @@map("cmf_staged_uploads")
+}
+
+model PackageFile {
+  id        String   @id @default(cuid())
+  packageId String   @unique @map("package_id")
+  filename  String
+  s3Key     String   @map("s3_key")
+  createdAt DateTime @default(now()) @map("created_at")
+  package   Package  @relation(fields: [packageId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("cmf_package_files")
+}
+
+model Run {
+  id                 String    @id @default(cuid())
+  packageId          String    @map("package_id")
+  userId             String    @map("user_id")
+  operation          Operation
+  status             RunStatus @default(QUEUED)
+  cmfBaselineEndDate String?   @map("cmf_baseline_end_date")
+  selectedTypes      Json      @map("selected_types")
+  result             Int?
+  log                Json?
+  error              String?
+  startedAt          DateTime  @default(now()) @map("started_at")
+  endedAt            DateTime? @map("ended_at")
+  package            Package   @relation(fields: [packageId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user               User      @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([packageId])
+  @@index([startedAt])
+  @@map("cmf_runs")
+}
+
+/// A dashboard an admin has pinned so every role can see it.
+///
+/// Stores the RECIPE, not the rendered HTML: the dashboard id plus whichever
+/// lot/product the admin asked about. Opening or refreshing a pinned dashboard
+/// re-runs that dashboard's SQL, so the figures track the environment instead of
+/// freezing at the moment it was pinned.
+model PinnedDashboard {
+  id            String    @id @default(uuid())
+  title         String
+  dashboardId   String    @map("dashboard_id")
+  /// "recipe" = one of the 7 curated dashboards (data comes from dashboards.ts).
+  /// "custom" = an admin-created dashboard whose query set lives in `definition`.
+  kind          String    @default("recipe")
+  /// For custom dashboards: { queries: [{ key, label, sql, limit? }] }. Null for recipes.
+  definition    Json?
+  params        Json      @default("{}")
+  createdById   String    @map("created_by_id")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @default(now()) @updatedAt @map("updated_at")
+  sourceKey     String    @default("lumentum") @map("source_key")
+  metricColumns Json      @default("[]") @map("metric_columns")
+  cachedHtml    String?   @map("cached_html")
+  cachedSummary String?   @map("cached_summary")
+  refreshedAt   DateTime? @map("refreshed_at") @db.Timestamptz(6)
+  lastStatus    String?   @map("last_status")
+  createdBy     User      @relation(fields: [createdById], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([createdAt])
+  @@map("pinned_dashboards")
+}
+
+/// Shared library of prompt chips (shortcut bubbles above the composer). A role
+/// carries an ordered list of chip ids; defaults are auto-selected when Dashboard
+/// Scheduling is enabled. Written by the admin app; read by Fab AI.
+model PromptChip {
+  id          String   @id @default(uuid())
+  label       String
+  blurb       String   @default("")
+  prompt      String
+  /// factory | clock | trend | wrench | funnel | grid | bars | gauge | table | alert | list | search | chart | spark
+  icon        String   @default("chart")
+  isDefault   Boolean  @default(false) @map("is_default")
+  isActive    Boolean  @default(true) @map("is_active")
+  sortOrder   Int      @default(100) @map("sort_order")
+  createdById String?  @map("created_by_id")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([isActive, sortOrder], map: "prompt_chips_active_idx")
+  @@map("prompt_chips")
+}
+
+/// A user's request to turn a chat dashboard into a scheduled, shared dashboard.
+/// Written by Fab AI at pin time (full HTML + MCP call trace + KPIs + reason);
+/// decided by the admin app (approve/deny, schedule, expiry). See prisma/create_dashboards.sql.
+model DashboardRequest {
+  id                 String                @id @default(uuid())
+  requesterId        String                @map("requester_id")
+  conversationId     String?               @map("conversation_id")
+  messageId          String?               @map("message_id")
+  artifactIdentifier String?               @map("artifact_identifier")
+  title              String
+  reason             String
+  html               String
+  kpis               Json                  @default("[]")
+  /// Ordered MCP calls: [{seq, toolCallId, connectionId, registryId, serverUrl, toolName, args, result, durationMs}]
+  trace              Json                  @default("[]")
+  /// requested | approved | denied | compiling | compile_failed | preview_ready | live | cancelled
+  status             String                @default("requested")
+  /// {mode:'create'|'extend', targetDashboardId?, connectionScope, schedule, expiresAt, decidedById, note}
+  decision           Json?
+  decidedById        String?               @map("decided_by_id")
+  decidedAt          DateTime?             @map("decided_at") @db.Timestamptz(6)
+  dashboardId        String?               @map("dashboard_id")
+  createdAt          DateTime              @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime              @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  requester          User                  @relation(fields: [requesterId], references: [id], onDelete: Cascade)
+  compileJobs        DashboardCompileJob[]
+
+  @@index([status, createdAt(sort: Desc)], map: "dashboard_requests_status_idx")
+  @@index([requesterId], map: "dashboard_requests_requester_idx")
+  @@map("dashboard_requests")
+}
+
+/// A live (or paused/expired) dashboard: current replay-program version, visibility,
+/// expiry and the cached snapshot the scheduler writes. `slug` is the stable key the
+/// legacy tables (report_schedules, alert_thresholds, shift_summaries) refer to.
+model Dashboard {
+  id                String             @id @default(uuid())
+  slug              String             @unique
+  title             String
+  /// seeded | custom
+  kind              String             @default("custom")
+  /// live | paused | expired
+  status            String             @default("live")
+  currentVersionId  String?            @map("current_version_id")
+  kpis              Json               @default("[]")
+  visibleToAll      Boolean            @default(false) @map("visible_to_all")
+  visibilityRoleIds Json               @default("[]") @map("visibility_role_ids")
+  visibilityUserIds Json               @default("[]") @map("visibility_user_ids")
+  /// {mode:'fixed', servers:[{registryId, serverUrl}]} | {mode:'all'}
+  connectionScope   Json               @default("{\"mode\":\"all\"}") @map("connection_scope")
+  expiresAt         DateTime?          @map("expires_at") @db.Timestamptz(6)
+  expiryWarnedAt    DateTime?          @map("expiry_warned_at") @db.Timestamptz(6)
+  sourceRequestId   String?            @map("source_request_id")
+  createdById       String             @map("created_by_id")
+  requesterId       String?            @map("requester_id")
+  metricColumns     Json               @default("[]") @map("metric_columns")
+  cachedHtml        String?            @map("cached_html")
+  cachedSummary     String?            @map("cached_summary")
+  cachedSets        Json?              @map("cached_sets")
+  refreshedAt       DateTime?          @map("refreshed_at") @db.Timestamptz(6)
+  lastStatus        String?            @map("last_status")
+  perServerStatus   Json               @default("{}") @map("per_server_status")
+  createdAt         DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime           @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  versions          DashboardVersion[]
+
+  @@index([status], map: "dashboards_status_idx")
+  @@index([expiresAt], map: "dashboards_expires_at_idx")
+  @@map("dashboards")
+}
+
+/// One row per go-live; the dashboard points at its current version and can roll back.
+model DashboardVersion {
+  id               String    @id @default(uuid())
+  dashboardId      String    @map("dashboard_id")
+  versionNo        Int       @map("version_no")
+  /// Replay program (programVersion 1): scope, time, calls, kpis, summary.
+  program          Json
+  /// Captured HTML with data-fab-* binding markers.
+  templateHtml     String    @map("template_html")
+  kpis             Json      @default("[]")
+  connectionScope  Json      @default("{\"mode\":\"all\"}") @map("connection_scope")
+  refineHistory    Json      @default("[]") @map("refine_history")
+  createdFromJobId String?   @map("created_from_job_id")
+  approvedById     String?   @map("approved_by_id")
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  dashboard        Dashboard @relation(fields: [dashboardId], references: [id], onDelete: Cascade)
+
+  @@unique([dashboardId, versionNo])
+  @@map("dashboard_versions")
+}
+
+/// Compile work item: inserted by the admin app (approve / refine / edit), claimed and
+/// executed by the Fab AI scheduler tick, which runs the compiler agent and writes the
+/// resulting program + template + rendered preview back onto the row.
+model DashboardCompileJob {
+  id              String            @id @default(uuid())
+  /// create | extend | refine
+  kind            String
+  requestId       String?           @map("request_id")
+  dashboardId     String?           @map("dashboard_id")
+  baseVersionId   String?           @map("base_version_id")
+  instruction     String?
+  connectionScope Json              @default("{\"mode\":\"all\"}") @map("connection_scope")
+  /// queued | claimed | preview_ready | failed
+  status          String            @default("queued")
+  attempts        Int               @default(0)
+  claimedAt       DateTime?         @map("claimed_at") @db.Timestamptz(6)
+  finishedAt      DateTime?         @map("finished_at") @db.Timestamptz(6)
+  resultProgram   Json?             @map("result_program")
+  resultTemplate  String?           @map("result_template")
+  resultHtml      String?           @map("result_html")
+  resultKpis      Json?             @map("result_kpis")
+  resultNotes     Json?             @map("result_notes")
+  usage           Json?
+  error           String?
+  createdById     String?           @map("created_by_id")
+  createdAt       DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  request         DashboardRequest? @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  @@index([status, createdAt], map: "dashboard_compile_jobs_status_idx")
+  @@index([requestId], map: "dashboard_compile_jobs_request_idx")
+  @@index([dashboardId], map: "dashboard_compile_jobs_dashboard_idx")
+  @@map("dashboard_compile_jobs")
+}
+
+/// Per-dashboard refresh schedule for the Recent Reports (pinned dashboards).
+/// Written by the admin app (chat tool), read by the Fab Orch cron tick which
+/// re-renders each pinned report of a due dashboard and caches the HTML.
+/// One row per (dashboard_id, source_key). Times are UTC.
+model ReportSchedule {
+  id              String    @id @default(uuid())
+  dashboardId     String    @map("dashboard_id")
+  sourceKey       String    @default("lumentum") @map("source_key")
+  frequency       String    @default("hourly")
+  intervalMinutes Int?      @map("interval_minutes")
+  atTime          String?   @map("at_time")
+  dayOfMonth      Int?      @map("day_of_month")
+  enabled         Boolean   @default(true)
+  nextRunAt       DateTime? @map("next_run_at") @db.Timestamptz(6)
+  lastRunAt       DateTime? @map("last_run_at") @db.Timestamptz(6)
+  lastStatus      String?   @map("last_status")
+  updatedById     String?   @map("updated_by_id")
+  updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  daysOfWeek      String?   @map("days_of_week")
+  /// IANA timezone the atTime/day are interpreted in (e.g. "America/Los_Angeles"); "UTC" default.
+  timezone        String    @default("UTC")
+  /// Interval-frequency active window (HH:MM, in `timezone`); null = all day.
+  windowStart     String?   @map("window_start")
+  windowEnd       String?   @map("window_end")
+
+  @@unique([dashboardId, sourceKey], map: "report_schedules_dashboard_source_key")
+  @@index([enabled, nextRunAt], map: "report_schedules_enabled_next_run_idx")
+  @@map("report_schedules")
+}
+
+/// Admin-configurable discrepancy alert thresholds. Written by the admin app,
+/// read + evaluated by the Fab Orch scheduler (lib/fabinsight/alerts.ts). One
+/// row per (metric_key, source_key, dashboard_id). Mirrors the ReportSchedule
+/// write-in-admin / read-in-fab pattern.
+model AlertThreshold {
+  id               String    @id @default(uuid())
+  metricKey        String    @map("metric_key")
+  label            String?
+  comparator       String    @default("gt")
+  minValue         Float?    @map("min_value")
+  maxValue         Float?    @map("max_value")
+  dashboardId      String?   @map("dashboard_id")
+  sourceKey        String    @default("lumentum") @map("source_key")
+  throttleMin      Int       @default(60) @map("throttle_min")
+  isActive         Boolean   @default(true) @map("is_active")
+  recipientRoleIds Json      @default("[]") @map("recipient_role_ids")
+  customSetKey     String?   @map("custom_set_key")
+  customColumn     String?   @map("custom_column")
+  createdById      String?   @map("created_by_id")
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([isActive], map: "alert_thresholds_active_idx")
+  @@map("alert_thresholds")
+}
+
+/// Rolling history of every live dashboard's numeric columns, sampled by the
+/// Fab scheduler (modules/fabinsight/lib/baselines.ts) so the admin Alert
+/// Thresholds form can show a dynamic 7-day min/avg/max "normal range". Pruned
+/// to ~30 days by the sampler. Accessed by raw SQL only; declared here so the
+/// schema describes every table the app uses. See prisma/create_alert_thresholds.sql.
+model MetricSample {
+  id        BigInt   @id @default(autoincrement())
+  metricKey String   @map("metric_key")
+  sourceKey String   @default("lumentum") @map("source_key")
+  value     Float
+  sampledAt DateTime @default(now()) @map("sampled_at") @db.Timestamptz(6)
+
+  @@index([metricKey, sampledAt(sort: Desc)], map: "metric_samples_key_time_idx")
+  @@map("metric_samples")
+}
+
+/// Shift-summary email sends (V06 "Scheduled Dashboard"). Written by the admin
+/// app, read + fired by the Fab scheduler: at each send_time it emails an overall
+/// summary + each dashboard's cached summary to the recipient roles. One row per
+/// send time; times are wall-clock in `timezone` (default PST).
+model ShiftSummary {
+  id               String    @id @default(uuid())
+  name             String
+  sendTime         String    @map("send_time")
+  timezone         String    @default("America/Los_Angeles")
+  recipientRoleIds Json      @default("[]") @map("recipient_role_ids")
+  dashboardIds     Json      @default("[]") @map("dashboard_ids")
+  sourceKey        String    @default("lumentum") @map("source_key")
+  isActive         Boolean   @default(true) @map("is_active")
+  nextSendAt       DateTime? @map("next_send_at") @db.Timestamptz(6)
+  lastSendAt       DateTime? @map("last_send_at") @db.Timestamptz(6)
+  lastStatus       String?   @map("last_status")
+  createdById      String?   @map("created_by_id")
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([isActive, nextSendAt], map: "shift_summaries_active_next_idx")
+  @@map("shift_summaries")
+}
+
+model error_audit_daily_counter {
+  counter_date DateTime @id @db.Date
+  last_seq     Int      @default(0)
+}
+
+model error_audit_logs {
+  id                                        String             @id
+  error_id                                  String             @unique
+  error_uuid                                String
+  error_type                                String
+  user_id                                   String?
+  datetime                                  DateTime           @default(now()) @db.Timestamptz(6)
+  user_message                              String
+  technical_message                         String?
+  priority                                  String
+  status                                    error_audit_status @default(OPEN)
+  resolved_by                               String?
+  resolved_at                               DateTime?          @db.Timestamptz(6)
+  resolution_note                           String?
+  route                                     String?
+  http_method                               String?
+  http_status                               Int?
+  stack_preview                             String?
+  request_context                           Json?
+  created_at                                DateTime           @default(now()) @db.Timestamptz(6)
+  users_error_audit_logs_resolved_byTousers User?              @relation("error_audit_logs_resolved_byTousers", fields: [resolved_by], references: [id], map: "error_audit_logs_resolver_fkey")
+  users_error_audit_logs_user_idTousers     User?              @relation("error_audit_logs_user_idTousers", fields: [user_id], references: [id], map: "error_audit_logs_user_fkey")
+
+  @@index([datetime(sort: Desc)])
+  @@index([priority])
+  @@index([status])
+  @@index([error_type], map: "error_audit_logs_type_idx")
+  @@index([user_id, datetime(sort: Desc)], map: "error_audit_logs_user_datetime_idx")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model error_catalog {
+  error_type   String   @id
+  user_message String
+  priority     String
+  http_status  Int
+  updated_at   DateTime @default(now()) @db.Timestamptz(6)
+  updated_by   String   @default("system")
+
+  @@index([updated_at(sort: Desc)], map: "idx_error_catalog_updated_at")
+}
+
+model McpDataSource {
+  id                    String              @id @default(uuid())
+  name                  String
+  engine                String              @default("postgres")
+  status                McpDataSourceStatus @default(DRAFT)
+  host                  String?
+  port                  Int?
+  database              String?
+  schemasJson           Json                @default("[]") @map("schemas_json")
+  secretArn             String?             @map("secret_arn")
+  discoveredSchema      Json?               @map("discovered_schema")
+  manifest              Json?
+  staticCheck           Json?               @map("static_check")
+  runtimeVersion        String?             @map("runtime_version")
+  lambdaArn             String?             @map("lambda_arn")
+  endpointUrl           String?             @map("endpoint_url")
+  endpointAuthEncrypted String?             @map("endpoint_auth_encrypted")
+  registryId            String?             @map("registry_id")
+  lastError             String?             @map("last_error")
+  createdById           String              @map("created_by_id")
+  createdAt             DateTime            @default(now()) @map("created_at")
+  updatedAt             DateTime            @default(now()) @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@index([createdById])
+  @@map("mcp_data_sources")
+}
+
+model McpRegistry {
+  id                       String   @id @default(uuid())
+  displayName              String   @map("display_name")
+  serverUrl                String   @unique @map("server_url")
+  authType                 String   @default("none") @map("auth_type")
+  createdAt                DateTime @default(now()) @map("created_at")
+  description              String?
+  authCredentialsEncrypted String?  @map("auth_credentials_encrypted")
+  isActive                 Boolean  @default(true) @map("is_active")
+  updatedAt                DateTime @default(now()) @updatedAt @map("updated_at")
+  /** Latest health result: healthy | degraded | down | unknown (see modules/mcp/lib/mcp-health-types.ts). */
+  healthStatus             String    @default("unknown") @map("health_status")
+  healthCheckedAt          DateTime? @map("health_checked_at")
+  /** Latest check detail: stage reached, latencies, tool used, error. */
+  healthDetail             Json?     @map("health_detail")
+  /** Admin-set data probe { tool, arguments }; null = pick automatically. */
+  healthProbe              Json?     @map("health_probe")
+  healthChecks             McpHealthCheck[]
+
+  @@map("mcp_registry")
+}
+
+/// One row per health check of a registry server (scheduled every 5 min or on demand).
+model McpHealthCheck {
+  id         String      @id @default(uuid())
+  registryId String      @map("registry_id")
+  checkedAt  DateTime    @default(now()) @map("checked_at")
+  status     String
+  /** Highest stage that passed: 0 none, 1 reachable, 2 tools, 3 data. */
+  stage      Int         @default(0)
+  reachMs    Int?        @map("reach_ms")
+  toolsMs    Int?        @map("tools_ms")
+  dataMs     Int?        @map("data_ms")
+  toolUsed   String?     @map("tool_used")
+  error      String?
+  source     String      @default("scheduled")
+  registry   McpRegistry @relation(fields: [registryId], references: [id], onDelete: Cascade)
+
+  @@index([registryId, checkedAt])
+  @@map("mcp_health_checks")
+}
+
+model prompt_audit_daily_counter {
+  counter_date DateTime @id @db.Date
+  last_seq     Int      @default(0)
+}
+
+model prompt_audit_logs {
+  id               String              @id
+  prompt_id        String              @unique
+  datetime         DateTime            @default(now()) @db.Timestamptz(6)
+  user_prompt      String
+  topic_matched    String?
+  data_retrieved   String?
+  llm_response     String?
+  response_time_ms Int?
+  status           prompt_audit_status @default(PENDING)
+  user_name        String?
+  user_email       String?
+  query_executed   String?
+  tool_calls       Json?
+  user_id          String?
+  request_tokens   Int?
+  retrieval_tokens Int?
+  response_tokens  Int?
+  /// Per-request phase/tool timing breakdown. See add_prompt_audit_timings.sql.
+  timings          Json?
+  request_cost     Decimal?            @db.Decimal(12, 6)
+  retrieval_cost   Decimal?            @db.Decimal(12, 6)
+  response_cost    Decimal?            @db.Decimal(12, 6)
+  model            String?
+  users            User?               @relation(fields: [user_id], references: [id], onUpdate: NoAction)
+
+  @@index([user_id], map: "idx_prompt_audit_logs_user_id")
+  @@index([datetime(sort: Desc)])
+  @@index([status])
+  @@index([topic_matched], map: "prompt_audit_logs_topic_idx")
+}
+
+model CmfBearerToken {
+  cmfDatabaseName String    @id @map("cmf_database_name")
+  token           String
+  expiresAt       DateTime? @map("expires_at") @db.Timestamptz(6)
+  updatedAt       DateTime  @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@map("cmf_bearer_tokens")
+}
+
+model CmfConnection {
+  id                      String   @id
+  dbKey                   String   @unique @map("db_key")
+  label                   String
+  engine                  String   @default("mssql")
+  sqlServer               String   @map("sql_server")
+  sqlInstance             String?  @map("sql_instance")
+  sqlDatabase             String   @map("sql_database")
+  sqlUser                 String   @map("sql_user")
+  sqlPasswordEncrypted    String?  @map("sql_password_encrypted")
+  baseUrl                 String   @map("base_url")
+  hostResolver            Json     @default("[]") @map("host_resolver")
+  tokenDbName             String   @map("token_db_name")
+  tokenSecretId           String?  @map("token_secret_id")
+  portalUser              String?  @map("portal_user")
+  portalPasswordEncrypted String?  @map("portal_password_encrypted")
+  lambdaArn               String?  @map("lambda_arn")
+  scheduleName            String?  @map("schedule_name")
+  enabled                 Boolean  @default(true)
+  createdById             String?  @map("created_by_id")
+  createdAt               DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt               DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@map("cmf_connections")
+}
+
+/// Per-user / per-role grant of a CMF database connection (polymorphic: exactly
+/// one of userId/roleId is set). Effective access = union of the user's direct
+/// grants and their role's grants. See prisma/create_cmf_access.sql.
+model CmfAccess {
+  id          String   @id
+  dbKey       String   @map("db_key")
+  userId      String?  @map("user_id")
+  roleId      String?  @map("role_id")
+  createdById String?  @map("created_by_id")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([userId])
+  @@index([roleId])
+  @@map("cmf_access")
+}
+
+enum SessionStatus {
+  ACTIVE
+  CLOSED_LOGOUT
+  CLOSED_IDLE
+  CLOSED_ADMIN
+  CLOSED_EXPIRED
+
+  @@map("session_status")
+}
+
+enum Operation {
+  VALIDATE
+  LOAD
+
+  @@map("cmf_operation")
+}
+
+enum RunStatus {
+  QUEUED
+  RUNNING
+  SUCCESS
+  FAILURE
+  EXPIRED
+
+  @@map("cmf_run_status")
+}
+
+enum error_audit_status {
+  OPEN
+  RESOLVED
+}
+
+enum McpDataSourceStatus {
+  DRAFT
+  CONNECTED
+  GENERATED
+  DEPLOYING
+  ACTIVE
+  FAILED
+  RETIRED
+
+  @@map("mcp_data_source_status")
+}
+
+enum prompt_audit_status {
+  PENDING
+  SUCCESS
+  FAILED
+  TIMEOUT
+  CANCELLED
+}

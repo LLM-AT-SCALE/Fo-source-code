@@ -1,0 +1,605 @@
+{
+  "__cmfVersion": "10000",
+  "id": "{{PAGE_UID}}",
+  "version": 1,
+  "layouts": [
+    {
+      "id": "desktop",
+      "name": "Desktop (master)",
+      "columns": "{{LAYOUT_COLUMNS}}",
+      "width": "{{LAYOUT_WIDTH}}",
+      "leftPane": {
+        "active": false,
+        "contentType": 1,
+        "collapsed": true,
+        "widthPercentage": 0,
+        "$id": "3"
+      },
+      "centerPane": {
+        "active": true,
+        "contentType": 2,
+        "$id": "4",
+        "fixedPage": true
+      },
+      "rightPane": {
+        "active": false,
+        "contentType": 1,
+        "collapsed": true,
+        "widthPercentage": 0,
+        "$id": "5"
+      },
+      "isToExcludeFromAutomaticSelection": false,
+      "widgets": []
+    }
+  ],
+  "definition": {
+    "title": "{{PAGE_TITLE}}",
+    "layout": "desktop",
+    "masterLayout": "desktop",
+    "gridLayoutInPreview": false,
+    "actionBarCollapsedInPreview": false,
+    "widgetsBackgroundInPreview": false,
+    "autoRefresh": false,
+    "autoRefreshInterval": "PT1M",
+    "hideWidgetsProgressIndicators": false,
+    "clusterHideWidgetsProgressIndicators": {
+      "Id": 2,
+      "Name": "Hide",
+      "Value": true
+    }
+  },
+  "leftPanel": {
+    "headerType": 0,
+    "properties": [
+      {
+        "id": "{{PAGE_UID}}_leftPanel_title",
+        "source": 0,
+        "name": "title",
+        "type": {
+          "type": 4,
+          "collectionType": null,
+          "referenceType": null,
+          "referenceTypeName": null
+        },
+        "value": "Left Panel",
+        "required": false,
+        "emptyValue": false
+      },
+      {
+        "id": "{{PAGE_UID}}_leftPanel_subtitle",
+        "source": 0,
+        "name": "sub title",
+        "type": {
+          "type": 4,
+          "collectionType": null,
+          "referenceType": null,
+          "referenceTypeName": null
+        },
+        "value": "",
+        "required": false,
+        "emptyValue": false
+      },
+      {
+        "id": "{{PAGE_UID}}_leftPanel_dropdownoptions",
+        "source": 0,
+        "name": "dropdown options",
+        "type": {
+          "type": null,
+          "collectionType": 1,
+          "referenceType": null,
+          "referenceTypeName": null
+        },
+        "value": null,
+        "required": false,
+        "emptyValue": false
+      },
+      {
+        "id": "{{PAGE_UID}}_leftPanel_selectedoption",
+        "source": 0,
+        "name": "selected option",
+        "type": {
+          "type": null,
+          "collectionType": null,
+          "referenceType": null,
+          "referenceTypeName": null
+        },
+        "value": null,
+        "required": false,
+        "emptyValue": false
+      },
+      {
+        "id": "{{PAGE_UID}}_leftPanel_showcontent",
+        "source": 0,
+        "name": "show content",
+        "type": {
+          "type": 3,
+          "collectionType": null,
+          "referenceType": null,
+          "referenceTypeName": null
+        },
+        "value": true,
+        "required": false,
+        "emptyValue": false
+      },
+      {
+        "id": "{{PAGE_UID}}_leftPanel_nocontenttext",
+        "source": 0,
+        "name": "no content text",
+        "type": {
+          "type": 4,
+          "collectionType": null,
+          "referenceType": null,
+          "referenceTypeName": null
+        },
+        "value": null,
+        "required": false,
+        "emptyValue": false
+      },
+      {
+        "id": "{{PAGE_UID}}_leftPanel_singlewidget",
+        "source": 0,
+        "name": "single widget",
+        "type": {
+          "type": 3,
+          "collectionType": null,
+          "referenceType": null,
+          "referenceTypeName": null
+        },
+        "value": false,
+        "required": false,
+        "emptyValue": false
+      }
+    ]
+  },
+  "rightPanel": {
+    "headerType": 0,
+    "properties": [
+      {
+        "id": "{{PAGE_UID}}_rightPanel_title",
+        "source": 0,
+        "name": "title",
+        "type": {
+          "type": 4,
+          "collectionType": null,
+          "referenceType": null,
+          "referenceTypeName": null
+        },
+        "value": "Right Panel",
+        "required": false,
+        "emptyValue": false
+      },
+      {
+        "id": "{{PAGE_UID}}_rightPanel_subtitle",
+        "source": 0,
+        "name": "sub title",
+        "type": {
+          "type": 4,
+          "collectionType": null,
+          "referenceType": null,
+          "referenceTypeName": null
+        },
+        "value": "",
+        "required": false,
+        "emptyValue": false
+      },
+      {
+        "id": "{{PAGE_UID}}_rightPanel_dropdownoptions",
+        "source": 0,
+        "name": "dropdown options",
+        "type": {
+          "type": null,
+          "collectionType": 1,
+          "referenceType": null,
+          "referenceTypeName": null
+        },
+        "value": null,
+        "required": false,
+        "emptyValue": false
+      },
+      {
+        "id": "{{PAGE_UID}}_rightPanel_selectedoption",
+        "source": 0,
+        "name": "selected option",
+        "type": {
+          "type": null,
+          "collectionType": null,
+          "referenceType": null,
+          "referenceTypeName": null
+        },
+        "value": null,
+        "required": false,
+        "emptyValue": false
+      },
+      {
+        "id": "{{PAGE_UID}}_rightPanel_showcontent",
+        "source": 0,
+        "name": "show content",
+        "type": {
+          "type": 3,
+          "collectionType": null,
+          "referenceType": null,
+          "referenceTypeName": null
+        },
+        "value": true,
+        "required": false,
+        "emptyValue": false
+      },
+      {
+        "id": "{{PAGE_UID}}_rightPanel_nocontenttext",
+        "source": 0,
+        "name": "no content text",
+        "type": {
+          "type": 4,
+          "collectionType": null,
+          "referenceType": null,
+          "referenceTypeName": null
+        },
+        "value": null,
+        "required": false,
+        "emptyValue": false
+      },
+      {
+        "id": "{{PAGE_UID}}_rightPanel_singlewidget",
+        "source": 0,
+        "name": "single widget",
+        "type": {
+          "type": 3,
+          "collectionType": null,
+          "referenceType": null,
+          "referenceTypeName": null
+        },
+        "value": false,
+        "required": false,
+        "emptyValue": false
+      }
+    ]
+  },
+  "properties": [
+    {
+      "id": "titleProperty",
+      "source": 0,
+      "name": "title",
+      "type": {
+        "type": 4
+      },
+      "value": "{{PAGE_TITLE}}",
+      "required": false,
+      "emptyValue": false,
+      "visible": true,
+      "editable": true,
+      "removable": false
+    },
+    {
+      "id": "subTitleProperty",
+      "source": 0,
+      "name": "subtitle",
+      "type": {
+        "type": 4
+      },
+      "value": "",
+      "required": false,
+      "emptyValue": false,
+      "visible": true,
+      "editable": true,
+      "removable": false
+    },
+    {
+      "id": "additionalInfoProperty",
+      "source": 0,
+      "name": "additionalInfo",
+      "type": {
+        "type": 4
+      },
+      "value": "",
+      "required": false,
+      "emptyValue": false,
+      "visible": true,
+      "editable": true,
+      "removable": false
+    },
+    {
+      "id": "iconClassProperty",
+      "source": 0,
+      "name": "iconClass",
+      "type": {
+        "type": 4
+      },
+      "value": "",
+      "required": false,
+      "emptyValue": false,
+      "visible": true,
+      "editable": true,
+      "removable": false
+    },
+    {
+      "id": "isLoadedProperty",
+      "source": 0,
+      "name": "isLoaded",
+      "type": {
+        "type": 3
+      },
+      "value": true,
+      "required": false,
+      "emptyValue": false,
+      "visible": true,
+      "editable": true,
+      "removable": false
+    },
+    {
+      "id": "wizardComments",
+      "source": 0,
+      "name": "Comments",
+      "type": {
+        "type": 4,
+        "collectionType": null,
+        "referenceType": null,
+        "referenceTypeName": null
+      },
+      "value": "",
+      "required": false,
+      "emptyValue": false,
+      "visible": true,
+      "editable": true,
+      "removable": false,
+      "fields": {
+        "source": {
+          "editable": false
+        },
+        "name": {
+          "editable": false
+        },
+        "type": {
+          "editable": false
+        },
+        "value": {
+          "editable": true
+        },
+        "required": {
+          "editable": true
+        },
+        "emptyValue": {
+          "editable": false
+        },
+        "referenceTypeName": {
+          "editable": true
+        }
+      }
+    },
+    {
+      "id": "wizardError",
+      "source": 0,
+      "name": "Error",
+      "type": {
+        "type": 4,
+        "collectionType": null,
+        "referenceType": null,
+        "referenceTypeName": null
+      },
+      "value": "",
+      "required": false,
+      "emptyValue": false,
+      "visible": true,
+      "editable": true,
+      "removable": false,
+      "fields": {
+        "source": {
+          "editable": false
+        },
+        "name": {
+          "editable": false
+        },
+        "type": {
+          "editable": false
+        },
+        "value": {
+          "editable": false
+        },
+        "required": {
+          "editable": false
+        },
+        "emptyValue": {
+          "editable": false
+        },
+        "referenceTypeName": {
+          "editable": false
+        }
+      }
+    },
+    {
+      "id": "wizardHeaderInstance",
+      "source": 0,
+      "name": "HeaderInstance",
+      "type": {
+        "type": 11,
+        "collectionType": null,
+        "referenceType": 1,
+        "referenceTypeName": null
+      },
+      "value": null,
+      "required": false,
+      "emptyValue": false,
+      "visible": true,
+      "editable": true,
+      "removable": false,
+      "fields": {
+        "source": {
+          "editable": false
+        },
+        "name": {
+          "editable": false
+        },
+        "type": {
+          "editable": false
+        },
+        "value": {
+          "editable": true
+        },
+        "required": {
+          "editable": true
+        },
+        "emptyValue": {
+          "editable": false
+        },
+        "referenceTypeName": {
+          "editable": true
+        }
+      }
+    },
+    {
+      "id": "wizardHeaderExpanded",
+      "source": 0,
+      "name": "HeaderExpanded",
+      "type": {
+        "type": 3,
+        "collectionType": null,
+        "referenceType": null,
+        "referenceTypeName": null
+      },
+      "value": null,
+      "required": false,
+      "emptyValue": false,
+      "visible": true,
+      "editable": true,
+      "removable": false,
+      "fields": {
+        "source": {
+          "editable": false
+        },
+        "name": {
+          "editable": false
+        },
+        "type": {
+          "editable": false
+        },
+        "value": {
+          "editable": true
+        },
+        "required": {
+          "editable": true
+        },
+        "emptyValue": {
+          "editable": false
+        }
+      }
+    },
+    {
+      "id": "wizardHeaderSubtitle",
+      "source": 0,
+      "name": "HeaderSubtitle",
+      "type": {
+        "type": 4,
+        "collectionType": null,
+        "referenceType": null,
+        "referenceTypeName": null
+      },
+      "value": null,
+      "required": false,
+      "emptyValue": false,
+      "visible": true,
+      "editable": true,
+      "removable": false,
+      "fields": {
+        "source": {
+          "editable": false
+        },
+        "name": {
+          "editable": false
+        },
+        "type": {
+          "editable": false
+        },
+        "value": {
+          "editable": true
+        },
+        "required": {
+          "editable": true
+        },
+        "emptyValue": {
+          "editable": false
+        }
+      }
+    },
+    {
+      "id": "wizardHeaderProperties",
+      "source": 0,
+      "name": "HeaderProperties",
+      "type": {
+        "type": 10,
+        "collectionType": 1,
+        "referenceType": null,
+        "referenceTypeName": null
+      },
+      "value": null,
+      "required": false,
+      "emptyValue": false,
+      "visible": true,
+      "editable": true,
+      "removable": false,
+      "fields": {
+        "source": {
+          "editable": false
+        },
+        "name": {
+          "editable": false
+        },
+        "type": {
+          "editable": false
+        },
+        "value": {
+          "editable": true
+        },
+        "required": {
+          "editable": true
+        },
+        "emptyValue": {
+          "editable": false
+        }
+      }
+    },
+    {
+      "id": "wizardActionLabel",
+      "source": 0,
+      "name": "ActionLabel",
+      "type": {
+        "type": 4,
+        "collectionType": null,
+        "referenceType": null,
+        "referenceTypeName": null
+      },
+      "value": "",
+      "required": false,
+      "emptyValue": false,
+      "visible": true,
+      "editable": true,
+      "removable": false,
+      "fields": {
+        "source": {
+          "editable": false
+        },
+        "name": {
+          "editable": false
+        },
+        "type": {
+          "editable": false
+        },
+        "value": {
+          "editable": true
+        },
+        "required": {
+          "editable": true
+        },
+        "emptyValue": {
+          "editable": false
+        }
+      }
+    }
+  ],
+  "widgets": [],
+  "links": [],
+  "actionButtons": [],
+  "dataSources": [],
+  "revision": "A",
+  "diagramModel": {
+    "items": []
+  }
+}

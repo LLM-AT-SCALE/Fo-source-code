@@ -1,0 +1,1 @@
+{"$note":"Precomputed required user-fillable fields per object type: CMF-mandatory MINUS system-managed columns, restricted to the object's template columns. Regenerate with scripts/_buildreq (needs CMF SQL over VPN). When empty or missing an object, the validator falls back to live CMF metadata, then to Name."}

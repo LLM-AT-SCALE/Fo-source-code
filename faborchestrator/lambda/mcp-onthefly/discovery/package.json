@@ -1,0 +1,16 @@
+{
+  "name": "mcp-onthefly-discovery",
+  "version": "0.1.0",
+  "description": "Shared discovery Lambda (pg + mssql). Runs in the CMF VPC; invoked by the admin app to read information_schema for a target from inside the VPC.",
+  "type": "module",
+  "main": "index.mjs",
+  "scripts": { "build:zip": "node build.mjs" },
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "mssql": "^11.0.1",
+    "pg": "^8.13.0"
+  },
+  "devDependencies": {
+    "adm-zip": "^0.5.16"
+  }
+}

@@ -1,0 +1,82 @@
+# ---- dependencies ----
+node_modules/
+.pnp
+.pnp.*
+
+# ---- next.js / build output ----
+.next/
+out/
+build/
+*.tsbuildinfo
+next-env.d.ts
+
+# ---- env / secrets ----
+.env
+.env.*
+!.env.example
+*.pem
+
+# ---- prisma generated client (root-level only; app copies are tracked as on origin) ----
+lib/generated/prisma/
+
+# ---- testing ----
+coverage/
+test-results/
+playwright-report/
+playwright/.cache/
+.lighthouse/
+
+# ---- tooling / local config ----
+.claude/settings.local.json
+.claude/skills/
+.agents/
+.playwright-mcp/
+iam/
+.vercel
+.turbo
+
+# ---- deploy artifacts ----
+*.zip
+
+# ---- generated docs & sample data (kept on disk, not tracked) ----
+docs/
+sample-cmf-inputs/
+
+# ---- logs / os ----
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.DS_Store
+
+# ---- SECRETS: never commit (private repo, but keep secrets out of git) ----
+OTF_MCP_accessKeys.csv
+prodkeyencrypt.md
+*.pem
+*.key
+*_accessKeys*.csv
+*credentials*.json
+# sample / uploaded DB-credential files (contain real logins)
+**/Sample_server_testing.txt
+**/Sample*Details.txt
+**/*_server_testing.txt
+**/*creds*.txt
+
+# ---- python venv (local tooling for doc generation) ----
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# ---- internal session docs / handoff notes (kept local, NOT in repo) ----
+ledger.md
+MCPONFLY.md
+OTF_MCP_DEPLOYMENT_PLAN.md
+OTF_MCP_Test_Steps.txt
+ECORedLiner_Test_Prompts.md
+MasterData_Fix_Verification_Report.docx
+masterdata-413.png
+OTF_MCP_Job_Aide.docx
+On-the-Fly_MCP_Architecture_Flow.docx
+MCP_OnTheFly_Solution_Risks_and_Challenges1.docx
+MCP_Disclaimer_Review_Raj.docx

@@ -1,0 +1,430 @@
+AWSTemplateFormatVersion: '2010-09-09'
+# =============================================================================
+# EKS edge — ALB, per-module target groups and path rules, EFS for the Coding
+# Agent, and the CloudFront distribution in front of it all.
+#
+# The ALB and its rules live here (not in Kubernetes Ingress objects) so that
+# rule priorities are explicit and the ALB hostname never changes. Pods are
+# attached to the target groups by the AWS Load Balancer Controller through
+# TargetGroupBinding objects (Helm chart), using the TargetGroup ARNs output here.
+#
+# Traffic path:  viewer -> CloudFront -> ALB -> pod IP (port 3000)
+#   - The ALB accepts only CloudFront's origin-facing IP ranges, AND every rule
+#     requires the secret X-Origin-Verify header CloudFront adds, so the ALB
+#     cannot be used directly (that would bypass CloudFront / WAF).
+#   - Without CertificateArn, CloudFront talks to the ALB over HTTP (viewer
+#     traffic is still HTTPS on the *.cloudfront.net certificate) — the same
+#     model as the current Elastic Beanstalk setup. With CertificateArn +
+#     OriginDomainName (a DNS name pointing at the ALB) the hop is HTTPS.
+#
+# Path ownership mirrors deploy/modules.json — keep the two in sync. An ALB rule
+# allows five condition values; the header takes one, so each rule carries at
+# most four path patterns. The home image owns everything else (priority 1000).
+# =============================================================================
+Description: >-
+  FabOrchestrator EKS edge: ALB with per-module target groups and path rules,
+  EFS for Coding Agent runs, and CloudFront.
+
+Parameters:
+  ClusterStackName:
+    Type: String
+    Default: fo-dev-eks-cluster
+  CertificateArn:
+    Type: String
+    Default: ''
+    Description: >-
+      Optional ACM certificate (us-west-2) for an HTTPS ALB listener. Empty =
+      HTTP listener reachable only from CloudFront.
+  OriginDomainName:
+    Type: String
+    Default: ''
+    Description: >-
+      Only with CertificateArn — a DNS name (CNAME/alias to the ALB) that the
+      certificate covers. CloudFront connects to it over HTTPS.
+  OriginVerifySecret:
+    Type: String
+    NoEcho: true
+    MinLength: 32
+    Description: >-
+      Random value CloudFront sends as X-Origin-Verify; the ALB rejects requests
+      without it. Generate with `openssl rand -hex 32`.
+  CloudFrontPrefixListId:
+    Type: String
+    Default: pl-82a045eb
+    Description: com.amazonaws.global.cloudfront.origin-facing in us-west-2.
+  ViewerDomainName:
+    Type: String
+    Default: ''
+    Description: Optional custom hostname for CloudFront (needs ViewerCertificateArn).
+  ViewerCertificateArn:
+    Type: String
+    Default: ''
+    Description: ACM certificate in us-east-1 for ViewerDomainName.
+  WebAclArn:
+    Type: String
+    Default: ''
+    Description: Optional WAF web ACL (CLOUDFRONT scope) for the distribution.
+  OriginReadTimeout:
+    Type: Number
+    Default: 60
+    Description: >-
+      Seconds CloudFront waits for the first byte / between bytes. 60 is the
+      default quota (raise to 180 through AWS support for slow non-streaming
+      admin calls). Streaming chats send keep-alives every 20 s.
+
+Conditions:
+  HasCert: !Not [!Equals [!Ref CertificateArn, '']]
+  HasViewerDomain: !Not [!Equals [!Ref ViewerDomainName, '']]
+  HasWebAcl: !Not [!Equals [!Ref WebAclArn, '']]
+
+Resources:
+  # ---------------------------------------------------------- security groups
+  AlbSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName:
+        Fn::Sub:
+          - '${Env}-eks-alb'
+          - Env: { 'Fn::ImportValue': !Sub '${ClusterStackName}-EnvName' }
+      GroupDescription: FabOrchestrator ALB - CloudFront origin-facing ranges only
+      VpcId: { 'Fn::ImportValue': !Sub '${ClusterStackName}-VpcId' }
+      # One rule only: a managed prefix list counts as ~55 rules against the
+      # security group quota of 60, so a second (80 + 443) rule would not fit.
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: !If [HasCert, 443, 80]
+          ToPort: !If [HasCert, 443, 80]
+          SourcePrefixListId: !Ref CloudFrontPrefixListId
+          Description: CloudFront origin-facing
+      Tags:
+        - Key: Name
+          Value:
+            Fn::Sub:
+              - '${Env}-eks-alb'
+              - Env: { 'Fn::ImportValue': !Sub '${ClusterStackName}-EnvName' }
+
+  NodeIngressFromAlb:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: { 'Fn::ImportValue': !Sub '${ClusterStackName}-NodeSecurityGroupId' }
+      IpProtocol: tcp
+      FromPort: 3000
+      ToPort: 3000
+      SourceSecurityGroupId: !Ref AlbSecurityGroup
+      Description: ALB to module pods (target type ip)
+
+  EfsSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: EFS mount targets for Coding Agent runs (NFS from EKS nodes)
+      VpcId: { 'Fn::ImportValue': !Sub '${ClusterStackName}-VpcId' }
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 2049
+          ToPort: 2049
+          SourceSecurityGroupId: { 'Fn::ImportValue': !Sub '${ClusterStackName}-NodeSecurityGroupId' }
+          Description: NFS from EKS nodes
+
+  # ------------------------------------------------------------ load balancer
+  LoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name:
+        Fn::Sub:
+          - '${Env}-eks-alb'
+          - Env: { 'Fn::ImportValue': !Sub '${ClusterStackName}-EnvName' }
+      Type: application
+      Scheme: internet-facing
+      IpAddressType: ipv4
+      Subnets: !Split [',', { 'Fn::ImportValue': !Sub '${ClusterStackName}-PublicSubnetIds' }]
+      SecurityGroups: [!Ref AlbSecurityGroup]
+      LoadBalancerAttributes:
+        # Long SSE chat responses and slow VPN-backed queries.
+        - { Key: idle_timeout.timeout_seconds, Value: '600' }
+        - { Key: routing.http2.enabled, Value: 'true' }
+        - { Key: routing.http.drop_invalid_header_fields.enabled, Value: 'true' }
+
+  Listener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref LoadBalancer
+      Port: !If [HasCert, 443, 80]
+      Protocol: !If [HasCert, HTTPS, HTTP]
+      SslPolicy: !If [HasCert, ELBSecurityPolicy-TLS13-1-2-2021-06, !Ref 'AWS::NoValue']
+      Certificates: !If [HasCert, [{ CertificateArn: !Ref CertificateArn }], !Ref 'AWS::NoValue']
+      DefaultActions:
+        # Reached only by requests without the CloudFront header.
+        - Type: fixed-response
+          FixedResponseConfig:
+            StatusCode: '403'
+            ContentType: text/plain
+            MessageBody: Forbidden
+
+  # ------------------------------------------------------------ target groups
+  # One per web module. Pods register by IP through TargetGroupBinding.
+  HomeTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Sub ['${Env}-home', { Env: { 'Fn::ImportValue': !Sub '${ClusterStackName}-EnvName' } }]
+      VpcId: { 'Fn::ImportValue': !Sub '${ClusterStackName}-VpcId' }
+      TargetType: ip
+      Protocol: HTTP
+      Port: 3000
+      HealthCheckPath: /api/health
+      HealthCheckIntervalSeconds: 15
+      HealthCheckTimeoutSeconds: 10
+      HealthyThresholdCount: 2
+      UnhealthyThresholdCount: 5
+      Matcher: { HttpCode: '200' }
+      TargetGroupAttributes:
+        - { Key: deregistration_delay.timeout_seconds, Value: '30' }
+  SupportEngineerTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Sub ['${Env}-support-engineer', { Env: { 'Fn::ImportValue': !Sub '${ClusterStackName}-EnvName' } }]
+      VpcId: { 'Fn::ImportValue': !Sub '${ClusterStackName}-VpcId' }
+      TargetType: ip
+      Protocol: HTTP
+      Port: 3000
+      HealthCheckPath: /api/health
+      HealthCheckIntervalSeconds: 15
+      HealthCheckTimeoutSeconds: 10
+      HealthyThresholdCount: 2
+      UnhealthyThresholdCount: 5
+      Matcher: { HttpCode: '200' }
+      TargetGroupAttributes:
+        # Support-engineer (chat) responses stream for minutes; give in-flight streams time to finish.
+        - { Key: deregistration_delay.timeout_seconds, Value: '120' }
+  MasterDataLoadTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Sub ['${Env}-master-data-load', { Env: { 'Fn::ImportValue': !Sub '${ClusterStackName}-EnvName' } }]
+      VpcId: { 'Fn::ImportValue': !Sub '${ClusterStackName}-VpcId' }
+      TargetType: ip
+      Protocol: HTTP
+      Port: 3000
+      HealthCheckPath: /api/health
+      HealthCheckIntervalSeconds: 15
+      HealthCheckTimeoutSeconds: 10
+      HealthyThresholdCount: 2
+      UnhealthyThresholdCount: 5
+      Matcher: { HttpCode: '200' }
+      TargetGroupAttributes:
+        - { Key: deregistration_delay.timeout_seconds, Value: '60' }
+  CodingAgentTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Sub ['${Env}-coding-agent', { Env: { 'Fn::ImportValue': !Sub '${ClusterStackName}-EnvName' } }]
+      VpcId: { 'Fn::ImportValue': !Sub '${ClusterStackName}-VpcId' }
+      TargetType: ip
+      Protocol: HTTP
+      Port: 3000
+      HealthCheckPath: /api/health
+      HealthCheckIntervalSeconds: 15
+      HealthCheckTimeoutSeconds: 10
+      HealthyThresholdCount: 2
+      UnhealthyThresholdCount: 5
+      Matcher: { HttpCode: '200' }
+      TargetGroupAttributes:
+        - { Key: deregistration_delay.timeout_seconds, Value: '120' }
+  AdminTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Sub ['${Env}-admin', { Env: { 'Fn::ImportValue': !Sub '${ClusterStackName}-EnvName' } }]
+      VpcId: { 'Fn::ImportValue': !Sub '${ClusterStackName}-VpcId' }
+      TargetType: ip
+      Protocol: HTTP
+      Port: 3000
+      HealthCheckPath: /api/health
+      HealthCheckIntervalSeconds: 15
+      HealthCheckTimeoutSeconds: 10
+      HealthyThresholdCount: 2
+      UnhealthyThresholdCount: 5
+      Matcher: { HttpCode: '200' }
+      TargetGroupAttributes:
+        - { Key: deregistration_delay.timeout_seconds, Value: '60' }
+
+  # ------------------------------------------------------------- path rules
+  # Explicit priorities, all below home's catch-all at 1000. (support-engineer uses
+  # 210-212: renamed from chat at 200-202, and ALB priorities must stay unique while
+  # CloudFormation adds the new rules before removing the old ones.)
+  AdminRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      ListenerArn: !Ref Listener
+      Priority: 100
+      Conditions:
+        - { Field: http-header, HttpHeaderConfig: { HttpHeaderName: X-Origin-Verify, Values: [!Ref OriginVerifySecret] } }
+        - { Field: path-pattern, PathPatternConfig: { Values: ['/admin*', '/api/admin*', '/_fab/admin/*'] } }
+      Actions: [{ Type: forward, TargetGroupArn: !Ref AdminTargetGroup }]
+  SupportEngineerRule1:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      ListenerArn: !Ref Listener
+      Priority: 210
+      Conditions:
+        - { Field: http-header, HttpHeaderConfig: { HttpHeaderName: X-Origin-Verify, Values: [!Ref OriginVerifySecret] } }
+        - { Field: path-pattern, PathPatternConfig: { Values: ['/chat*', '/reports*', '/api/chat*', '/api/conversations*'] } }
+      Actions: [{ Type: forward, TargetGroupArn: !Ref SupportEngineerTargetGroup }]
+  SupportEngineerRule2:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      ListenerArn: !Ref Listener
+      Priority: 211
+      Conditions:
+        - { Field: http-header, HttpHeaderConfig: { HttpHeaderName: X-Origin-Verify, Values: [!Ref OriginVerifySecret] } }
+        - { Field: path-pattern, PathPatternConfig: { Values: ['/api/messages*', '/api/artifacts*', '/api/files*', '/api/memory*'] } }
+      Actions: [{ Type: forward, TargetGroupArn: !Ref SupportEngineerTargetGroup }]
+  SupportEngineerRule3:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      ListenerArn: !Ref Listener
+      Priority: 212
+      Conditions:
+        - { Field: http-header, HttpHeaderConfig: { HttpHeaderName: X-Origin-Verify, Values: [!Ref OriginVerifySecret] } }
+        - { Field: path-pattern, PathPatternConfig: { Values: ['/api/mcp*', '/api/fabinsight*', '/_fab/support-engineer/*'] } }
+      Actions: [{ Type: forward, TargetGroupArn: !Ref SupportEngineerTargetGroup }]
+  MasterDataLoadRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      ListenerArn: !Ref Listener
+      Priority: 300
+      Conditions:
+        - { Field: http-header, HttpHeaderConfig: { HttpHeaderName: X-Origin-Verify, Values: [!Ref OriginVerifySecret] } }
+        - { Field: path-pattern, PathPatternConfig: { Values: ['/modeling-agent*', '/api/modeling-agent*', '/api/cmf*', '/_fab/master-data-load/*'] } }
+      Actions: [{ Type: forward, TargetGroupArn: !Ref MasterDataLoadTargetGroup }]
+  CodingAgentRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      ListenerArn: !Ref Listener
+      Priority: 400
+      Conditions:
+        - { Field: http-header, HttpHeaderConfig: { HttpHeaderName: X-Origin-Verify, Values: [!Ref OriginVerifySecret] } }
+        - { Field: path-pattern, PathPatternConfig: { Values: ['/backend-agent*', '/api/backend-agent*', '/_fab/coding-agent/*'] } }
+      Actions: [{ Type: forward, TargetGroupArn: !Ref CodingAgentTargetGroup }]
+  HomeCatchAllRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      ListenerArn: !Ref Listener
+      Priority: 1000
+      Conditions:
+        - { Field: http-header, HttpHeaderConfig: { HttpHeaderName: X-Origin-Verify, Values: [!Ref OriginVerifySecret] } }
+        - { Field: path-pattern, PathPatternConfig: { Values: ['/*'] } }
+      Actions: [{ Type: forward, TargetGroupArn: !Ref HomeTargetGroup }]
+
+  # ------------------------------------------------ EFS for Coding Agent runs
+  # Customer content lives here: kept when the stack is deleted or replaced
+  # (RetainExceptOnCreate: a failed first create still cleans up after itself).
+  RunsFileSystem:
+    Type: AWS::EFS::FileSystem
+    DeletionPolicy: RetainExceptOnCreate
+    UpdateReplacePolicy: Retain
+    Properties:
+      Encrypted: true
+      PerformanceMode: generalPurpose
+      ThroughputMode: elastic
+      BackupPolicy: { Status: ENABLED }
+      FileSystemTags:
+        - Key: Name
+          Value: !Sub ['${Env}-po-ui-runs', { Env: { 'Fn::ImportValue': !Sub '${ClusterStackName}-EnvName' } }]
+
+  RunsMountTargetA:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref RunsFileSystem
+      SubnetId: !Select [0, !Split [',', { 'Fn::ImportValue': !Sub '${ClusterStackName}-PrivateSubnetIds' }]]
+      SecurityGroups: [!Ref EfsSecurityGroup]
+  RunsMountTargetB:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref RunsFileSystem
+      SubnetId: !Select [1, !Split [',', { 'Fn::ImportValue': !Sub '${ClusterStackName}-PrivateSubnetIds' }]]
+      SecurityGroups: [!Ref EfsSecurityGroup]
+
+  RunsAccessPoint:
+    Type: AWS::EFS::AccessPoint
+    Properties:
+      FileSystemId: !Ref RunsFileSystem
+      # uid/gid 1001 = the `nextjs` user in deploy/Dockerfile.image
+      PosixUser: { Uid: '1001', Gid: '1001' }
+      RootDirectory:
+        Path: /po-ui-runs
+        CreationInfo: { OwnerUid: '1001', OwnerGid: '1001', Permissions: '0750' }
+
+  # --------------------------------------------------------------- CloudFront
+  Distribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        Comment: FabOrchestrator on EKS
+        HttpVersion: http2and3
+        PriceClass: PriceClass_100
+        Aliases: !If [HasViewerDomain, [!Ref ViewerDomainName], !Ref 'AWS::NoValue']
+        WebACLId: !If [HasWebAcl, !Ref WebAclArn, !Ref 'AWS::NoValue']
+        ViewerCertificate: !If
+          - HasViewerDomain
+          - { AcmCertificateArn: !Ref ViewerCertificateArn, SslSupportMethod: sni-only, MinimumProtocolVersion: TLSv1.2_2021 }
+          - { CloudFrontDefaultCertificate: true }
+        Origins:
+          - Id: alb
+            DomainName: !If [HasCert, !Ref OriginDomainName, !GetAtt LoadBalancer.DNSName]
+            OriginCustomHeaders:
+              - { HeaderName: X-Origin-Verify, HeaderValue: !Ref OriginVerifySecret }
+            CustomOriginConfig:
+              OriginProtocolPolicy: !If [HasCert, https-only, http-only]
+              HTTPPort: 80
+              HTTPSPort: 443
+              OriginSSLProtocols: [TLSv1.2]
+              OriginReadTimeout: !Ref OriginReadTimeout
+              OriginKeepaliveTimeout: 60
+        DefaultCacheBehavior:
+          TargetOriginId: alb
+          ViewerProtocolPolicy: redirect-to-https
+          AllowedMethods: [GET, HEAD, OPTIONS, PUT, PATCH, POST, DELETE]
+          CachedMethods: [GET, HEAD]
+          Compress: true
+          CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad          # Managed-CachingDisabled
+          # Over HTTP the viewer Host header is passed through (as Elastic
+          # Beanstalk had it). Over HTTPS the origin certificate must match the
+          # host CloudFront sends, so the Host header is left out.
+          OriginRequestPolicyId: !If
+            - HasCert
+            - b689b0a8-53d0-40ab-baf2-68738e2966ac                      # Managed-AllViewerExceptHostHeader
+            - 216adef6-5c7f-47e4-b989-5492eafa07d3                      # Managed-AllViewer
+        CacheBehaviors:
+          # Hashed, immutable build assets of every image.
+          - PathPattern: '/_fab/*/_next/static/*'
+            TargetOriginId: alb
+            ViewerProtocolPolicy: redirect-to-https
+            AllowedMethods: [GET, HEAD]
+            CachedMethods: [GET, HEAD]
+            Compress: true
+            CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6        # Managed-CachingOptimized
+
+Outputs:
+  AppUrl:
+    Description: Public URL — set as APP_URL for every module.
+    Value: !If [HasViewerDomain, !Sub 'https://${ViewerDomainName}', !Sub 'https://${Distribution.DomainName}']
+  DistributionId:
+    Value: !Ref Distribution
+  LoadBalancerDnsName:
+    Value: !GetAtt LoadBalancer.DNSName
+  AlbSecurityGroupId:
+    Value: !Ref AlbSecurityGroup
+  HomeTargetGroupArn:
+    Value: !Ref HomeTargetGroup
+  SupportEngineerTargetGroupArn:
+    Value: !Ref SupportEngineerTargetGroup
+  MasterDataLoadTargetGroupArn:
+    Value: !Ref MasterDataLoadTargetGroup
+  CodingAgentTargetGroupArn:
+    Value: !Ref CodingAgentTargetGroup
+  AdminTargetGroupArn:
+    Value: !Ref AdminTargetGroup
+  RunsFileSystemId:
+    Value: !Ref RunsFileSystem
+    Export: { Name: !Sub '${AWS::StackName}-RunsFileSystemId' }
+  RunsAccessPointId:
+    Value: !Ref RunsAccessPoint
+    Export: { Name: !Sub '${AWS::StackName}-RunsAccessPointId' }

@@ -1,0 +1,314 @@
+AWSTemplateFormatVersion: '2010-09-09'
+# =============================================================================
+# EKS workload IAM — one role per module (and per cluster controller), bound to
+# a Kubernetes service account with EKS Pod Identity.
+#
+# Replaces the single Elastic Beanstalk instance role (fo-dev-eb-ec2-role),
+# which every module shared. The grants below are that role's grants, split so
+# each module gets only what its code calls:
+#
+#   module / SA (namespace faborchestrator)   AWS access
+#   fab-support-engineer                       S3 user uploads; invoke mcp-otf-* MCP Lambdas
+#   fab-fabinsight                      invoke mcp-otf-* MCP Lambdas (dashboard replay)
+#   fab-master-data-load                       S3 CMF loader uploads; read cmf/portal-token-*
+#   fab-admin                                  fo-dev-mcp-otf-admin-deploy (on-the-fly MCP);
+#                                              optional: CMF token Lambda provisioning
+#   fab-home, fab-coding-agent                 none (no role — they call no AWS API;
+#                                              Coding Agent runs use EFS via the CSI driver)
+#
+# Controllers:
+#   aws-load-balancer-controller (kube-system)  register pod IPs in the edge stack's
+#                                               target groups (TargetGroupBinding only)
+#   external-secrets (external-secrets)         read fo-dev/app/* into Kubernetes Secrets
+# =============================================================================
+Description: >-
+  FabOrchestrator EKS Pod Identity roles: per-module app roles plus the load
+  balancer controller and External Secrets roles.
+
+Parameters:
+  ClusterStackName:
+    Type: String
+    Default: fo-dev-eks-cluster
+  AppNamespace:
+    Type: String
+    Default: faborchestrator
+  UserUploadsBucket:
+    Type: String
+    Default: fo-dev-user-uploads-358982197923
+    Description: S3_UPLOAD_BUCKET (chat attachments).
+  CmfLoaderBucket:
+    Type: String
+    Default: fo-dev-cmf-loader-uploads-358982197923
+    Description: S3_BUCKET (Master Data Load staging).
+  AppSecretsPrefix:
+    Type: String
+    Default: fo-dev/app/
+    Description: Secrets Manager name prefix External Secrets may read.
+  McpLambdaNamePattern:
+    Type: String
+    Default: mcp-otf-*
+    Description: Lambda names chat and the worker may invoke (lambda-invoke:// MCP servers).
+  OtfAdminDeployPolicyArn:
+    Type: String
+    Default: arn:aws:iam::358982197923:policy/fo-dev-mcp-otf-admin-deploy
+    Description: Existing managed policy the admin app uses for on-the-fly MCP.
+  EnableCmfTokenProvisioning:
+    Type: String
+    Default: 'false'
+    AllowedValues: ['true', 'false']
+    Description: >-
+      true lets the Admin Console create / delete CMF token Lambdas
+      (cmf-token-*) and their EventBridge schedules. Also set the CMF_LAMBDA_*
+      variables on the admin module when turning this on.
+  CmfLambdaRoleArn:
+    Type: String
+    Default: arn:aws:iam::358982197923:role/feb-orc-mcp-lambda-role
+    Description: Execution role the existing cmf-token-* Lambdas use (CMF_LAMBDA_ROLE_ARN).
+  CmfLambdaArtifactBucket:
+    Type: String
+    Default: fo-dev-mcp-otf-artifacts-358982197923
+    Description: Bucket holding cmf-token/runtime.zip (CMF_LAMBDA_ARTIFACT_BUCKET).
+
+Conditions:
+  WithCmfTokenProvisioning: !Equals [!Ref EnableCmfTokenProvisioning, 'true']
+
+Resources:
+  # ------------------------------------------------------------- app modules
+  SupportEngineerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ['${Env}-eks-support-engineer', { Env: { 'Fn::ImportValue': !Sub '${ClusterStackName}-EnvName' } }]
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: { Service: pods.eks.amazonaws.com }
+            Action: [sts:AssumeRole, sts:TagSession]
+      Policies:
+        - PolicyName: support-engineer
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: UserUploads
+                Effect: Allow
+                Action: [s3:GetObject, s3:PutObject, s3:DeleteObject]
+                Resource: !Sub 'arn:aws:s3:::${UserUploadsBucket}/*'
+              - Sid: UserUploadsList
+                Effect: Allow
+                Action: s3:ListBucket
+                Resource: !Sub 'arn:aws:s3:::${UserUploadsBucket}'
+              - Sid: InvokeMcpLambdas
+                Effect: Allow
+                Action: lambda:InvokeFunction
+                Resource: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${McpLambdaNamePattern}'
+  SupportEngineerPodIdentity:
+    Type: AWS::EKS::PodIdentityAssociation
+    Properties:
+      ClusterName: { 'Fn::ImportValue': !Sub '${ClusterStackName}-ClusterName' }
+      Namespace: !Ref AppNamespace
+      ServiceAccount: fab-support-engineer
+      RoleArn: !GetAtt SupportEngineerRole.Arn
+
+  FabinsightRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ['${Env}-eks-fabinsight', { Env: { 'Fn::ImportValue': !Sub '${ClusterStackName}-EnvName' } }]
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: { Service: pods.eks.amazonaws.com }
+            Action: [sts:AssumeRole, sts:TagSession]
+      Policies:
+        - PolicyName: fabinsight
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: InvokeMcpLambdas
+                Effect: Allow
+                Action: lambda:InvokeFunction
+                Resource: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${McpLambdaNamePattern}'
+  FabinsightPodIdentity:
+    Type: AWS::EKS::PodIdentityAssociation
+    Properties:
+      ClusterName: { 'Fn::ImportValue': !Sub '${ClusterStackName}-ClusterName' }
+      Namespace: !Ref AppNamespace
+      ServiceAccount: fab-fabinsight
+      RoleArn: !GetAtt FabinsightRole.Arn
+
+  MasterDataLoadRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ['${Env}-eks-master-data-load', { Env: { 'Fn::ImportValue': !Sub '${ClusterStackName}-EnvName' } }]
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: { Service: pods.eks.amazonaws.com }
+            Action: [sts:AssumeRole, sts:TagSession]
+      Policies:
+        - PolicyName: master-data-load
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: CmfLoaderUploads
+                Effect: Allow
+                Action: [s3:GetObject, s3:PutObject, s3:DeleteObject]
+                Resource: !Sub 'arn:aws:s3:::${CmfLoaderBucket}/*'
+              - Sid: CmfLoaderList
+                Effect: Allow
+                Action: s3:ListBucket
+                Resource: !Sub 'arn:aws:s3:::${CmfLoaderBucket}'
+              # Fallback when cmf_bearer_tokens has no fresh token
+              # (modules/master-data-load/lib/cmf/cmf-auth.ts).
+              - Sid: CmfPortalToken
+                Effect: Allow
+                Action: secretsmanager:GetSecretValue
+                Resource: !Sub 'arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:cmf/portal-token-*'
+  MasterDataLoadPodIdentity:
+    Type: AWS::EKS::PodIdentityAssociation
+    Properties:
+      ClusterName: { 'Fn::ImportValue': !Sub '${ClusterStackName}-ClusterName' }
+      Namespace: !Ref AppNamespace
+      ServiceAccount: fab-master-data-load
+      RoleArn: !GetAtt MasterDataLoadRole.Arn
+
+  AdminRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ['${Env}-eks-admin', { Env: { 'Fn::ImportValue': !Sub '${ClusterStackName}-EnvName' } }]
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: { Service: pods.eks.amazonaws.com }
+            Action: [sts:AssumeRole, sts:TagSession]
+      ManagedPolicyArns:
+        - !Ref OtfAdminDeployPolicyArn
+      Policies: !If
+        - WithCmfTokenProvisioning
+        - - PolicyName: cmf-token-provisioning
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                # modules/admin/lib/mcp/cmf-lambda/provision.ts
+                - Sid: ManageCmfTokenFunctions
+                  Effect: Allow
+                  Action:
+                    - lambda:CreateFunction
+                    - lambda:UpdateFunctionCode
+                    - lambda:UpdateFunctionConfiguration
+                    - lambda:GetFunctionConfiguration
+                    - lambda:DeleteFunction
+                    - lambda:AddPermission
+                    - lambda:RemovePermission
+                    - lambda:InvokeFunction
+                  Resource: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:cmf-token-*'
+                - Sid: ManageCmfTokenSchedules
+                  Effect: Allow
+                  Action: [events:PutRule, events:PutTargets, events:RemoveTargets, events:DeleteRule, events:DescribeRule]
+                  Resource: !Sub 'arn:aws:events:${AWS::Region}:${AWS::AccountId}:rule/cmf-token-refresh-*'
+                - Sid: PassCmfTokenRole
+                  Effect: Allow
+                  Action: iam:PassRole
+                  Resource: !Ref CmfLambdaRoleArn
+                  Condition:
+                    StringEquals: { 'iam:PassedToService': lambda.amazonaws.com }
+                - Sid: ReadCmfTokenArtifact
+                  Effect: Allow
+                  Action: s3:GetObject
+                  Resource: !Sub 'arn:aws:s3:::${CmfLambdaArtifactBucket}/cmf-token/*'
+        - !Ref 'AWS::NoValue'
+  AdminPodIdentity:
+    Type: AWS::EKS::PodIdentityAssociation
+    Properties:
+      ClusterName: { 'Fn::ImportValue': !Sub '${ClusterStackName}-ClusterName' }
+      Namespace: !Ref AppNamespace
+      ServiceAccount: fab-admin
+      RoleArn: !GetAtt AdminRole.Arn
+
+  # ------------------------------------------------------------- controllers
+  LoadBalancerControllerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ['${Env}-eks-lb-controller', { Env: { 'Fn::ImportValue': !Sub '${ClusterStackName}-EnvName' } }]
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: { Service: pods.eks.amazonaws.com }
+            Action: [sts:AssumeRole, sts:TagSession]
+      Policies:
+        # The controller is used ONLY for TargetGroupBinding: the ALB, listener,
+        # rules and target groups belong to the edge stack. No create/delete rights.
+        - PolicyName: target-group-binding
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: Describe
+                Effect: Allow
+                Action:
+                  - elasticloadbalancing:Describe*
+                  - ec2:DescribeVpcs
+                  - ec2:DescribeSubnets
+                  - ec2:DescribeSecurityGroups
+                  - ec2:DescribeInstances
+                  - ec2:DescribeNetworkInterfaces
+                  - ec2:DescribeAvailabilityZones
+                Resource: '*'
+              - Sid: RegisterTargets
+                Effect: Allow
+                Action: [elasticloadbalancing:RegisterTargets, elasticloadbalancing:DeregisterTargets]
+                Resource: !Sub
+                  - 'arn:aws:elasticloadbalancing:${AWS::Region}:${AWS::AccountId}:targetgroup/${Env}-*/*'
+                  - Env: { 'Fn::ImportValue': !Sub '${ClusterStackName}-EnvName' }
+  LoadBalancerControllerPodIdentity:
+    Type: AWS::EKS::PodIdentityAssociation
+    Properties:
+      ClusterName: { 'Fn::ImportValue': !Sub '${ClusterStackName}-ClusterName' }
+      Namespace: kube-system
+      ServiceAccount: aws-load-balancer-controller
+      RoleArn: !GetAtt LoadBalancerControllerRole.Arn
+
+  ExternalSecretsRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ['${Env}-eks-external-secrets', { Env: { 'Fn::ImportValue': !Sub '${ClusterStackName}-EnvName' } }]
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: { Service: pods.eks.amazonaws.com }
+            Action: [sts:AssumeRole, sts:TagSession]
+      Policies:
+        - PolicyName: read-app-secrets
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - secretsmanager:GetSecretValue
+                  - secretsmanager:DescribeSecret
+                  - secretsmanager:ListSecretVersionIds
+                Resource: !Sub 'arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${AppSecretsPrefix}*'
+  ExternalSecretsPodIdentity:
+    Type: AWS::EKS::PodIdentityAssociation
+    Properties:
+      ClusterName: { 'Fn::ImportValue': !Sub '${ClusterStackName}-ClusterName' }
+      Namespace: external-secrets
+      ServiceAccount: external-secrets
+      RoleArn: !GetAtt ExternalSecretsRole.Arn
+
+Outputs:
+  SupportEngineerRoleArn:
+    Value: !GetAtt SupportEngineerRole.Arn
+  FabinsightRoleArn:
+    Value: !GetAtt FabinsightRole.Arn
+  MasterDataLoadRoleArn:
+    Value: !GetAtt MasterDataLoadRole.Arn
+  AdminRoleArn:
+    Value: !GetAtt AdminRole.Arn
+  LoadBalancerControllerRoleArn:
+    Value: !GetAtt LoadBalancerControllerRole.Arn
+  ExternalSecretsRoleArn:
+    Value: !GetAtt ExternalSecretsRole.Arn

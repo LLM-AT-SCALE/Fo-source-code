@@ -1,0 +1,17 @@
+# Build context for deploy/Dockerfile.image (all six images share it).
+node_modules
+.next
+.git
+.gitignore
+.env*
+deploy/.env*
+.po-ui-runs
+.playwright-mcp
+docs
+lambda
+deploy/cloudformation
+*.tsbuildinfo
+npm-debug.log
+.claude
+.dockerignore
+# Markdown is NOT excluded: the Coding Agent's prompt files under po-ui-assets/ are .md.

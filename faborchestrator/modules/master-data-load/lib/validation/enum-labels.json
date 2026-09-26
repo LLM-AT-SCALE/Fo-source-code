@@ -1,0 +1,7 @@
+{
+  "$note": "Int-enum columns whose stored value is a CMF *system enum* ordinal with NO database authority table (the label lives only in CMF's compiled code / the loader template's Enums sheet). For each `ObjectType.Column` we can (a) BLANK ordinals that are 'undefined/unset' placeholders so the export doesn't emit a meaningless number, and (b) map ordinal -> loadable LABEL once the exact enum is confirmed. Values not listed in `labels` pass through unchanged. `blank` ordinals AND null both export as an empty cell (the template check then flags them for the user, rather than shipping a wrong value). Consumed by lib/validation/enum-labels.ts.",
+  "Product.ProductType": {
+    "note": "CMF ProductType is a compiled Int enum; T_Product.ProductType is a bare Int (no DB lookup). VERIFIED 2026-08-12: product S4438R027Y21 effective revision has ProductType=0 and CMF UI shows 'Finished Good' -> 0 IS FinishedGood, a VALID value (NOT an undefined placeholder). CMF UI dropdown order (Finished Good, Packaging, Part, Raw Material, Semi Finished Good) = ordinal order. Labels emitted in the template's no-space form. 0 confirmed; 1/2 follow CMF enum order (data uses 0/1/2 only) — Yogita to spot-check 1=Packaging, 2=Part. null -> blank (product genuinely unset).",
+    "labels": { "0": "FinishedGood", "1": "Packaging", "2": "Part", "3": "RawMaterial", "4": "SemiFinishedGood" }
+  }
+}

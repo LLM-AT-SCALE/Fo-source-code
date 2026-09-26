@@ -1,0 +1,99 @@
+# Local run of the per-module deployment: six images + one router on :8080.
+#
+#   cd faborchestrator
+#   create deploy/.env.local-docker (git-ignored; see DEPLOYMENT.md §13 for the three lines)
+#   docker compose -f deploy/docker-compose.local.yml up --build
+#   open http://localhost:8080
+#
+# Every service reads the app's .env (secrets) and then deploy/.env.local-docker
+# (overrides: the DB reachable from inside Docker, APP_URL, SMTP off). Web images
+# run with REPORT_SCHEDULER_ENABLED=false; only fabinsight runs the jobs.
+name: faborchestrator-local
+
+x-build: &build
+  context: ..
+  dockerfile: deploy/Dockerfile.image
+
+x-env-files: &env-files
+  - ../.env
+  - ./.env.local-docker
+
+services:
+  home:
+    build: { <<: *build, args: { IMAGE: home } }
+    image: faborchestrator/home:local
+    env_file: *env-files
+    environment:
+      REPORT_SCHEDULER_ENABLED: "false"
+      NODE_OPTIONS: "--max-old-space-size=1024"
+    restart: unless-stopped
+
+  support-engineer:
+    build: { <<: *build, args: { IMAGE: support-engineer } }
+    image: faborchestrator/support-engineer:local
+    env_file: *env-files
+    environment:
+      REPORT_SCHEDULER_ENABLED: "false"
+      NODE_OPTIONS: "--max-old-space-size=6144"
+    restart: unless-stopped
+
+  master-data-load:
+    build: { <<: *build, args: { IMAGE: master-data-load } }
+    image: faborchestrator/master-data-load:local
+    env_file: *env-files
+    environment:
+      REPORT_SCHEDULER_ENABLED: "false"
+      NODE_OPTIONS: "--max-old-space-size=2048"
+    restart: unless-stopped
+
+  coding-agent:
+    build: { <<: *build, args: { IMAGE: coding-agent } }
+    image: faborchestrator/coding-agent:local
+    env_file: *env-files
+    environment:
+      REPORT_SCHEDULER_ENABLED: "false"
+      NODE_OPTIONS: "--max-old-space-size=4096"
+      PO_UI_RUNS_DIR: /data/po-ui-runs
+    volumes:
+      # Run output (client requirement documents + generated pages) — in AWS this
+      # becomes S3/EFS; a single task is enough until then.
+      - po-ui-runs:/data/po-ui-runs
+    restart: unless-stopped
+
+  admin:
+    build: { <<: *build, args: { IMAGE: admin } }
+    image: faborchestrator/admin:local
+    env_file: *env-files
+    environment:
+      REPORT_SCHEDULER_ENABLED: "false"
+      NODE_OPTIONS: "--max-old-space-size=2048"
+    restart: unless-stopped
+
+  fabinsight:
+    build: { <<: *build, args: { IMAGE: fabinsight } }
+    image: faborchestrator/fabinsight:local
+    env_file: *env-files
+    environment:
+      REPORT_SCHEDULER_ENABLED: "true"
+      PORT: "8080"
+      NODE_OPTIONS: "--max-old-space-size=4096"
+    restart: unless-stopped
+
+  router:
+    image: public.ecr.aws/docker/library/node:22-alpine
+    command: ["node", "/router/local-router.mjs"]
+    working_dir: /router
+    volumes:
+      - ./scripts/local-router.mjs:/router/local-router.mjs:ro
+      - ./modules.json:/router/modules.json:ro
+    environment:
+      ROUTER_PORT: "8080"
+      TARGET_TEMPLATE: "http://{image}:3000"
+      TARGET_FABINSIGHT: "http://fabinsight:8080"
+    ports:
+      - "8080:8080"
+    depends_on: [home, support-engineer, master-data-load, coding-agent, admin, fabinsight]
+    restart: unless-stopped
+
+volumes:
+  po-ui-runs:

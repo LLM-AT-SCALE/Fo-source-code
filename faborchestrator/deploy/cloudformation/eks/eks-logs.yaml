@@ -1,0 +1,139 @@
+AWSTemplateFormatVersion: '2010-09-09'
+# =============================================================================
+# EKS logs — saved CloudWatch Logs Insights queries for the six modules.
+#
+# Container logs are already shipped by the amazon-cloudwatch-observability
+# add-on (Fluent Bit, eks-cluster.yaml) to
+#   /aws/containerinsights/<cluster>/application   one stream per pod
+# and the control plane logs to /aws/eks/<cluster>/cluster. Those log groups
+# are created by EKS / the add-on, not by CloudFormation, so their retention is
+# set with `aws logs put-retention-policy` (see README.md in this folder).
+#
+# CloudWatch → Logs Insights → "Saved queries" → folder fo-dev/ lists these.
+# =============================================================================
+Description: >-
+  FabOrchestrator EKS: saved CloudWatch Logs Insights queries per module and for
+  errors across all modules.
+
+Parameters:
+  ClusterName:
+    Type: String
+    Default: fo-dev-eks
+  EnvName:
+    Type: String
+    Default: fo-dev
+
+Resources:
+  AllModulesQuery:
+    Type: AWS::Logs::QueryDefinition
+    Properties:
+      Name: !Sub '${EnvName}/all modules'
+      LogGroupNames: [!Sub '/aws/containerinsights/${ClusterName}/application']
+      QueryString: |
+        fields @timestamp, kubernetes.pod_name as pod, log
+        | filter kubernetes.namespace_name = "faborchestrator"
+        | sort @timestamp desc
+        | limit 300
+
+  ErrorsQuery:
+    Type: AWS::Logs::QueryDefinition
+    Properties:
+      Name: !Sub '${EnvName}/errors (all modules)'
+      LogGroupNames: [!Sub '/aws/containerinsights/${ClusterName}/application']
+      QueryString: |
+        fields @timestamp, kubernetes.pod_name as pod, log
+        | filter kubernetes.namespace_name = "faborchestrator"
+        | filter log like /"level":"error"|\[error\]|Error:|ERR|FAILURE|Unhandled/
+        | sort @timestamp desc
+        | limit 300
+
+  ErrorCountQuery:
+    Type: AWS::Logs::QueryDefinition
+    Properties:
+      Name: !Sub '${EnvName}/error count per module (5 min)'
+      LogGroupNames: [!Sub '/aws/containerinsights/${ClusterName}/application']
+      QueryString: |
+        fields kubernetes.labels.app.kubernetes.io/component as module
+        | filter kubernetes.namespace_name = "faborchestrator"
+        | filter log like /"level":"error"|\[error\]|Error:|FAILURE/
+        | stats count(*) as errors by module, bin(5m)
+        | sort bin(5m) desc
+
+  HomeQuery:
+    Type: AWS::Logs::QueryDefinition
+    Properties:
+      Name: !Sub '${EnvName}/module: home'
+      LogGroupNames: [!Sub '/aws/containerinsights/${ClusterName}/application']
+      QueryString: |
+        fields @timestamp, kubernetes.pod_name as pod, log
+        | filter kubernetes.namespace_name = "faborchestrator" and kubernetes.pod_name like /^home-/
+        | sort @timestamp desc
+        | limit 300
+
+  SupportEngineerQuery:
+    Type: AWS::Logs::QueryDefinition
+    Properties:
+      Name: !Sub '${EnvName}/module: support-engineer'
+      LogGroupNames: [!Sub '/aws/containerinsights/${ClusterName}/application']
+      QueryString: |
+        fields @timestamp, kubernetes.pod_name as pod, log
+        | filter kubernetes.namespace_name = "faborchestrator" and kubernetes.pod_name like /^support-engineer-/
+        | sort @timestamp desc
+        | limit 300
+
+  MasterDataLoadQuery:
+    Type: AWS::Logs::QueryDefinition
+    Properties:
+      Name: !Sub '${EnvName}/module: master-data-load'
+      LogGroupNames: [!Sub '/aws/containerinsights/${ClusterName}/application']
+      QueryString: |
+        fields @timestamp, kubernetes.pod_name as pod, log
+        | filter kubernetes.namespace_name = "faborchestrator" and kubernetes.pod_name like /^master-data-load-/
+        | sort @timestamp desc
+        | limit 300
+
+  CodingAgentQuery:
+    Type: AWS::Logs::QueryDefinition
+    Properties:
+      Name: !Sub '${EnvName}/module: coding-agent'
+      LogGroupNames: [!Sub '/aws/containerinsights/${ClusterName}/application']
+      QueryString: |
+        fields @timestamp, kubernetes.pod_name as pod, log
+        | filter kubernetes.namespace_name = "faborchestrator" and kubernetes.pod_name like /^coding-agent-/
+        | sort @timestamp desc
+        | limit 300
+
+  AdminQuery:
+    Type: AWS::Logs::QueryDefinition
+    Properties:
+      Name: !Sub '${EnvName}/module: admin'
+      LogGroupNames: [!Sub '/aws/containerinsights/${ClusterName}/application']
+      QueryString: |
+        fields @timestamp, kubernetes.pod_name as pod, log
+        | filter kubernetes.namespace_name = "faborchestrator" and kubernetes.pod_name like /^admin-/
+        | sort @timestamp desc
+        | limit 300
+
+  FabinsightQuery:
+    Type: AWS::Logs::QueryDefinition
+    Properties:
+      Name: !Sub '${EnvName}/module: fabinsight (scheduler)'
+      LogGroupNames: [!Sub '/aws/containerinsights/${ClusterName}/application']
+      QueryString: |
+        fields @timestamp, kubernetes.pod_name as pod, log
+        | filter kubernetes.namespace_name = "faborchestrator" and kubernetes.pod_name like /^fabinsight-/
+        | sort @timestamp desc
+        | limit 300
+
+  ControlPlaneAuditQuery:
+    Type: AWS::Logs::QueryDefinition
+    Properties:
+      Name: !Sub '${EnvName}/cluster: who changed what (audit)'
+      LogGroupNames: [!Sub '/aws/eks/${ClusterName}/cluster']
+      QueryString: |
+        fields @timestamp, user.username, verb, objectRef.resource, objectRef.namespace, objectRef.name
+        | filter @logStream like /kube-apiserver-audit/
+        | filter verb in ["create", "update", "patch", "delete"]
+        | filter objectRef.namespace = "faborchestrator"
+        | sort @timestamp desc
+        | limit 200

@@ -1,0 +1,142 @@
+{
+  "schemaVersion": 1,
+  "userStory": "455386",
+  "title": "PO Management UI",
+  "pages": [
+    {
+      "name": "CustomChangePriorityWizard",
+      "uiType": "Wizard",
+      "forms": [
+        {
+          "purpose": "collect the values to apply",
+          "fields": [
+            {
+              "label": "Priority",
+              "scalarType": "Integer"
+            },
+            {
+              "label": "IsHot",
+              "scalarType": "Boolean"
+            }
+          ]
+        }
+      ],
+      "grids": [],
+      "actionButtons": []
+    },
+    {
+      "name": "CustomProductionOrderManagementUI",
+      "uiType": "Page",
+      "forms": [
+        {
+          "purpose": "filter Production Orders",
+          "fields": [
+            {
+              "label": "Production Order",
+              "scalarType": "String"
+            }
+          ]
+        }
+      ],
+      "grids": [
+        {
+          "entity": "ProductionOrder",
+          "selection": "single",
+          "columns": [
+            {
+              "name": "Name",
+              "link": true
+            },
+            {
+              "name": "Product",
+              "link": true
+            },
+            {
+              "name": "Quantity"
+            },
+            {
+              "name": "ActiveMaterialsCount"
+            },
+            {
+              "name": "PlannedStartDate"
+            },
+            {
+              "name": "PlannedEndDate"
+            }
+          ]
+        },
+        {
+          "entity": "Material",
+          "selection": "multiple",
+          "columns": [
+            {
+              "name": "Material",
+              "link": true
+            },
+            {
+              "name": "Step",
+              "link": true
+            },
+            {
+              "name": "DateEnteredStep"
+            },
+            {
+              "name": "IsHot"
+            },
+            {
+              "name": "HoldCount"
+            },
+            {
+              "name": "SystemState"
+            },
+            {
+              "name": "TrackInDate"
+            },
+            {
+              "name": "TrackInResource"
+            },
+            {
+              "name": "TrackInId"
+            },
+            {
+              "name": "Comment",
+              "link": true
+            }
+          ]
+        }
+      ],
+      "actionButtons": [
+        {
+          "name": "Hold"
+        },
+        {
+          "name": "Release"
+        },
+        {
+          "name": "Change Priority",
+          "opensPage": "CustomChangePriorityWizard",
+          "dataSource": "CustomUpdateMaterialsPriority"
+        }
+      ]
+    }
+  ],
+  "queries": [
+    "CustomRetrieveProductionOrders",
+    "CustomRetrievePOMaterials"
+  ],
+  "api": [
+    "CustomUpdateMaterialsPriority"
+  ],
+  "notes": [
+    "Authored by hand from SPEC_US-455386.txt only. The delivered artifacts were NOT consulted, so this states what the story asks for, not what was built.",
+    "The story writes the entity as 'Production Order'; recorded as the CMF entity type name 'ProductionOrder'. 'Material' and 'Step' are unchanged.",
+    "Grid column scalar types are not stated by the story and are therefore omitted rather than inferred. Only the two wizard form fields carry a stated type.",
+    "The Comment column is marked '(Material comments, link)'. The story does not name the entity it links to, so no entity is recorded.",
+    "AMBIGUITY: Change Priority names both a data source (CustomUpdateMaterialsPriority) and a UI page (CustomChangePriorityWizard). Whether the page-level button calls the service, or only opens the wizard which calls it, is not stated.",
+    "GAP: Hold and Release are given no data source and no UI page. What they invoke is unstated.",
+    "GAP: the story does not say how filtering is triggered - on change, on Enter, or via a search button.",
+    "GAP: no layout, geometry or widget placement is specified anywhere in the story.",
+    "GAP: the description mentions updating the 'IsHot property' for multiple materials; IsHot appears as a Materials grid column and as a wizard field, but no page-level control for setting it is described outside the wizard.",
+    "Link columns carry no target entity. The story marks Name, Product, Material, Step and Comment as links but never names what they link to; an independent extraction omitted all five and was right to. Earlier drafts inferred Product->Product and Material->Material, which is an assumption, not something the story states."
+  ]
+}

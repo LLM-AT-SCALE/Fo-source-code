@@ -1,0 +1,29 @@
+{
+  "generatedAt": "2026-09-22T07:30:12.604Z",
+  "generatedBy": "scripts/verify-template-assets.ts",
+  "assets": {
+    "template-schema.json": {
+      "sha256": "602c150b9fd32b60551cb265c129f9463e8ddf97b875ea502e44fa32a5d2a852",
+      "objectTypes": 206,
+      "derivedFrom": "templates/KSP_DL_client_final.xlsx",
+      "sourceSha256": "aa768ac73b55235126af65ea452a020d6dc3ea4c964cdfee8ca2f95b1cbcc92f"
+    },
+    "template-overrides.json": {
+      "sha256": "5ab7ba20ec92e7213b6e23321ef4ba9af74ef438b29904952e357a239d293dc6",
+      "removedObjects": 27,
+      "removedColumnObjects": 12,
+      "derivedFrom": "TemplateObjectCatalog.xlsx",
+      "sourceSha256": "7dde699b249fc3dbd3f321013090699cbf71cfbbbcc20724f06e8b0c9fe9fe46",
+      "sourceFile": "TemplateObjectCatalog.xlsx"
+    }
+  },
+  "sources": {
+    "KSP_DL_client_final.xlsx": {
+      "sha256": "aa768ac73b55235126af65ea452a020d6dc3ea4c964cdfee8ca2f95b1cbcc92f",
+      "objectSheetsParsed": 207
+    },
+    "TemplateObjectCatalog.xlsx": {
+      "sha256": "7dde699b249fc3dbd3f321013090699cbf71cfbbbcc20724f06e8b0c9fe9fe46"
+    }
+  }
+}

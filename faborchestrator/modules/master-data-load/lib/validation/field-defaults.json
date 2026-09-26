@@ -1,0 +1,8 @@
+{
+  "$note": "Curated fill values for fields CMF marks IsMandatory but leaves NULL for many records, with NO declared DefaultValue (so fetchTemplateRows' CMF-default fill can't supply one). The export fills a BLANK cell with the object's own dominant real value so the file passes the required-field check with a VALID value — each value is verified against live CMF's distinct Type values (Checklist has no 'Standard', its default is 'General'; Flow/Product/DataCollection/BOM are 'Standard'). Applied ONLY to a blank cell; a record that has a real value keeps it. Keyed ObjectType.Column. Consumed by lib/chat-cmf/fill-from-existing.ts.",
+  "Product.Type": "Standard",
+  "DataCollection.Type": "Standard",
+  "BOM.Type": "Standard",
+  "Checklist.Type": "General",
+  "Flow.Type": "Standard"
+}

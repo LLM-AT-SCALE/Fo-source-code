@@ -1,0 +1,62 @@
+--- TABLE 1 ---
+DATE: | 12-11-2024 | USER STORY: | 455386
+COMPANY: | Entegris KSP | TITLE: | PO Management UI
+ |  |  | 
+--- END ---
+DESCRIPTION :
+Ability to perform Hold, Release, Change Priority and IsHot property for multiple materials based on PO (Production Order) selection.
+TECHNICAL DETAILS:
+Create a custom API: CustomUpdateMaterialsPriority
+Objective: To update Priority and IsHot for multiple materials
+Create two queries
+CustomRetrieveProductionOrders
+CustomRetrievePOMaterials
+Create an UI Page(OOB)
+Name: CustomChangePriorityWizard
+Type: Wizard
+a. Add a Form widget
+Field 1
+Name: Priority
+Scalar type: Integer
+Field 2
+Name: IsHot
+Scalar type: Boolean
+Create an UI Page(OOB)
+Name: CustomProductionOrderManagementUI
+Type: Page
+Add a Form Widget
+Field 1
+Name:  Production Order
+Scalar type: string
+NOTE: Production Order can be filtered using this field
+Add a grid to display list of Production Orders.
+Entity - Production Order
+Columns:
+- Name (Production Order Name, link)
+- Product(link)
+- Quantity
+- ActiveMaterialsCount
+- PlannedStartDate
+- PlannedEndDate
+NOTE: PO single selection
+Add a grid to display Production Order Materials.
+Entity – Material
+Columns:
+- Material (link)
+- Step(link)
+- DateEnteredStep
+- IsHot
+- HoldCount
+- SystemState
+- TrackInDate
+- TrackInResource
+- TrackInId
+- Comment(Material comments, link)
+Note: Materials Multi selection
+Add the below button in the action bar
+Hold
+Release
+Change Priority
+(Data source: CustomUpdateMaterialsPriority,
+UI Page: CustomChangePriorityWizard)
+NOTE: All the three actions should work for Multiple materials

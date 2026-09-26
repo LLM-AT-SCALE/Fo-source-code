@@ -1,0 +1,7914 @@
+{
+  "_source": "CMF FullLoadAllEntityTypes, tenant CriticalManufacturing (read-only)",
+  "capturedAt": "2026-08-24T09:44:09.973Z",
+  "entityCount": 340,
+  "entities": {
+    "App": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "Area": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Calendar",
+          "referenceType": 1,
+          "target": "Calendar"
+        },
+        {
+          "name": "Facility",
+          "referenceType": 1,
+          "target": "Facility"
+        },
+        {
+          "name": "Schedule",
+          "referenceType": 1,
+          "target": "Schedule"
+        },
+        {
+          "name": "DefaultTransferOrderDestinationLocation",
+          "referenceType": 1,
+          "target": "Area"
+        },
+        {
+          "name": "Flow",
+          "referenceType": 7,
+          "target": "Flow"
+        },
+        {
+          "name": "ParentArea",
+          "referenceType": 1,
+          "target": "Area"
+        },
+        {
+          "name": "PickingSequence",
+          "referenceType": 1,
+          "target": "SortRuleSet"
+        },
+        {
+          "name": "PickingStrategy",
+          "referenceType": 1,
+          "target": "SortRuleSet"
+        },
+        {
+          "name": "Step",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "TopMostArea",
+          "referenceType": 1,
+          "target": "Area"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "AreaType"
+      ]
+    },
+    "AreaSupplyArea": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Area",
+          "referenceType": 1,
+          "target": "Area"
+        },
+        {
+          "name": "SupplyArea",
+          "referenceType": 1,
+          "target": "Area"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "AreaTransferRequirementType": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Area",
+          "referenceType": 1,
+          "target": "Area"
+        },
+        {
+          "name": "DestinationLocation",
+          "referenceType": 1,
+          "target": "Area"
+        },
+        {
+          "name": "SourceLocation",
+          "referenceType": 1,
+          "target": "Area"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "Asset": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "AssetDirectory",
+          "referenceType": 1,
+          "target": "AssetDirectory"
+        },
+        {
+          "name": "ParentAsset",
+          "referenceType": 1,
+          "target": "Asset"
+        }
+      ],
+      "enums": [
+        "DefaultView",
+        "UniversalState"
+      ]
+    },
+    "AssetAssetTemplate": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "Asset"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "Asset"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "AssetDashboard": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "TargetEntity",
+          "referenceType": 7,
+          "target": "UIPage"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "AssetDirectory": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "AssetEvent": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Asset",
+          "referenceType": 1,
+          "target": "Asset"
+        },
+        {
+          "name": "IoTEventDefinition",
+          "referenceType": 1,
+          "target": "IoTEventDefinition"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "AssetProperty": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Asset",
+          "referenceType": 1,
+          "target": "Asset"
+        },
+        {
+          "name": "AssetPropertyDefinition",
+          "referenceType": 1,
+          "target": "AssetPropertyDefinition"
+        }
+      ],
+      "enums": [
+        "LastUpdateSource",
+        "SynchronizationState",
+        "UniversalState"
+      ]
+    },
+    "AssetPropertyDefinition": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Asset",
+          "referenceType": 1,
+          "target": "Asset"
+        }
+      ],
+      "enums": [
+        "PropertyType",
+        "TelemetryType",
+        "UniversalState",
+        "WriteAccess"
+      ]
+    },
+    "AutomationCommand": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "AutomationCommandParameter": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "AutomationCommand",
+          "referenceType": 1,
+          "target": "AutomationCommand"
+        },
+        {
+          "name": "AutomationProtocolDataType",
+          "referenceType": 1,
+          "target": "AutomationProtocolDataType"
+        }
+      ],
+      "enums": [
+        "DataType",
+        "UniversalState"
+      ]
+    },
+    "AutomationController": {
+      "hasId": true,
+      "hasDefinitionId": true,
+      "references": [
+        {
+          "name": "ChangeSet",
+          "referenceType": 1,
+          "target": "ChangeSet"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "Scope",
+        "RevisionState",
+        "LinkConnector",
+        "LinkRouter"
+      ]
+    },
+    "AutomationControllerDriverDefinition": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "AutomationDriverDefinition",
+          "referenceType": 7,
+          "target": "AutomationDriverDefinition"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "AutomationControllerInstance": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "AutomationController",
+          "referenceType": 7,
+          "target": "AutomationController"
+        },
+        {
+          "name": "AutomationManager",
+          "referenceType": 1,
+          "target": "AutomationManager"
+        }
+      ],
+      "enums": [
+        "SystemState",
+        "UniversalState"
+      ]
+    },
+    "AutomationControllerIoTEventDefinition": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "IoTEventDefinition"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "AutomationDriverDefinition": {
+      "hasId": true,
+      "hasDefinitionId": true,
+      "references": [
+        {
+          "name": "AutomationProtocol",
+          "referenceType": 7,
+          "target": "AutomationProtocol"
+        },
+        {
+          "name": "ChangeSet",
+          "referenceType": 1,
+          "target": "ChangeSet"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "RevisionState"
+      ]
+    },
+    "AutomationDriverInstance": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "AutomationControllerDriverDefinition",
+          "referenceType": 1,
+          "target": "AutomationControllerDriverDefinition"
+        },
+        {
+          "name": "AutomationControllerInstance",
+          "referenceType": 1,
+          "target": "AutomationControllerInstance"
+        },
+        {
+          "name": "AutomationManager",
+          "referenceType": 1,
+          "target": "AutomationManager"
+        }
+      ],
+      "enums": [
+        "SystemState",
+        "UniversalState",
+        "CommunicationState"
+      ]
+    },
+    "AutomationEvent": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "AutomationEventProperty": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "AutomationEvent",
+          "referenceType": 1,
+          "target": "AutomationEvent"
+        },
+        {
+          "name": "AutomationProperty",
+          "referenceType": 1,
+          "target": "AutomationProperty"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "AutomationJob": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "LastEvent",
+          "referenceType": 1,
+          "target": "IoTEventDefinition"
+        },
+        {
+          "name": "ParentAutomationJob",
+          "referenceType": 1,
+          "target": "AutomationJob"
+        },
+        {
+          "name": "TriggerEvent",
+          "referenceType": 1,
+          "target": "IoTEventDefinition"
+        },
+        {
+          "name": "IntegrationEntry",
+          "referenceType": 1,
+          "target": "IntegrationEntry"
+        }
+      ],
+      "enums": [
+        "SchedulingState",
+        "SystemState",
+        "SystemSubState",
+        "UniversalState",
+        "WaitType",
+        "Scope"
+      ]
+    },
+    "AutomationJobWaitItem": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "AutomationJob",
+          "referenceType": 1,
+          "target": "AutomationJob"
+        }
+      ],
+      "enums": [
+        "SystemState",
+        "UniversalState",
+        "WaitItemType"
+      ]
+    },
+    "AutomationManager": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [],
+      "enums": [
+        "SystemState",
+        "UniversalState"
+      ]
+    },
+    "AutomationManagerFailover": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "AutomationManager"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "AutomationManager"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "AutomationProperty": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "AutomationProtocolDataType",
+          "referenceType": 1,
+          "target": "AutomationProtocolDataType"
+        }
+      ],
+      "enums": [
+        "DataType",
+        "UniversalState"
+      ]
+    },
+    "AutomationProtocol": {
+      "hasId": true,
+      "hasDefinitionId": true,
+      "references": [
+        {
+          "name": "ChangeSet",
+          "referenceType": 1,
+          "target": "ChangeSet"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "RevisionState"
+      ]
+    },
+    "AutomationProtocolDataType": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "AutomationProtocolDeviceIdentifier": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [],
+      "enums": [
+        "Type",
+        "UniversalState"
+      ]
+    },
+    "AutomationProtocolExtendedData": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [],
+      "enums": [
+        "DataType",
+        "Type",
+        "UniversalState",
+        "ReferenceType"
+      ]
+    },
+    "AutomationProtocolParameter": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [],
+      "enums": [
+        "DataType",
+        "UniversalState",
+        "ReferenceType"
+      ]
+    },
+    "AutomationProtocolTemplate": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [],
+      "enums": [
+        "Type",
+        "UniversalState"
+      ]
+    },
+    "AutomationTasksLibrary": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "AutomationWorkflow": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "AutoMLNET": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "MLModel",
+          "referenceType": 1,
+          "target": "MLModel"
+        }
+      ],
+      "enums": [
+        "BinaryClassification",
+        "MultiClassification",
+        "Regression",
+        "UniversalState"
+      ]
+    },
+    "BinConversion": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "BinConverter",
+          "referenceType": 1,
+          "target": "BinConverter"
+        }
+      ],
+      "enums": [
+        "ToBinQuality",
+        "UniversalState"
+      ]
+    },
+    "BinConverter": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [],
+      "enums": [
+        "BinConverterType",
+        "BinType",
+        "UniversalState"
+      ]
+    },
+    "BOM": {
+      "hasId": true,
+      "hasDefinitionId": true,
+      "references": [
+        {
+          "name": "ChangeSet",
+          "referenceType": 1,
+          "target": "ChangeSet"
+        },
+        {
+          "name": "WeighAndDispenseLabel",
+          "referenceType": 7,
+          "target": "PrintableDocument"
+        },
+        {
+          "name": "Product",
+          "referenceType": 7,
+          "target": "Product"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "Scope",
+        "FormulaType",
+        "RevisionState"
+      ]
+    },
+    "BOMInstance": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Facility",
+          "referenceType": 1,
+          "target": "Facility"
+        },
+        {
+          "name": "Material",
+          "referenceType": 1,
+          "target": "Material"
+        },
+        {
+          "name": "Resource",
+          "referenceType": 1,
+          "target": "Resource"
+        },
+        {
+          "name": "Step",
+          "referenceType": 1,
+          "target": "Step"
+        }
+      ],
+      "enums": [
+        "AssemblyType",
+        "SystemState",
+        "UniversalState"
+      ]
+    },
+    "BOMInstanceItem": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "BOMInstance",
+          "referenceType": 1,
+          "target": "BOMInstance"
+        },
+        {
+          "name": "BOMProduct",
+          "referenceType": 1,
+          "target": "BOMProduct"
+        },
+        {
+          "name": "WeighAndDispensePerformedBy",
+          "referenceType": 1,
+          "target": "Employee"
+        },
+        {
+          "name": "WeighAndDispenseVerifiedBy",
+          "referenceType": 1,
+          "target": "Employee"
+        }
+      ],
+      "enums": [
+        "SystemState",
+        "UniversalState"
+      ]
+    },
+    "BOMInstanceItemMaterial": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "BOMInstanceItem",
+          "referenceType": 1,
+          "target": "BOMInstanceItem"
+        },
+        {
+          "name": "WeighAndDispenseFromContainer",
+          "referenceType": 1,
+          "target": "Container"
+        },
+        {
+          "name": "WeighAndDispenseScale",
+          "referenceType": 1,
+          "target": "Resource"
+        },
+        {
+          "name": "WeighAndDispenseToContainer",
+          "referenceType": 1,
+          "target": "Container"
+        }
+      ],
+      "enums": [
+        "Type",
+        "UniversalState",
+        "WeighAndDispenseType"
+      ]
+    },
+    "BOMProduct": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Step",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 7,
+          "target": "Product"
+        },
+        {
+          "name": "AssemblyStep",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "QuantityCalculationRule",
+          "referenceType": 1,
+          "target": "Rule"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "MaterialReservationMode"
+      ]
+    },
+    "BusinessPartner": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "Calendar": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "DefaultFridayShiftDefinition",
+          "referenceType": 1,
+          "target": "ShiftDefinition"
+        },
+        {
+          "name": "DefaultMondayShiftDefinition",
+          "referenceType": 1,
+          "target": "ShiftDefinition"
+        },
+        {
+          "name": "DefaultSaturdayShiftDefinition",
+          "referenceType": 1,
+          "target": "ShiftDefinition"
+        },
+        {
+          "name": "DefaultSundayShiftDefinition",
+          "referenceType": 1,
+          "target": "ShiftDefinition"
+        },
+        {
+          "name": "DefaultThursdayShiftDefinition",
+          "referenceType": 1,
+          "target": "ShiftDefinition"
+        },
+        {
+          "name": "DefaultTuesdayShiftDefinition",
+          "referenceType": 1,
+          "target": "ShiftDefinition"
+        },
+        {
+          "name": "DefaultWednesdayShiftDefinition",
+          "referenceType": 1,
+          "target": "ShiftDefinition"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "WeekStartDay"
+      ]
+    },
+    "CalendarDay": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Calendar",
+          "referenceType": 1,
+          "target": "Calendar"
+        },
+        {
+          "name": "ShiftDefinition",
+          "referenceType": 1,
+          "target": "ShiftDefinition"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "CalendarDayShiftDefinitionShift": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "CalendarDay",
+          "referenceType": 1,
+          "target": "CalendarDay"
+        },
+        {
+          "name": "ShiftDefinitionShift",
+          "referenceType": 1,
+          "target": "ShiftDefinitionShift"
+        },
+        {
+          "name": "Team",
+          "referenceType": 1,
+          "target": "Team"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "Certification": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [],
+      "enums": [
+        "UniversalState",
+        "ValidForScale",
+        "TrainingMaximumDurationScale"
+      ]
+    },
+    "CertificationRequiredQualification": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "Certification"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "Qualification"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "ChangeSet": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [],
+      "enums": [
+        "SystemState",
+        "UniversalState"
+      ]
+    },
+    "ChangeSetItem": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "ChangeSet",
+          "referenceType": 1,
+          "target": "ChangeSet"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "ChangeSetStateReviewer": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "ChangeSet",
+          "referenceType": 1,
+          "target": "ChangeSet"
+        }
+      ],
+      "enums": [
+        "ReviewerAction",
+        "ReviewerFunction",
+        "SystemState",
+        "UniversalState"
+      ]
+    },
+    "Chart": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Parameter",
+          "referenceType": 1,
+          "target": "Parameter"
+        }
+      ],
+      "enums": [
+        "ChartType",
+        "UniversalState",
+        "IndicatorsToShowByDefault",
+        "PanelToShowByDefault",
+        "SpecLimitsDefinitionMode",
+        "YAxisScaleMode",
+        "DisplayDefaultFilterMode"
+      ]
+    },
+    "ChartContextInformation": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Chart",
+          "referenceType": 1,
+          "target": "Chart"
+        }
+      ],
+      "enums": [
+        "ContextType",
+        "UniversalState"
+      ]
+    },
+    "ChartDataPoint": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "LogicalChart",
+          "referenceType": 1,
+          "target": "LogicalChart"
+        }
+      ],
+      "enums": [
+        "SystemState",
+        "UniversalState",
+        "ReadingsMode"
+      ]
+    },
+    "ChartDataPointContext": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "ChartDataPoint",
+          "referenceType": 1,
+          "target": "ChartDataPoint"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "ChartDataPointOccurrence": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "ChartDataPoint",
+          "referenceType": 1,
+          "target": "ChartDataPoint"
+        },
+        {
+          "name": "ExceptionProtocol",
+          "referenceType": 1,
+          "target": "ProtocolInstance"
+        },
+        {
+          "name": "Rule",
+          "referenceType": 1,
+          "target": "Rule"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "Indicator"
+      ]
+    },
+    "ChartDataPointReading": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "ChartDataPoint",
+          "referenceType": 1,
+          "target": "ChartDataPoint"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "ChartRule": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "Chart"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "Rule"
+        },
+        {
+          "name": "Protocol",
+          "referenceType": 7,
+          "target": "Protocol"
+        },
+        {
+          "name": "Action",
+          "referenceType": 1,
+          "target": "Rule"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "Scope"
+      ]
+    },
+    "Checklist": {
+      "hasId": true,
+      "hasDefinitionId": true,
+      "references": [
+        {
+          "name": "ChangeSet",
+          "referenceType": 1,
+          "target": "ChangeSet"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "ExecutionMode",
+        "RevisionState"
+      ]
+    },
+    "ChecklistInstance": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [],
+      "enums": [
+        "UniversalState",
+        "SystemState",
+        "ExecutionMode"
+      ]
+    },
+    "ChecklistInstanceItemMaterial": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "ChecklistItemInstance",
+          "referenceType": 1,
+          "target": "ChecklistItemInstance"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "ChecklistItem": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Rule",
+          "referenceType": 1,
+          "target": "Rule"
+        }
+      ],
+      "enums": [
+        "ActivityType",
+        "TrackingType",
+        "UniversalState"
+      ]
+    },
+    "ChecklistItemBOMItem": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "ChecklistItem",
+          "referenceType": 1,
+          "target": "ChecklistItem"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "ChecklistItemDataCollectionParameter": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "ChecklistItem",
+          "referenceType": 1,
+          "target": "ChecklistItem"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "ChecklistItemInstance": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "ParentEntity",
+          "referenceType": 1,
+          "target": "ChecklistItem"
+        },
+        {
+          "name": "ChecklistInstance",
+          "referenceType": 1,
+          "target": "ChecklistInstance"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "SystemState",
+        "EditState"
+      ]
+    },
+    "ChecklistItemInstanceParameter": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "ChecklistItemInstance",
+          "referenceType": 1,
+          "target": "ChecklistItemInstance"
+        },
+        {
+          "name": "ChecklistItemParameter",
+          "referenceType": 1,
+          "target": "ChecklistItemParameter"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "ChecklistItemInstanceSignature": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "ChecklistItemInstance",
+          "referenceType": 1,
+          "target": "ChecklistItemInstance"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "ChecklistItemParameter": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "ChecklistItem",
+          "referenceType": 1,
+          "target": "ChecklistItem"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "Type",
+        "RangeType",
+        "Source",
+        "DateTimePickerMode"
+      ]
+    },
+    "ChecklistItemSignature": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "ChecklistItem",
+          "referenceType": 1,
+          "target": "ChecklistItem"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "CmfDataSet": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "IoTEventDefinition",
+          "referenceType": 1,
+          "target": "IoTEventDefinition"
+        },
+        {
+          "name": "OwnerApp",
+          "referenceType": 1,
+          "target": "App"
+        }
+      ],
+      "enums": [
+        "OwnerType",
+        "Type",
+        "UniversalState"
+      ]
+    },
+    "CmfDataSetField": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "CmfDataSet",
+          "referenceType": 1,
+          "target": "CmfDataSet"
+        }
+      ],
+      "enums": [
+        "AggregateFunction",
+        "DataType",
+        "SortDirection",
+        "Type",
+        "UniversalState"
+      ]
+    },
+    "CmfTimer": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Rule",
+          "referenceType": 1,
+          "target": "Rule"
+        },
+        {
+          "name": "OnErrorRule",
+          "referenceType": 1,
+          "target": "Rule"
+        }
+      ],
+      "enums": [
+        "Recurrence",
+        "Scope",
+        "UniversalState",
+        "TerminateAfterExecutionMode"
+      ]
+    },
+    "CompatibleService": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "Service"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "Service"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "Container": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Facility",
+          "referenceType": 1,
+          "target": "Facility"
+        },
+        {
+          "name": "TopMostContainer",
+          "referenceType": 1,
+          "target": "Container"
+        }
+      ],
+      "enums": [
+        "CapacityValidationMode",
+        "SystemState",
+        "UniversalState",
+        "ResourceAssociationType",
+        "PositionUnitType",
+        "Orientation",
+        "PositionSorting"
+      ]
+    },
+    "ContainerResource": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "Container"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "Resource"
+        },
+        {
+          "name": "Location",
+          "referenceType": 1,
+          "target": "ResourceLocation"
+        },
+        {
+          "name": "StorageBin",
+          "referenceType": 7,
+          "target": "StorageBin"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "DataCollection": {
+      "hasId": true,
+      "hasDefinitionId": true,
+      "references": [
+        {
+          "name": "ChangeSet",
+          "referenceType": 1,
+          "target": "ChangeSet"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "SPCPostMode",
+        "Scope",
+        "RevisionState",
+        "UserInterface"
+      ]
+    },
+    "DataCollectionInstance": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Area",
+          "referenceType": 1,
+          "target": "Area"
+        },
+        {
+          "name": "Facility",
+          "referenceType": 1,
+          "target": "Facility"
+        },
+        {
+          "name": "Flow",
+          "referenceType": 7,
+          "target": "Flow"
+        },
+        {
+          "name": "Material",
+          "referenceType": 1,
+          "target": "Material"
+        },
+        {
+          "name": "Product",
+          "referenceType": 7,
+          "target": "Product"
+        },
+        {
+          "name": "Resource",
+          "referenceType": 1,
+          "target": "Resource"
+        },
+        {
+          "name": "Step",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "ProcessResource",
+          "referenceType": 1,
+          "target": "Resource"
+        },
+        {
+          "name": "Container",
+          "referenceType": 1,
+          "target": "Container"
+        }
+      ],
+      "enums": [
+        "EditState",
+        "SystemState",
+        "ExecutionMode",
+        "UniversalState",
+        "SPCPostMode",
+        "Result"
+      ]
+    },
+    "DataCollectionInstanceChart": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Parameter",
+          "referenceType": 1,
+          "target": "Parameter"
+        },
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "DataCollectionInstance"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "Chart"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "DisplayMode"
+      ]
+    },
+    "DataCollectionInstanceParameter": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "DataCollectionInstance",
+          "referenceType": 1,
+          "target": "DataCollectionInstance"
+        },
+        {
+          "name": "DataCollectionParameter",
+          "referenceType": 1,
+          "target": "DataCollectionParameter"
+        },
+        {
+          "name": "LastInstrument",
+          "referenceType": 1,
+          "target": "Resource"
+        }
+      ],
+      "enums": [
+        "Result",
+        "UniversalState"
+      ]
+    },
+    "DataCollectionLimitSet": {
+      "hasId": true,
+      "hasDefinitionId": true,
+      "references": [
+        {
+          "name": "DataCollection",
+          "referenceType": 7,
+          "target": "DataCollection"
+        },
+        {
+          "name": "ChangeSet",
+          "referenceType": 1,
+          "target": "ChangeSet"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "RevisionState"
+      ]
+    },
+    "DataCollectionParameter": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "Parameter"
+        },
+        {
+          "name": "ErrorLimitViolationProtocol",
+          "referenceType": 7,
+          "target": "Protocol"
+        },
+        {
+          "name": "WarningLimitViolationProtocol",
+          "referenceType": 7,
+          "target": "Protocol"
+        },
+        {
+          "name": "Rule",
+          "referenceType": 1,
+          "target": "Rule"
+        }
+      ],
+      "enums": [
+        "Calculation",
+        "CalculationGroupingMode",
+        "LimitCheckingMode",
+        "SampleCountPercentageSource",
+        "SampleKey",
+        "UniversalState",
+        "MaterialIdSampleProperty",
+        "CaptureInstrumentBehavior",
+        "InspectionFrequency",
+        "InspectionFrequencyConfigurationMode",
+        "MaximumAcceptableDefectsMode",
+        "SampleCountSource",
+        "SampleValueType"
+      ]
+    },
+    "DataCollectionParameterLimit": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "Parameter"
+        }
+      ],
+      "enums": [
+        "LimitType",
+        "UniversalState"
+      ]
+    },
+    "DataCollectionParameterReadingName": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "DataCollectionParameter",
+          "referenceType": 1,
+          "target": "DataCollectionParameter"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "DataCollectionParameterSampleName": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "DataCollectionParameter",
+          "referenceType": 1,
+          "target": "DataCollectionParameter"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "DataCollectionPoint": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "DataCollectionInstance"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "Parameter"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "DataCollectionSampleLimit": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "Document": {
+      "hasId": true,
+      "hasDefinitionId": true,
+      "references": [
+        {
+          "name": "ChangeSet",
+          "referenceType": 1,
+          "target": "ChangeSet"
+        },
+        {
+          "name": "Folder",
+          "referenceType": 1,
+          "target": "Folder"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "ContentStorageType",
+        "RevisionState"
+      ]
+    },
+    "DocumentApplicableRole": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Document",
+          "referenceType": 7,
+          "target": "Document"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "DocumentEmployeeTracking": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Document",
+          "referenceType": 7,
+          "target": "Document"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "DurablesBOMInstance": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Facility",
+          "referenceType": 1,
+          "target": "Facility"
+        },
+        {
+          "name": "Material",
+          "referenceType": 1,
+          "target": "Material"
+        },
+        {
+          "name": "Resource",
+          "referenceType": 1,
+          "target": "Resource"
+        },
+        {
+          "name": "Step",
+          "referenceType": 1,
+          "target": "Step"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "DurablesBOMInstanceItem": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "DurablesBOMInstance",
+          "referenceType": 1,
+          "target": "DurablesBOMInstance"
+        },
+        {
+          "name": "Material",
+          "referenceType": 1,
+          "target": "Material"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "Employee": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Area",
+          "referenceType": 1,
+          "target": "Area"
+        },
+        {
+          "name": "Calendar",
+          "referenceType": 1,
+          "target": "Calendar"
+        },
+        {
+          "name": "Position",
+          "referenceType": 1,
+          "target": "Certification"
+        },
+        {
+          "name": "Manager",
+          "referenceType": 1,
+          "target": "Employee"
+        },
+        {
+          "name": "Team",
+          "referenceType": 1,
+          "target": "Team"
+        },
+        {
+          "name": "Workgroup",
+          "referenceType": 1,
+          "target": "Workgroup"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "ClockedState"
+      ]
+    },
+    "EmployeeCalendarDay": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "Employee"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "CalendarDay"
+        },
+        {
+          "name": "Position",
+          "referenceType": 1,
+          "target": "Certification"
+        },
+        {
+          "name": "Workgroup",
+          "referenceType": 1,
+          "target": "Workgroup"
+        },
+        {
+          "name": "Team",
+          "referenceType": 1,
+          "target": "Team"
+        },
+        {
+          "name": "ShiftDefinitionShift",
+          "referenceType": 1,
+          "target": "ShiftDefinitionShift"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "EmployeeCalendarDayNonWorkingTime": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "EmployeeCalendarDay",
+          "referenceType": 1,
+          "target": "EmployeeCalendarDay"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "EmployeeCertification": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "Employee"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "Certification"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "SystemState",
+        "GrantType"
+      ]
+    },
+    "EmployeeDelegate": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "Employee"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "Employee"
+        }
+      ],
+      "enums": [
+        "Scope",
+        "UniversalState"
+      ]
+    },
+    "EmployeeQualification": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "Employee"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "Qualification"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "SystemState"
+      ]
+    },
+    "EmployeeTimeSheetEntry": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Employee",
+          "referenceType": 1,
+          "target": "Employee"
+        },
+        {
+          "name": "Resource",
+          "referenceType": 1,
+          "target": "Resource"
+        },
+        {
+          "name": "MaintenanceActivityOrder",
+          "referenceType": 1,
+          "target": "MaintenanceActivityOrder"
+        },
+        {
+          "name": "Trainer",
+          "referenceType": 1,
+          "target": "Employee"
+        }
+      ],
+      "enums": [
+        "Type",
+        "UniversalState"
+      ]
+    },
+    "Enterprise": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "EventRule": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "EventRuleAction": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "EventRule",
+          "referenceType": 1,
+          "target": "EventRule"
+        },
+        {
+          "name": "Rule",
+          "referenceType": 1,
+          "target": "Rule"
+        }
+      ],
+      "enums": [
+        "ActionType",
+        "UniversalState"
+      ]
+    },
+    "Experiment": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "ExperimentDefinition",
+          "referenceType": 7,
+          "target": "ExperimentDefinition"
+        },
+        {
+          "name": "Material",
+          "referenceType": 1,
+          "target": "Material"
+        }
+      ],
+      "enums": [
+        "Mode",
+        "Result",
+        "SystemState",
+        "UniversalState"
+      ]
+    },
+    "ExperimentDefinition": {
+      "hasId": true,
+      "hasDefinitionId": true,
+      "references": [
+        {
+          "name": "ChangeSet",
+          "referenceType": 1,
+          "target": "ChangeSet"
+        },
+        {
+          "name": "FirstStep",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "FirstStepFlow",
+          "referenceType": 7,
+          "target": "Flow"
+        },
+        {
+          "name": "Flow",
+          "referenceType": 7,
+          "target": "Flow"
+        },
+        {
+          "name": "LastStep",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "LastStepFlow",
+          "referenceType": 7,
+          "target": "Flow"
+        },
+        {
+          "name": "Product",
+          "referenceType": 7,
+          "target": "Product"
+        },
+        {
+          "name": "ProductGroup",
+          "referenceType": 7,
+          "target": "ProductGroup"
+        }
+      ],
+      "enums": [
+        "Mode",
+        "Result",
+        "UniversalState",
+        "RevisionState"
+      ]
+    },
+    "ExperimentDefinitionMaterialGroup": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "ExperimentDefinitionObjective": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "ExperimentDefinitionStep": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Flow",
+          "referenceType": 7,
+          "target": "Flow"
+        },
+        {
+          "name": "Step",
+          "referenceType": 1,
+          "target": "Step"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "ExitStepSplitAndMergeType",
+        "MaterialGroupsDefinitionMode"
+      ]
+    },
+    "ExperimentDefinitionStepActionRecipeParameter": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "ExperimentDefinitionStepMaterialGroupAction",
+          "referenceType": 1,
+          "target": "ExperimentDefinitionStepMaterialGroupAction"
+        },
+        {
+          "name": "Parameter",
+          "referenceType": 1,
+          "target": "Parameter"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "ExperimentDefinitionStepMaterialGroup": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "MergeFlow",
+          "referenceType": 7,
+          "target": "Flow"
+        },
+        {
+          "name": "MergeStep",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "ExperimentDefinitionStep"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "ExperimentDefinitionMaterialGroup"
+        }
+      ],
+      "enums": [
+        "MergeState",
+        "SplitScope",
+        "SplitType",
+        "Type",
+        "UniversalState",
+        "StepEvent"
+      ]
+    },
+    "ExperimentDefinitionStepMaterialGroupAction": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "ChangeFlowAndStepFlow",
+          "referenceType": 7,
+          "target": "Flow"
+        },
+        {
+          "name": "ChangeFlowAndStepStep",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "ExperimentDefinitionStepMaterialGroup",
+          "referenceType": 1,
+          "target": "ExperimentDefinitionStepMaterialGroup"
+        },
+        {
+          "name": "HoldReason",
+          "referenceType": 1,
+          "target": "Reason"
+        },
+        {
+          "name": "SetBOMBOM",
+          "referenceType": 7,
+          "target": "BOM"
+        },
+        {
+          "name": "SetChecklistChecklist",
+          "referenceType": 7,
+          "target": "Checklist"
+        },
+        {
+          "name": "SetDataCollectionDataCollection",
+          "referenceType": 7,
+          "target": "DataCollection"
+        },
+        {
+          "name": "SetDataCollectionDataCollectionLimitSet",
+          "referenceType": 7,
+          "target": "DataCollectionLimitSet"
+        },
+        {
+          "name": "SetDurablesBOM",
+          "referenceType": 7,
+          "target": "BOM"
+        },
+        {
+          "name": "SetRecipeRecipe",
+          "referenceType": 7,
+          "target": "Recipe"
+        },
+        {
+          "name": "TemporaryOffFlowFlow",
+          "referenceType": 7,
+          "target": "Flow"
+        },
+        {
+          "name": "TemporaryOffFlowReason",
+          "referenceType": 1,
+          "target": "Reason"
+        },
+        {
+          "name": "TemporaryOffFlowStep",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "TerminateLossReason",
+          "referenceType": 1,
+          "target": "Reason"
+        },
+        {
+          "name": "SetResourceResource",
+          "referenceType": 1,
+          "target": "Resource"
+        },
+        {
+          "name": "SendAheadEvaluateFlow",
+          "referenceType": 7,
+          "target": "Flow"
+        },
+        {
+          "name": "SendAheadEvaluateStep",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "SendAheadMergeFlow",
+          "referenceType": 7,
+          "target": "Flow"
+        },
+        {
+          "name": "SendAheadMergeStep",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "SendMailNotificationAssignedToEmployee",
+          "referenceType": 1,
+          "target": "Employee"
+        },
+        {
+          "name": "SetServiceService",
+          "referenceType": 1,
+          "target": "Service"
+        }
+      ],
+      "enums": [
+        "Action",
+        "Event",
+        "SetBOMAssemblyType",
+        "SetBOMTrackInCheckMode",
+        "SetBOMTrackOutLossesMode",
+        "UniversalState",
+        "SetBOMWeighAndDispenseMode",
+        "SendAheadResultsCaptureMode",
+        "SendAheadSplitType",
+        "SendMailNotificationAssignmentType",
+        "MergeType",
+        "SplitType"
+      ]
+    },
+    "ExperimentMaterial": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "MaterialGroup",
+          "referenceType": 1,
+          "target": "ExperimentDefinitionMaterialGroup"
+        },
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "Experiment"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "Material"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "ExperimentMaterialChange": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "AddedMaterialFlow",
+          "referenceType": 7,
+          "target": "Flow"
+        },
+        {
+          "name": "AddedMaterialStep",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "Experiment",
+          "referenceType": 1,
+          "target": "Experiment"
+        },
+        {
+          "name": "RemovedMaterialFlow",
+          "referenceType": 7,
+          "target": "Flow"
+        },
+        {
+          "name": "RemovedMaterialStep",
+          "referenceType": 1,
+          "target": "Step"
+        }
+      ],
+      "enums": [
+        "ChangeOperation",
+        "UniversalState"
+      ]
+    },
+    "FabLive3D": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Folder",
+          "referenceType": 1,
+          "target": "Folder"
+        },
+        {
+          "name": "FloorBackground",
+          "referenceType": 1,
+          "target": "Multimedia"
+        },
+        {
+          "name": "Thumbnail",
+          "referenceType": 1,
+          "target": "Multimedia"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "FabLive3DLayer": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "FabLive3D",
+          "referenceType": 1,
+          "target": "FabLive3D"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "FabLive3DLayerAppearancePropertyBehavior": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "FabLive3DLayer",
+          "referenceType": 1,
+          "target": "FabLive3DLayer"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "FabLive3DLayerFilterableProperty": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "FabLive3DLayer",
+          "referenceType": 1,
+          "target": "FabLive3DLayer"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "FabLive3DLibraryMesh": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "FabLive3DMesh",
+          "referenceType": 1,
+          "target": "FabLive3DMesh"
+        },
+        {
+          "name": "Thumbnail",
+          "referenceType": 1,
+          "target": "Multimedia"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "FabLive3DMesh": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Texture",
+          "referenceType": 1,
+          "target": "Multimedia"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "FabLive3DObjectRepresentation": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "FabLive3DLayer",
+          "referenceType": 1,
+          "target": "FabLive3DLayer"
+        },
+        {
+          "name": "Mesh",
+          "referenceType": 1,
+          "target": "FabLive3DMesh"
+        },
+        {
+          "name": "LibraryMesh",
+          "referenceType": 1,
+          "target": "FabLive3DLibraryMesh"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "FabLive3DUnionMesh": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "FabLive3DMesh",
+          "referenceType": 1,
+          "target": "FabLive3DMesh"
+        },
+        {
+          "name": "FabLive3DObjectRepresentation",
+          "referenceType": 1,
+          "target": "FabLive3DObjectRepresentation"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "Facility": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "DefaultCalendar",
+          "referenceType": 1,
+          "target": "Calendar"
+        },
+        {
+          "name": "Site",
+          "referenceType": 1,
+          "target": "Site"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "Flow": {
+      "hasId": true,
+      "hasDefinitionId": true,
+      "references": [
+        {
+          "name": "ChangeSet",
+          "referenceType": 1,
+          "target": "ChangeSet"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "ChildType",
+        "RevisionState"
+      ]
+    },
+    "FlowLineFlow": {
+      "hasId": true,
+      "hasDefinitionId": true,
+      "references": [
+        {
+          "name": "Flow",
+          "referenceType": 7,
+          "target": "Flow"
+        },
+        {
+          "name": "FlowStep",
+          "referenceType": 1,
+          "target": "FlowStep"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "FlowLogicalName": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Flow",
+          "referenceType": 7,
+          "target": "Flow"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "FlowStep": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "Step"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "Folder": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "ParentFolder",
+          "referenceType": 1,
+          "target": "Folder"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "FutureAction": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Step",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "Flow",
+          "referenceType": 7,
+          "target": "Flow"
+        },
+        {
+          "name": "Product",
+          "referenceType": 7,
+          "target": "Product"
+        },
+        {
+          "name": "ProductGroup",
+          "referenceType": 7,
+          "target": "ProductGroup"
+        },
+        {
+          "name": "Material",
+          "referenceType": 1,
+          "target": "Material"
+        },
+        {
+          "name": "LinkedFutureLogisticAction",
+          "referenceType": 1,
+          "target": "FutureAction"
+        },
+        {
+          "name": "MergeToMaterial",
+          "referenceType": 1,
+          "target": "Material"
+        },
+        {
+          "name": "Reason",
+          "referenceType": 1,
+          "target": "Reason"
+        },
+        {
+          "name": "ActionFlow",
+          "referenceType": 7,
+          "target": "Flow"
+        },
+        {
+          "name": "ActionStep",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "ExperimentDefinitionMaterialGroup",
+          "referenceType": 1,
+          "target": "ExperimentDefinitionMaterialGroup"
+        },
+        {
+          "name": "SetResourceResource",
+          "referenceType": 1,
+          "target": "Resource"
+        },
+        {
+          "name": "SendAheadEvaluateFlow",
+          "referenceType": 7,
+          "target": "Flow"
+        },
+        {
+          "name": "SendAheadEvaluateStep",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "SendAheadMergeFlow",
+          "referenceType": 7,
+          "target": "Flow"
+        },
+        {
+          "name": "SendAheadMergeStep",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "SendAheadRun",
+          "referenceType": 1,
+          "target": "SendAheadRun"
+        },
+        {
+          "name": "SendAheadSubMaterialsSelectionRule",
+          "referenceType": 1,
+          "target": "Rule"
+        },
+        {
+          "name": "SendMailNotificationAssignedToEmployee",
+          "referenceType": 1,
+          "target": "Employee"
+        },
+        {
+          "name": "SetServiceService",
+          "referenceType": 1,
+          "target": "Service"
+        },
+        {
+          "name": "ProductionOrder",
+          "referenceType": 1,
+          "target": "ProductionOrder"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "SystemState",
+        "Action",
+        "Source",
+        "ExecutionMode",
+        "State",
+        "SplitMode",
+        "SplitType",
+        "SendAheadResultsCaptureMode",
+        "SendAheadSplitType",
+        "SendAheadSubMaterialsSelectionMode",
+        "SendAheadSystemSelection",
+        "SendMailNotificationAssignmentType",
+        "MergeType"
+      ]
+    },
+    "FutureActionMergeMaterial": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "FutureAction",
+          "referenceType": 1,
+          "target": "FutureAction"
+        },
+        {
+          "name": "Material",
+          "referenceType": 1,
+          "target": "Material"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "FutureActionSendAheadRunMaterialId": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "FutureAction"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "Material"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "FutureActionSplitMaterial": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "FutureAction",
+          "referenceType": 1,
+          "target": "FutureAction"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "FutureActionSplitMaterialId": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "FutureActionSplitMaterial"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "Material"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "Genealogy": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "AscMaterial",
+          "referenceType": 1,
+          "target": "Material"
+        },
+        {
+          "name": "AscStep",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "DescMaterial",
+          "referenceType": 1,
+          "target": "Material"
+        },
+        {
+          "name": "DescStep",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "Resource",
+          "referenceType": 1,
+          "target": "Resource"
+        },
+        {
+          "name": "AscResource",
+          "referenceType": 1,
+          "target": "Resource"
+        },
+        {
+          "name": "DescResource",
+          "referenceType": 1,
+          "target": "Resource"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "BOMAssemblyType"
+      ]
+    },
+    "ImportRemoteObject": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "InspectionOrder": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "ClosedBy",
+          "referenceType": 1,
+          "target": "Employee"
+        },
+        {
+          "name": "Facility",
+          "referenceType": 1,
+          "target": "Facility"
+        },
+        {
+          "name": "Flow",
+          "referenceType": 7,
+          "target": "Flow"
+        },
+        {
+          "name": "Material",
+          "referenceType": 1,
+          "target": "Material"
+        },
+        {
+          "name": "Product",
+          "referenceType": 7,
+          "target": "Product"
+        },
+        {
+          "name": "ProductGroup",
+          "referenceType": 7,
+          "target": "ProductGroup"
+        },
+        {
+          "name": "ProtocolInstance",
+          "referenceType": 1,
+          "target": "ProtocolInstance"
+        },
+        {
+          "name": "Resource",
+          "referenceType": 1,
+          "target": "Resource"
+        },
+        {
+          "name": "Step",
+          "referenceType": 1,
+          "target": "Step"
+        }
+      ],
+      "enums": [
+        "Result",
+        "SystemState",
+        "UniversalState"
+      ]
+    },
+    "InspectionOrderMaterial": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "InspectionOrder",
+          "referenceType": 1,
+          "target": "InspectionOrder"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "InspectionOrderStepSample": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "DataCollection",
+          "referenceType": 7,
+          "target": "DataCollection"
+        },
+        {
+          "name": "DataCollectionLimitSet",
+          "referenceType": 7,
+          "target": "DataCollectionLimitSet"
+        },
+        {
+          "name": "Flow",
+          "referenceType": 7,
+          "target": "Flow"
+        },
+        {
+          "name": "InspectionOrder",
+          "referenceType": 1,
+          "target": "InspectionOrder"
+        },
+        {
+          "name": "InspectionPlanStep",
+          "referenceType": 1,
+          "target": "InspectionPlanStep"
+        },
+        {
+          "name": "SplitStep",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "Step",
+          "referenceType": 1,
+          "target": "Step"
+        }
+      ],
+      "enums": [
+        "Result",
+        "SystemState",
+        "UniversalState"
+      ]
+    },
+    "InspectionPlan": {
+      "hasId": true,
+      "hasDefinitionId": true,
+      "references": [
+        {
+          "name": "ChangeSet",
+          "referenceType": 1,
+          "target": "ChangeSet"
+        },
+        {
+          "name": "FutureHoldReason",
+          "referenceType": 1,
+          "target": "Reason"
+        },
+        {
+          "name": "FutureHoldStep",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "HoldReason",
+          "referenceType": 1,
+          "target": "Reason"
+        },
+        {
+          "name": "Protocol",
+          "referenceType": 7,
+          "target": "Protocol"
+        }
+      ],
+      "enums": [
+        "FutureHoldCreationMode",
+        "UniversalState",
+        "RevisionState"
+      ]
+    },
+    "InspectionPlanConfiguration": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "InspectionPlanConfigurationStep": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "DataCollection",
+          "referenceType": 7,
+          "target": "DataCollection"
+        },
+        {
+          "name": "DataCollectionLimitSet",
+          "referenceType": 7,
+          "target": "DataCollectionLimitSet"
+        },
+        {
+          "name": "InspectionPlanConfiguration",
+          "referenceType": 1,
+          "target": "InspectionPlanConfiguration"
+        },
+        {
+          "name": "Step",
+          "referenceType": 1,
+          "target": "Step"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "InspectionPlanStep": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "InspectionFlow",
+          "referenceType": 7,
+          "target": "Flow"
+        },
+        {
+          "name": "InspectionStep",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "ScrapReason",
+          "referenceType": 1,
+          "target": "Reason"
+        },
+        {
+          "name": "SplitStep",
+          "referenceType": 1,
+          "target": "Step"
+        }
+      ],
+      "enums": [
+        "SplitMode",
+        "SplitType",
+        "UniversalState"
+      ]
+    },
+    "IntegrationEntry": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [],
+      "enums": [
+        "UniversalState",
+        "SystemState"
+      ]
+    },
+    "IntegrationMessage": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "IntegrationEntry",
+          "referenceType": 1,
+          "target": "IntegrationEntry"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "IoTAction": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "IoTEventDefinition",
+          "referenceType": 1,
+          "target": "IoTEventDefinition"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "IoTActionTask": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "IoTAction",
+          "referenceType": 1,
+          "target": "IoTAction"
+        },
+        {
+          "name": "IoTActionTaskDefinition",
+          "referenceType": 1,
+          "target": "IoTActionTaskDefinition"
+        },
+        {
+          "name": "PreviousIoTActionTask",
+          "referenceType": 1,
+          "target": "IoTActionTask"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "IoTActionTaskDefinition": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "IoTConsumer": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "IoTConsumerDefinition",
+          "referenceType": 1,
+          "target": "IoTConsumerDefinition"
+        }
+      ],
+      "enums": [
+        "EventFilterType",
+        "UniversalState"
+      ]
+    },
+    "IoTConsumerDefinition": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "IoTConsumerIoTEventDefinition": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "IoTConsumer"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "IoTEventDefinition"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "IoTEventDefinition": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "IoTSchema",
+          "referenceType": 1,
+          "target": "IoTSchema"
+        },
+        {
+          "name": "OwnerApp",
+          "referenceType": 1,
+          "target": "App"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "Scope",
+        "OwnerType"
+      ]
+    },
+    "IoTSchema": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "IoTSchemaProperty": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "IoTSchema",
+          "referenceType": 1,
+          "target": "IoTSchema"
+        },
+        {
+          "name": "IoTSchemaReference",
+          "referenceType": 1,
+          "target": "IoTSchema"
+        }
+      ],
+      "enums": [
+        "DataType",
+        "MaxFileSizeScale",
+        "UniversalState"
+      ]
+    },
+    "KPI": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Parameter",
+          "referenceType": 1,
+          "target": "Parameter"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "KPIType",
+        "Frequency",
+        "SourceType"
+      ]
+    },
+    "KPIDimension": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "KPI",
+          "referenceType": 1,
+          "target": "KPI"
+        },
+        {
+          "name": "SourceBusinessRule",
+          "referenceType": 1,
+          "target": "Rule"
+        }
+      ],
+      "enums": [
+        "Source",
+        "UniversalState",
+        "ValueType"
+      ]
+    },
+    "KPITimeFrame": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "KPI",
+          "referenceType": 1,
+          "target": "KPI"
+        },
+        {
+          "name": "KPIDimension",
+          "referenceType": 1,
+          "target": "KPIDimension"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "LogicalChart": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Chart",
+          "referenceType": 1,
+          "target": "Chart"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "YAxisScaleMode"
+      ]
+    },
+    "LossMultimedia": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Product",
+          "referenceType": 7,
+          "target": "Product"
+        },
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "Reason"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "Multimedia"
+        }
+      ],
+      "enums": [
+        "Assessment",
+        "MultimediaAddedFrom",
+        "UniversalState"
+      ]
+    },
+    "MaintenanceActivity": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Checklist",
+          "referenceType": 7,
+          "target": "Checklist"
+        },
+        {
+          "name": "DataCollection",
+          "referenceType": 7,
+          "target": "DataCollection"
+        },
+        {
+          "name": "DataCollectionLimitSet",
+          "referenceType": 7,
+          "target": "DataCollectionLimitSet"
+        },
+        {
+          "name": "ReworkChecklist",
+          "referenceType": 7,
+          "target": "Checklist"
+        },
+        {
+          "name": "ReworkDataCollection",
+          "referenceType": 7,
+          "target": "DataCollection"
+        },
+        {
+          "name": "ReworkDataCollectionLimitSet",
+          "referenceType": 7,
+          "target": "DataCollectionLimitSet"
+        },
+        {
+          "name": "BOM",
+          "referenceType": 7,
+          "target": "BOM"
+        }
+      ],
+      "enums": [
+        "BeginAndCompleteMode",
+        "CompletionAcceptanceMode",
+        "OrderReleaseMode",
+        "RequestApprovalMode",
+        "ScheduleNextMode",
+        "ScheduleType",
+        "TimeDueOnDayOfWeek",
+        "TimeDueScale",
+        "TimeScheduleMode",
+        "UniversalState",
+        "UsageBasedCounterType",
+        "InstancesToScheduleDurationScale",
+        "InstancesToSchedulePattern",
+        "UsageBasedCounterMode",
+        "MaintenanceType",
+        "MaterialTypeRestrictionMode"
+      ]
+    },
+    "MaintenanceActivityChart": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "MaintenanceActivity"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "Chart"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "DisplayMode"
+      ]
+    },
+    "MaintenanceActivityDocument": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "MaintenanceActivity"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 7,
+          "target": "Document"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "MaintenanceActivityIncludedActivity": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [],
+      "enums": []
+    },
+    "MaintenanceActivityOrder": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "CheckListInstance",
+          "referenceType": 1,
+          "target": "ChecklistInstance"
+        },
+        {
+          "name": "DataCollectionInstance",
+          "referenceType": 1,
+          "target": "DataCollectionInstance"
+        },
+        {
+          "name": "MaintenancePlanInstance",
+          "referenceType": 1,
+          "target": "MaintenancePlanInstance"
+        },
+        {
+          "name": "OwnerEmployee",
+          "referenceType": 1,
+          "target": "Employee"
+        },
+        {
+          "name": "ReworkToMAO",
+          "referenceType": 1,
+          "target": "MaintenanceActivityOrder"
+        },
+        {
+          "name": "ParentMAO",
+          "referenceType": 1,
+          "target": "MaintenanceActivityOrder"
+        },
+        {
+          "name": "BOM",
+          "referenceType": 7,
+          "target": "BOM"
+        },
+        {
+          "name": "MaintenanceActivity",
+          "referenceType": 1,
+          "target": "MaintenanceActivity"
+        }
+      ],
+      "enums": [
+        "BeginAndCompleteMode",
+        "CompletionAcceptanceMode",
+        "ExecutionState",
+        "OrderReleaseMode",
+        "RequestApprovalMode",
+        "ScheduleState",
+        "UniversalState",
+        "UsageBasedCounterType",
+        "UsageBasedCounterMode",
+        "MaintenanceType",
+        "MaterialTypeRestrictionMode"
+      ]
+    },
+    "MaintenanceActivityOrderCmfTimer": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "MaintenanceActivityOrder"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "CmfTimer"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "MaintenanceActivityOrderEmployee": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "MaintenanceActivityOrder"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "Employee"
+        },
+        {
+          "name": "Certification",
+          "referenceType": 1,
+          "target": "Certification"
+        },
+        {
+          "name": "Trainer",
+          "referenceType": 1,
+          "target": "Employee"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "Type"
+      ]
+    },
+    "MaintenanceActivityOrderPart": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "BOMProduct",
+          "referenceType": 1,
+          "target": "BOMProduct"
+        },
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "MaintenanceActivityOrder"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 7,
+          "target": "Product"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "MaintenanceActivityOrderPartMaterial": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "MaintenanceActivityOrderPart",
+          "referenceType": 1,
+          "target": "MaintenanceActivityOrderPart"
+        },
+        {
+          "name": "Material",
+          "referenceType": 1,
+          "target": "Material"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "MaintenanceActivityOrderRule": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "MaintenanceActivityOrder"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "Rule"
+        }
+      ],
+      "enums": [
+        "EventType",
+        "UniversalState"
+      ]
+    },
+    "MaintenanceActivityPersonnelRequirement": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "MaintenanceActivity"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "Certification"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "MaintenanceActivityRule": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "MaintenanceActivity"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "Rule"
+        }
+      ],
+      "enums": [
+        "EventType",
+        "UniversalState"
+      ]
+    },
+    "MaintenancePlan": {
+      "hasId": true,
+      "hasDefinitionId": true,
+      "references": [
+        {
+          "name": "ChangeSet",
+          "referenceType": 1,
+          "target": "ChangeSet"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "RevisionState"
+      ]
+    },
+    "MaintenancePlanInstance": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "MaintenancePlan",
+          "referenceType": 7,
+          "target": "MaintenancePlan"
+        },
+        {
+          "name": "Resource",
+          "referenceType": 1,
+          "target": "Resource"
+        },
+        {
+          "name": "Container",
+          "referenceType": 1,
+          "target": "Container"
+        },
+        {
+          "name": "Area",
+          "referenceType": 1,
+          "target": "Area"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "MaintenanceInstanceType"
+      ]
+    },
+    "Map": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "MapDefinition",
+          "referenceType": 1,
+          "target": "MapDefinition"
+        },
+        {
+          "name": "Step",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "Resource",
+          "referenceType": 1,
+          "target": "Resource"
+        },
+        {
+          "name": "Material",
+          "referenceType": 1,
+          "target": "Material"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "MapDefinition": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "MapDefinitionMask",
+          "referenceType": 1,
+          "target": "MapDefinitionMask"
+        },
+        {
+          "name": "Background",
+          "referenceType": 1,
+          "target": "Multimedia"
+        },
+        {
+          "name": "MapDefinitionLayout",
+          "referenceType": 1,
+          "target": "MapDefinitionLayout"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "RulerMode",
+        "Notch",
+        "DefaultRotation",
+        "LayoutType"
+      ]
+    },
+    "MapDefinitionLayer": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "MapDefinition",
+          "referenceType": 1,
+          "target": "MapDefinition"
+        },
+        {
+          "name": "BonusReason",
+          "referenceType": 1,
+          "target": "Reason"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "Type",
+        "DataType"
+      ]
+    },
+    "MapDefinitionLayerFilter": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "MapDefinitionLayer",
+          "referenceType": 1,
+          "target": "MapDefinitionLayer"
+        },
+        {
+          "name": "LossReason",
+          "referenceType": 1,
+          "target": "Reason"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "FilterType"
+      ]
+    },
+    "MapDefinitionLayout": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "MapDefinitionMask": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "MapDefinitionRegion": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "MapDefinition",
+          "referenceType": 1,
+          "target": "MapDefinition"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "MapLayer": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Map",
+          "referenceType": 1,
+          "target": "Map"
+        },
+        {
+          "name": "MapDefinitionLayer",
+          "referenceType": 1,
+          "target": "MapDefinitionLayer"
+        },
+        {
+          "name": "MapLayerContent",
+          "referenceType": 1,
+          "target": "MapLayerContent"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "MapLayerType"
+      ]
+    },
+    "MapLayerContent": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "MasterDataPackage": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [],
+      "enums": [
+        "LastExecutionOperation",
+        "LastExecutionResult",
+        "SystemState",
+        "UniversalState"
+      ]
+    },
+    "Material": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "CurrentChecklistInstance",
+          "referenceType": 1,
+          "target": "ChecklistInstance"
+        },
+        {
+          "name": "CurrentMaterialTransfer",
+          "referenceType": 1,
+          "target": "MaterialTransfer"
+        },
+        {
+          "name": "Facility",
+          "referenceType": 1,
+          "target": "Facility"
+        },
+        {
+          "name": "Flow",
+          "referenceType": 7,
+          "target": "Flow"
+        },
+        {
+          "name": "InTransitToFacility",
+          "referenceType": 1,
+          "target": "Facility"
+        },
+        {
+          "name": "LastProcessedResource",
+          "referenceType": 1,
+          "target": "Resource"
+        },
+        {
+          "name": "ParentMaterial",
+          "referenceType": 1,
+          "target": "Material"
+        },
+        {
+          "name": "Product",
+          "referenceType": 7,
+          "target": "Product"
+        },
+        {
+          "name": "ProductionOrder",
+          "referenceType": 1,
+          "target": "ProductionOrder"
+        },
+        {
+          "name": "RequiredService",
+          "referenceType": 1,
+          "target": "Service"
+        },
+        {
+          "name": "Step",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "CurrentSamplingPattern",
+          "referenceType": 1,
+          "target": "SamplingPattern"
+        },
+        {
+          "name": "RequiredFutureAction",
+          "referenceType": 1,
+          "target": "FutureAction"
+        },
+        {
+          "name": "LastProcessStepResource",
+          "referenceType": 1,
+          "target": "Resource"
+        },
+        {
+          "name": "MaterialTransferFromFacility",
+          "referenceType": 1,
+          "target": "Facility"
+        },
+        {
+          "name": "LastRecipe",
+          "referenceType": 7,
+          "target": "Recipe"
+        },
+        {
+          "name": "TopMostMaterial",
+          "referenceType": 1,
+          "target": "Material"
+        },
+        {
+          "name": "CurrentNote",
+          "referenceType": 1,
+          "target": "FutureAction"
+        },
+        {
+          "name": "Manufacturer",
+          "referenceType": 1,
+          "target": "BusinessPartner"
+        },
+        {
+          "name": "RequiredResource",
+          "referenceType": 1,
+          "target": "Resource"
+        },
+        {
+          "name": "Supplier",
+          "referenceType": 1,
+          "target": "BusinessPartner"
+        },
+        {
+          "name": "CurrentSendAheadRun",
+          "referenceType": 1,
+          "target": "SendAheadRun"
+        },
+        {
+          "name": "LastSetupResource",
+          "referenceType": 1,
+          "target": "Resource"
+        },
+        {
+          "name": "SubstrateMap",
+          "referenceType": 1,
+          "target": "SubstrateMap"
+        }
+      ],
+      "enums": [
+        "CurrentBOMAssemblyType",
+        "InTransitFromState",
+        "InTransitType",
+        "LastProcessState",
+        "ResourceAssociationType",
+        "SplitMergeRestrictionType",
+        "SystemState",
+        "UniversalState",
+        "EarliestTimeConstraintType",
+        "CurrentBOMTrackOutLossesMode",
+        "CurrentBOMWeighAndDispenseMode",
+        "LineAssemblyMode",
+        "LineValidationMode",
+        "FloorLifeCounterState",
+        "RequiredServiceSource",
+        "SetupStatus",
+        "ExperimentLockType"
+      ]
+    },
+    "MaterialCharacteristic": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Material",
+          "referenceType": 1,
+          "target": "Material"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "MaterialContainer": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "Material"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "Container"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "MaterialDefect": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Facility",
+          "referenceType": 1,
+          "target": "Facility"
+        },
+        {
+          "name": "Material",
+          "referenceType": 1,
+          "target": "Material"
+        },
+        {
+          "name": "OriginalReason",
+          "referenceType": 1,
+          "target": "Reason"
+        },
+        {
+          "name": "ParentMaterial",
+          "referenceType": 1,
+          "target": "Material"
+        },
+        {
+          "name": "PartNumber",
+          "referenceType": 7,
+          "target": "Product"
+        },
+        {
+          "name": "ProcessResource",
+          "referenceType": 1,
+          "target": "Resource"
+        },
+        {
+          "name": "Reason",
+          "referenceType": 1,
+          "target": "Reason"
+        },
+        {
+          "name": "RepairAction",
+          "referenceType": 1,
+          "target": "ReasonRepairAction"
+        },
+        {
+          "name": "ReplacementSourceMaterial",
+          "referenceType": 1,
+          "target": "Material"
+        },
+        {
+          "name": "Resource",
+          "referenceType": 1,
+          "target": "Resource"
+        },
+        {
+          "name": "ScrapReason",
+          "referenceType": 1,
+          "target": "Reason"
+        },
+        {
+          "name": "Step",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "PartProduct",
+          "referenceType": 7,
+          "target": "Product"
+        }
+      ],
+      "enums": [
+        "DefectSource",
+        "DefectType",
+        "LocationType",
+        "PanelSide",
+        "PartNumberType",
+        "SystemState",
+        "UniversalState"
+      ]
+    },
+    "MaterialDependency": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "FromMaterial",
+          "referenceType": 1,
+          "target": "Material"
+        },
+        {
+          "name": "FromStep",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "ToMaterial",
+          "referenceType": 1,
+          "target": "Material"
+        },
+        {
+          "name": "ToStep",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "FromFlow",
+          "referenceType": 7,
+          "target": "Flow"
+        },
+        {
+          "name": "ToFlow",
+          "referenceType": 7,
+          "target": "Flow"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "SystemState"
+      ]
+    },
+    "MaterialHoldReason": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "Material"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "Reason"
+        },
+        {
+          "name": "SendAheadRun",
+          "referenceType": 1,
+          "target": "SendAheadRun"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "MaterialLineStep": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Material",
+          "referenceType": 1,
+          "target": "Material"
+        },
+        {
+          "name": "Resource",
+          "referenceType": 1,
+          "target": "Resource"
+        },
+        {
+          "name": "Service",
+          "referenceType": 1,
+          "target": "Service"
+        },
+        {
+          "name": "Step",
+          "referenceType": 1,
+          "target": "Step"
+        }
+      ],
+      "enums": [
+        "BOMAssemblyType",
+        "BOMTrackOutLossesMode",
+        "UniversalState",
+        "BOMTrackInCheckMode"
+      ]
+    },
+    "MaterialLineStepResource": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "DurablesBOMInstance",
+          "referenceType": 1,
+          "target": "DurablesBOMInstance"
+        },
+        {
+          "name": "MaterialLineStep",
+          "referenceType": 1,
+          "target": "MaterialLineStep"
+        },
+        {
+          "name": "RecipeInstance",
+          "referenceType": 1,
+          "target": "RecipeInstance"
+        },
+        {
+          "name": "Resource",
+          "referenceType": 1,
+          "target": "Resource"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "MaterialNonSequentialPerformedStep": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "Material"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "NonSequentialFlow",
+          "referenceType": 7,
+          "target": "Flow"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "MaterialOffFlow": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "FromFlow",
+          "referenceType": 7,
+          "target": "Flow"
+        },
+        {
+          "name": "FromStep",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "GotoFlow",
+          "referenceType": 7,
+          "target": "Flow"
+        },
+        {
+          "name": "GotoStep",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "Material",
+          "referenceType": 1,
+          "target": "Material"
+        },
+        {
+          "name": "OffFlowFromResource",
+          "referenceType": 1,
+          "target": "Resource"
+        },
+        {
+          "name": "Reason",
+          "referenceType": 1,
+          "target": "Reason"
+        },
+        {
+          "name": "ReturnFlow",
+          "referenceType": 7,
+          "target": "Flow"
+        },
+        {
+          "name": "ReturnStep",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "ReworkPath",
+          "referenceType": 1,
+          "target": "ReworkPath"
+        },
+        {
+          "name": "LineReworkReturnMaterial",
+          "referenceType": 1,
+          "target": "Material"
+        },
+        {
+          "name": "LineReworkReturnResource",
+          "referenceType": 1,
+          "target": "Resource"
+        },
+        {
+          "name": "LineReworkReturnStep",
+          "referenceType": 1,
+          "target": "Step"
+        }
+      ],
+      "enums": [
+        "OffFlowFromState",
+        "OffFlowType",
+        "UniversalState",
+        "LineReworkType"
+      ]
+    },
+    "MaterialProductionOrder": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "Material"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "ProductionOrder"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "MaterialRemoteExport": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "Material"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "RemoteExport"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "MaterialResource": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "Material"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "Resource"
+        },
+        {
+          "name": "StorageBin",
+          "referenceType": 1,
+          "target": "StorageBin"
+        },
+        {
+          "name": "Location",
+          "referenceType": 1,
+          "target": "ResourceLocation"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "MaterialTimeConstraint": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "FromStep",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "ToStep",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "TimeLimitRule",
+          "referenceType": 1,
+          "target": "Rule"
+        },
+        {
+          "name": "WarningRule",
+          "referenceType": 1,
+          "target": "Rule"
+        },
+        {
+          "name": "Material",
+          "referenceType": 1,
+          "target": "Material"
+        },
+        {
+          "name": "ToFlow",
+          "referenceType": 7,
+          "target": "Flow"
+        }
+      ],
+      "enums": [
+        "SystemState",
+        "Type",
+        "UniversalState",
+        "Source"
+      ]
+    },
+    "MaterialTimeConstraintCmfTimer": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "MaterialTimeConstraint"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "CmfTimer"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "MaterialTransfer": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "ForMaterial",
+          "referenceType": 1,
+          "target": "Material"
+        },
+        {
+          "name": "MAO",
+          "referenceType": 1,
+          "target": "MaintenanceActivityOrder"
+        },
+        {
+          "name": "ReturnMaterial",
+          "referenceType": 1,
+          "target": "Material"
+        },
+        {
+          "name": "ApprovedBy",
+          "referenceType": 1,
+          "target": "Employee"
+        },
+        {
+          "name": "FromArea",
+          "referenceType": 1,
+          "target": "Area"
+        },
+        {
+          "name": "FromFacility",
+          "referenceType": 1,
+          "target": "Facility"
+        },
+        {
+          "name": "FromResource",
+          "referenceType": 1,
+          "target": "Resource"
+        },
+        {
+          "name": "FromStep",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "MaintenanceActivityOrder",
+          "referenceType": 1,
+          "target": "MaintenanceActivityOrder"
+        },
+        {
+          "name": "Product",
+          "referenceType": 7,
+          "target": "Product"
+        },
+        {
+          "name": "RequestedBy",
+          "referenceType": 1,
+          "target": "Employee"
+        },
+        {
+          "name": "ToArea",
+          "referenceType": 1,
+          "target": "Area"
+        },
+        {
+          "name": "ToFacility",
+          "referenceType": 1,
+          "target": "Facility"
+        },
+        {
+          "name": "ToResource",
+          "referenceType": 1,
+          "target": "Resource"
+        },
+        {
+          "name": "ToStep",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "PickupEmployee",
+          "referenceType": 1,
+          "target": "Employee"
+        }
+      ],
+      "enums": [
+        "AllowedPickup",
+        "RecurrenceType",
+        "SystemState",
+        "TransferMode",
+        "Type",
+        "UniversalState",
+        "OriginalMaterialTransferType"
+      ]
+    },
+    "MaterialTransferMaterial": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Material",
+          "referenceType": 1,
+          "target": "Material"
+        },
+        {
+          "name": "MaterialTransfer",
+          "referenceType": 1,
+          "target": "MaterialTransfer"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "MLModel": {
+      "hasId": true,
+      "hasDefinitionId": true,
+      "references": [
+        {
+          "name": "ChangeSet",
+          "referenceType": 1,
+          "target": "ChangeSet"
+        },
+        {
+          "name": "CmfDataSet",
+          "referenceType": 1,
+          "target": "CmfDataSet"
+        },
+        {
+          "name": "OrderByField",
+          "referenceType": 1,
+          "target": "CmfDataSetField"
+        }
+      ],
+      "enums": [
+        "MLModelType",
+        "ModelStatus",
+        "RevisionState",
+        "UniversalState"
+      ]
+    },
+    "MLModelFeature": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "MLModel",
+          "referenceType": 1,
+          "target": "MLModel"
+        }
+      ],
+      "enums": [
+        "FeatureType",
+        "UniversalState"
+      ]
+    },
+    "MLModelFeatureTransformation": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "MLModelFeature",
+          "referenceType": 1,
+          "target": "MLModelFeature"
+        }
+      ],
+      "enums": [
+        "TransformationType",
+        "UniversalState"
+      ]
+    },
+    "Multimedia": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Folder",
+          "referenceType": 1,
+          "target": "Folder"
+        }
+      ],
+      "enums": [
+        "Type",
+        "UniversalState"
+      ]
+    },
+    "NonWorkingTime": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "ShiftDefinitionShift",
+          "referenceType": 1,
+          "target": "ShiftDefinitionShift"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "Notification": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Area",
+          "referenceType": 1,
+          "target": "Area"
+        },
+        {
+          "name": "Facility",
+          "referenceType": 1,
+          "target": "Facility"
+        },
+        {
+          "name": "Material",
+          "referenceType": 1,
+          "target": "Material"
+        },
+        {
+          "name": "Resource",
+          "referenceType": 1,
+          "target": "Resource"
+        },
+        {
+          "name": "Step",
+          "referenceType": 1,
+          "target": "Step"
+        }
+      ],
+      "enums": [
+        "AssignmentType",
+        "ClearanceMode",
+        "SourceType",
+        "SystemState",
+        "UniversalState",
+        "VisibilityFilter"
+      ]
+    },
+    "NotificationParameter": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Notification",
+          "referenceType": 1,
+          "target": "Notification"
+        }
+      ],
+      "enums": [
+        "Type",
+        "UniversalState"
+      ]
+    },
+    "NotificationUserTracking": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Notification",
+          "referenceType": 1,
+          "target": "Notification"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "Package": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "ContentProduct",
+          "referenceType": 7,
+          "target": "Product"
+        },
+        {
+          "name": "ContentProductionOrder",
+          "referenceType": 1,
+          "target": "ProductionOrder"
+        },
+        {
+          "name": "Material",
+          "referenceType": 1,
+          "target": "Material"
+        },
+        {
+          "name": "ParentPackage",
+          "referenceType": 1,
+          "target": "Package"
+        },
+        {
+          "name": "Product",
+          "referenceType": 7,
+          "target": "Product"
+        },
+        {
+          "name": "TopMostPackage",
+          "referenceType": 1,
+          "target": "Package"
+        }
+      ],
+      "enums": [
+        "ContentType",
+        "SystemState",
+        "UniversalState"
+      ]
+    },
+    "PackageMaterial": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Material",
+          "referenceType": 1,
+          "target": "Material"
+        },
+        {
+          "name": "Package",
+          "referenceType": 1,
+          "target": "Package"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "Parameter": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [],
+      "enums": [
+        "DataType",
+        "ParameterScope",
+        "UniversalState"
+      ]
+    },
+    "PeriodicInventory": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Owner",
+          "referenceType": 1,
+          "target": "Employee"
+        }
+      ],
+      "enums": [
+        "SystemState",
+        "UniversalState"
+      ]
+    },
+    "PeriodicInventoryMaterial": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "PeriodicInventory",
+          "referenceType": 1,
+          "target": "PeriodicInventory"
+        },
+        {
+          "name": "Product",
+          "referenceType": 7,
+          "target": "Product"
+        },
+        {
+          "name": "Resource",
+          "referenceType": 1,
+          "target": "Resource"
+        },
+        {
+          "name": "ResourceStorageBin",
+          "referenceType": 1,
+          "target": "StorageBin"
+        }
+      ],
+      "enums": [
+        "SystemState",
+        "UniversalState"
+      ]
+    },
+    "PeriodicInventoryResource": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "PeriodicInventory",
+          "referenceType": 1,
+          "target": "PeriodicInventory"
+        },
+        {
+          "name": "Resource",
+          "referenceType": 1,
+          "target": "Resource"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "PickList": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "DestinationLocation",
+          "referenceType": 1,
+          "target": "Area"
+        },
+        {
+          "name": "ForMAO",
+          "referenceType": 1,
+          "target": "MaintenanceActivityOrder"
+        },
+        {
+          "name": "ForMaterial",
+          "referenceType": 1,
+          "target": "Material"
+        },
+        {
+          "name": "ForProductionOrder",
+          "referenceType": 1,
+          "target": "ProductionOrder"
+        },
+        {
+          "name": "ForResource",
+          "referenceType": 1,
+          "target": "Resource"
+        },
+        {
+          "name": "ForStep",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "Owner",
+          "referenceType": 1,
+          "target": "Employee"
+        },
+        {
+          "name": "SourceLocation",
+          "referenceType": 1,
+          "target": "Area"
+        },
+        {
+          "name": "TransferRequirement",
+          "referenceType": 1,
+          "target": "TransferRequirement"
+        },
+        {
+          "name": "StorageResource",
+          "referenceType": 1,
+          "target": "Resource"
+        },
+        {
+          "name": "ForResourceLocation",
+          "referenceType": 1,
+          "target": "ResourceLocation"
+        }
+      ],
+      "enums": [
+        "SystemState",
+        "UniversalState"
+      ]
+    },
+    "PickListItem": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "PickedMaterial",
+          "referenceType": 1,
+          "target": "Material"
+        },
+        {
+          "name": "PickList",
+          "referenceType": 1,
+          "target": "PickList"
+        },
+        {
+          "name": "Product",
+          "referenceType": 7,
+          "target": "Product"
+        },
+        {
+          "name": "StorageBin",
+          "referenceType": 1,
+          "target": "StorageBin"
+        },
+        {
+          "name": "StorageResource",
+          "referenceType": 1,
+          "target": "Resource"
+        },
+        {
+          "name": "TransferRequirementItem",
+          "referenceType": 1,
+          "target": "TransferRequirementItem"
+        }
+      ],
+      "enums": [
+        "SystemState",
+        "UniversalState"
+      ]
+    },
+    "Plan": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Area",
+          "referenceType": 1,
+          "target": "Area"
+        },
+        {
+          "name": "Calendar",
+          "referenceType": 1,
+          "target": "Calendar"
+        },
+        {
+          "name": "EffectivePlan",
+          "referenceType": 1,
+          "target": "Plan"
+        },
+        {
+          "name": "Enterprise",
+          "referenceType": 1,
+          "target": "Enterprise"
+        },
+        {
+          "name": "Facility",
+          "referenceType": 1,
+          "target": "Facility"
+        },
+        {
+          "name": "LastReleasedPlanScenario",
+          "referenceType": 1,
+          "target": "Plan"
+        },
+        {
+          "name": "ParentPlan",
+          "referenceType": 1,
+          "target": "Plan"
+        },
+        {
+          "name": "Site",
+          "referenceType": 1,
+          "target": "Site"
+        },
+        {
+          "name": "SubPlanVolumeSynchronizationRule",
+          "referenceType": 1,
+          "target": "Rule"
+        },
+        {
+          "name": "Timer",
+          "referenceType": 1,
+          "target": "CmfTimer"
+        }
+      ],
+      "enums": [
+        "ManufacturingLevelType",
+        "PlanApplicability",
+        "PlanItemLevel",
+        "SubPlanVolumeSynchronizationMode",
+        "TimeUnit",
+        "UniversalState"
+      ]
+    },
+    "PlanItem": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Plan",
+          "referenceType": 7,
+          "target": "Plan"
+        },
+        {
+          "name": "Product",
+          "referenceType": 7,
+          "target": "Product"
+        },
+        {
+          "name": "ProductGroup",
+          "referenceType": 7,
+          "target": "ProductGroup"
+        }
+      ],
+      "enums": [
+        "PlanItemLevel",
+        "Status",
+        "UniversalState"
+      ]
+    },
+    "PlanMaterialType": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Plan",
+          "referenceType": 7,
+          "target": "Plan"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "PlanStep": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Facility",
+          "referenceType": 7,
+          "target": "Facility"
+        },
+        {
+          "name": "Plan",
+          "referenceType": 7,
+          "target": "Plan"
+        },
+        {
+          "name": "Step",
+          "referenceType": 7,
+          "target": "Step"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "PlanTimeFrame": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Plan",
+          "referenceType": 7,
+          "target": "Plan"
+        }
+      ],
+      "enums": [
+        "TimeUnit",
+        "UniversalState"
+      ]
+    },
+    "PlanTimeFrameItem": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "LastReleasedPlanScenario",
+          "referenceType": 7,
+          "target": "Plan"
+        },
+        {
+          "name": "PlanItem",
+          "referenceType": 7,
+          "target": "PlanItem"
+        },
+        {
+          "name": "PlanTimeFrame",
+          "referenceType": 7,
+          "target": "PlanTimeFrame"
+        }
+      ],
+      "enums": [
+        "SystemState",
+        "UniversalState"
+      ]
+    },
+    "PrintableDocument": {
+      "hasId": true,
+      "hasDefinitionId": true,
+      "references": [
+        {
+          "name": "ChangeSet",
+          "referenceType": 1,
+          "target": "ChangeSet"
+        }
+      ],
+      "enums": [
+        "LayoutType",
+        "UniversalState",
+        "Scope",
+        "RevisionState"
+      ]
+    },
+    "PrintableDocumentContextItem": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [],
+      "enums": [
+        "SourceType",
+        "Type",
+        "UniversalState",
+        "ValueDataType"
+      ]
+    },
+    "PrintableDocumentContextItemPrintHistory": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "ContextItem",
+          "referenceType": 1,
+          "target": "PrintableDocumentContextItem"
+        },
+        {
+          "name": "PrintableDocumentPrintHistory",
+          "referenceType": 1,
+          "target": "PrintableDocumentPrintHistory"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "PrintableDocumentPrintHistory": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "Product": {
+      "hasId": true,
+      "hasDefinitionId": true,
+      "references": [
+        {
+          "name": "ChangeSet",
+          "referenceType": 1,
+          "target": "ChangeSet"
+        },
+        {
+          "name": "Flow",
+          "referenceType": 7,
+          "target": "Flow"
+        },
+        {
+          "name": "Step",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "ProductGroup",
+          "referenceType": 7,
+          "target": "ProductGroup"
+        },
+        {
+          "name": "DefaultMapDefinition",
+          "referenceType": 7,
+          "target": "MapDefinition"
+        },
+        {
+          "name": "SubstrateMap",
+          "referenceType": 1,
+          "target": "SubstrateMap"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "MaterialTransferMode",
+        "MaterialTransferApprovalMode",
+        "MaterialTransferAllowedPickup",
+        "HazardClassificationFire",
+        "HazardClassificationHealth",
+        "HazardClassificationInstability",
+        "HazardClassificationSpecific",
+        "FloorLifeUnitOfTime",
+        "ProductType",
+        "CADContentType",
+        "PanelType",
+        "ProductComponentLocationSource",
+        "ProductComponentSource",
+        "RevisionState",
+        "SchedulingMode",
+        "BottomViewMirrorMode",
+        "CADFileType",
+        "DefectsRepairPolicy"
+      ]
+    },
+    "ProductBinning": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "LossReason",
+          "referenceType": 1,
+          "target": "Reason"
+        },
+        {
+          "name": "SourceEntity",
+          "referenceType": 7,
+          "target": "Product"
+        },
+        {
+          "name": "Step",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 7,
+          "target": "Product"
+        }
+      ],
+      "enums": [
+        "BinType",
+        "UniversalState"
+      ]
+    },
+    "ProductCharacteristic": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Product",
+          "referenceType": 7,
+          "target": "Product"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "ProductCharacteristicRule": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "BOM",
+          "referenceType": 7,
+          "target": "BOM"
+        },
+        {
+          "name": "Checklist",
+          "referenceType": 7,
+          "target": "Checklist"
+        },
+        {
+          "name": "DataCollection",
+          "referenceType": 7,
+          "target": "DataCollection"
+        },
+        {
+          "name": "DataCollectionLimitSet",
+          "referenceType": 7,
+          "target": "DataCollectionLimitSet"
+        },
+        {
+          "name": "Document",
+          "referenceType": 7,
+          "target": "Document"
+        },
+        {
+          "name": "DurablesBOM",
+          "referenceType": 7,
+          "target": "BOM"
+        },
+        {
+          "name": "Recipe",
+          "referenceType": 7,
+          "target": "Recipe"
+        },
+        {
+          "name": "RecipeParameter",
+          "referenceType": 1,
+          "target": "Parameter"
+        },
+        {
+          "name": "Service",
+          "referenceType": 1,
+          "target": "Service"
+        },
+        {
+          "name": "Step",
+          "referenceType": 1,
+          "target": "Step"
+        }
+      ],
+      "enums": [
+        "BOMAssemblyType",
+        "BOMTrackInCheckMode",
+        "BOMTrackOutLossesMode",
+        "BOMWeighAndDispenseMode",
+        "Context",
+        "UniversalState"
+      ]
+    },
+    "ProductComponent": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "ComponentProduct",
+          "referenceType": 7,
+          "target": "Product"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "ProductComponentLocation": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [],
+      "enums": [
+        "Rotation",
+        "Side",
+        "UniversalState"
+      ]
+    },
+    "ProductDefect": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Defect",
+          "referenceType": 1,
+          "target": "Reason"
+        },
+        {
+          "name": "Product",
+          "referenceType": 7,
+          "target": "Product"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "ProductGroup": {
+      "hasId": true,
+      "hasDefinitionId": true,
+      "references": [
+        {
+          "name": "ChangeSet",
+          "referenceType": 1,
+          "target": "ChangeSet"
+        },
+        {
+          "name": "Flow",
+          "referenceType": 7,
+          "target": "Flow"
+        },
+        {
+          "name": "Step",
+          "referenceType": 1,
+          "target": "Step"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "RevisionState"
+      ]
+    },
+    "ProductGroupParameter": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "Parameter"
+        },
+        {
+          "name": "Step",
+          "referenceType": 1,
+          "target": "Step"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "Type"
+      ]
+    },
+    "ProductionOrder": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Customer",
+          "referenceType": 1,
+          "target": "BusinessPartner"
+        },
+        {
+          "name": "Facility",
+          "referenceType": 1,
+          "target": "Facility"
+        },
+        {
+          "name": "Product",
+          "referenceType": 7,
+          "target": "Product"
+        },
+        {
+          "name": "Flow",
+          "referenceType": 7,
+          "target": "Flow"
+        },
+        {
+          "name": "Step",
+          "referenceType": 1,
+          "target": "Step"
+        }
+      ],
+      "enums": [
+        "SystemState",
+        "UniversalState"
+      ]
+    },
+    "ProductionOrderCharacteristic": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "ProductionOrder",
+          "referenceType": 1,
+          "target": "ProductionOrder"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "ProductionOrderCharacteristicRuleResult": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "ProductCharacteristicRule",
+          "referenceType": 1,
+          "target": "ProductCharacteristicRule"
+        },
+        {
+          "name": "ProductionOrder",
+          "referenceType": 1,
+          "target": "ProductionOrder"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "ProductionOrderCmfTimer": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "ProductionOrder"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "CmfTimer"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "ProductionOrderStep": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Facility",
+          "referenceType": 1,
+          "target": "Facility"
+        },
+        {
+          "name": "Flow",
+          "referenceType": 7,
+          "target": "Flow"
+        },
+        {
+          "name": "ProductionOrder",
+          "referenceType": 1,
+          "target": "ProductionOrder"
+        },
+        {
+          "name": "Resource",
+          "referenceType": 1,
+          "target": "Resource"
+        },
+        {
+          "name": "Step",
+          "referenceType": 1,
+          "target": "Step"
+        }
+      ],
+      "enums": [
+        "SystemState",
+        "UniversalState"
+      ]
+    },
+    "ProductionOrderStepDependency": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "FromProductionOrderStep",
+          "referenceType": 1,
+          "target": "ProductionOrderStep"
+        },
+        {
+          "name": "FromStep",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "ProductionOrder",
+          "referenceType": 1,
+          "target": "ProductionOrder"
+        },
+        {
+          "name": "ToProductionOrderStep",
+          "referenceType": 1,
+          "target": "ProductionOrderStep"
+        },
+        {
+          "name": "ToStep",
+          "referenceType": 1,
+          "target": "Step"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "ProductManufacturer": {
+      "hasId": true,
+      "hasDefinitionId": true,
+      "references": [
+        {
+          "name": "ChangeSet",
+          "referenceType": 1,
+          "target": "ChangeSet"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "BusinessPartner"
+        }
+      ],
+      "enums": [
+        "FloorLifeUnitOfTime",
+        "UniversalState"
+      ]
+    },
+    "ProductParameter": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "Parameter"
+        },
+        {
+          "name": "Step",
+          "referenceType": 1,
+          "target": "Step"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "Type"
+      ]
+    },
+    "Protocol": {
+      "hasId": true,
+      "hasDefinitionId": true,
+      "references": [
+        {
+          "name": "ChangeSet",
+          "referenceType": 1,
+          "target": "ChangeSet"
+        },
+        {
+          "name": "DefaultOwner",
+          "referenceType": 1,
+          "target": "Employee"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "DefaultAutoStateChangeBehavior",
+        "RevisionState"
+      ]
+    },
+    "ProtocolInstance": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Facility",
+          "referenceType": 1,
+          "target": "Facility"
+        },
+        {
+          "name": "Flow",
+          "referenceType": 7,
+          "target": "Flow"
+        },
+        {
+          "name": "Product",
+          "referenceType": 7,
+          "target": "Product"
+        },
+        {
+          "name": "Step",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "Initiator",
+          "referenceType": 1,
+          "target": "Employee"
+        },
+        {
+          "name": "Owner",
+          "referenceType": 1,
+          "target": "Employee"
+        }
+      ],
+      "enums": [
+        "SystemState",
+        "UniversalState",
+        "Source"
+      ]
+    },
+    "ProtocolMaterial": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "ProtocolInstance"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "Material"
+        },
+        {
+          "name": "DispositionApprovedBy",
+          "referenceType": 1,
+          "target": "Employee"
+        },
+        {
+          "name": "DispositionDefinedBy",
+          "referenceType": 1,
+          "target": "Employee"
+        },
+        {
+          "name": "DispositionExecutedBy",
+          "referenceType": 1,
+          "target": "Employee"
+        },
+        {
+          "name": "DispositionLossReason",
+          "referenceType": 1,
+          "target": "Reason"
+        },
+        {
+          "name": "DispositionReworkGotoFlow",
+          "referenceType": 7,
+          "target": "Flow"
+        },
+        {
+          "name": "DispositionReworkGotoStep",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "DispositionReworkReason",
+          "referenceType": 1,
+          "target": "Reason"
+        },
+        {
+          "name": "DispositionReworkReturnFlow",
+          "referenceType": 7,
+          "target": "Flow"
+        },
+        {
+          "name": "DispositionReworkReturnStep",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "DispositionTemporaryOffFlowGotoFlow",
+          "referenceType": 7,
+          "target": "Flow"
+        },
+        {
+          "name": "DispositionTemporaryOffFlowGotoStep",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "DispositionTemporaryOffFlowReason",
+          "referenceType": 1,
+          "target": "Reason"
+        },
+        {
+          "name": "DispositionTemporaryOffFlowReturnFlow",
+          "referenceType": 7,
+          "target": "Flow"
+        },
+        {
+          "name": "DispositionTemporaryOffFlowReturnStep",
+          "referenceType": 1,
+          "target": "Step"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "Disposition"
+      ]
+    },
+    "ProtocolParameter": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [],
+      "enums": [
+        "DataType",
+        "UniversalState",
+        "DateTimePickerMode"
+      ]
+    },
+    "ProtocolPath": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Checklist",
+          "referenceType": 1,
+          "target": "ChecklistInstance"
+        },
+        {
+          "name": "Parent",
+          "referenceType": 1,
+          "target": "ProtocolInstance"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "ProtocolPathParameter": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "ProtocolPath"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "ProtocolParameter"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "ProtocolRelatedProtocolInstance": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "ProtocolResource": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "ProtocolInstance"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "Resource"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "ProtocolStateDetail": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Checklist",
+          "referenceType": 7,
+          "target": "Checklist"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "AutoStateChangeBehavior",
+        "DispositionMode",
+        "TaskCreationState"
+      ]
+    },
+    "ProtocolStateDetailParameter": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "ProtocolStateDetail"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "ProtocolParameter"
+        }
+      ],
+      "enums": [
+        "SourceType",
+        "UniversalState"
+      ]
+    },
+    "ProtocolTask": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "LatestProtocolStateCompletion",
+          "referenceType": 1,
+          "target": "ProtocolStateDetail"
+        },
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "ProtocolInstance"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "Task"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "Qualification": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [],
+      "enums": [
+        "UniversalState",
+        "ValidForScale",
+        "GracePeriodScale"
+      ]
+    },
+    "RandomizedPCA": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "MLModel",
+          "referenceType": 1,
+          "target": "MLModel"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "Reason": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [],
+      "enums": [
+        "ReasonType",
+        "UniversalState"
+      ]
+    },
+    "ReasonRepairAction": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Reason",
+          "referenceType": 1,
+          "target": "Reason"
+        }
+      ],
+      "enums": [
+        "PartReplacementMode",
+        "UniversalState"
+      ]
+    },
+    "Recipe": {
+      "hasId": true,
+      "hasDefinitionId": true,
+      "references": [
+        {
+          "name": "ChangeSet",
+          "referenceType": 1,
+          "target": "ChangeSet"
+        },
+        {
+          "name": "Body",
+          "referenceType": 1,
+          "target": "RecipeBody"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "BodyFormat",
+        "BodySource",
+        "RevisionState"
+      ]
+    },
+    "RecipeBody": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "RecipeInstance": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Flow",
+          "referenceType": 7,
+          "target": "Flow"
+        },
+        {
+          "name": "Material",
+          "referenceType": 1,
+          "target": "Material"
+        },
+        {
+          "name": "ParentRecipeInstance",
+          "referenceType": 1,
+          "target": "RecipeInstance"
+        },
+        {
+          "name": "Product",
+          "referenceType": 7,
+          "target": "Product"
+        },
+        {
+          "name": "Resource",
+          "referenceType": 1,
+          "target": "Resource"
+        },
+        {
+          "name": "Step",
+          "referenceType": 1,
+          "target": "Step"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "RecipeInstanceParameter": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "RecipeInstance"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "Parameter"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "SourceType"
+      ]
+    },
+    "RecipeParameter": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "Parameter"
+        },
+        {
+          "name": "Rule",
+          "referenceType": 1,
+          "target": "Rule"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "Type"
+      ]
+    },
+    "RemoteExport": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "DestinationSite",
+          "referenceType": 1,
+          "target": "Site"
+        }
+      ],
+      "enums": [
+        "State",
+        "UniversalState"
+      ]
+    },
+    "Resource": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Area",
+          "referenceType": 1,
+          "target": "Area"
+        },
+        {
+          "name": "SelectedRecipe",
+          "referenceType": 7,
+          "target": "Recipe"
+        },
+        {
+          "name": "SetupMatrix",
+          "referenceType": 1,
+          "target": "SetupMatrix"
+        },
+        {
+          "name": "SortRuleSet",
+          "referenceType": 1,
+          "target": "SortRuleSet"
+        },
+        {
+          "name": "TransportService",
+          "referenceType": 1,
+          "target": "Service"
+        },
+        {
+          "name": "LastProduct",
+          "referenceType": 7,
+          "target": "Product"
+        },
+        {
+          "name": "LastProductGroup",
+          "referenceType": 7,
+          "target": "ProductGroup"
+        },
+        {
+          "name": "LastRecipe",
+          "referenceType": 7,
+          "target": "Recipe"
+        },
+        {
+          "name": "LastService",
+          "referenceType": 1,
+          "target": "Service"
+        },
+        {
+          "name": "CurrentBOM",
+          "referenceType": 7,
+          "target": "BOM"
+        },
+        {
+          "name": "CurrentRecipe",
+          "referenceType": 7,
+          "target": "Recipe"
+        },
+        {
+          "name": "LastMaterial",
+          "referenceType": 1,
+          "target": "Material"
+        },
+        {
+          "name": "LastStep",
+          "referenceType": 1,
+          "target": "Step"
+        }
+      ],
+      "enums": [
+        "AutomationMode",
+        "CurrentBOMAssemblyType",
+        "DefaultScheduleView",
+        "DefaultSetupTimeTimeScale",
+        "DispatchScheduleType",
+        "LoadPortType",
+        "PositionUnitType",
+        "ProcessingType",
+        "SchedulingType",
+        "SelectedRecipeSource",
+        "SystemState",
+        "UniversalState",
+        "Dimension0Orientation",
+        "DimensionXOrientation",
+        "DimensionYOrientation",
+        "DimensionZOrientation",
+        "CalibrationStatus",
+        "CurrentRecipeSource",
+        "ResourceCapacityMode",
+        "LastSetupCharacteristic",
+        "LastSchedulingMode",
+        "ScheduleViewMode",
+        "Criticality",
+        "LaneRecipeMode"
+      ]
+    },
+    "ResourceContainer": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "Resource"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "Container"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "ResourceDurable": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "Resource"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "Material"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "ResourceEmployee": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "Resource"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "Employee"
+        },
+        {
+          "name": "Certification",
+          "referenceType": 1,
+          "target": "Certification"
+        },
+        {
+          "name": "Trainer",
+          "referenceType": 1,
+          "target": "Employee"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "ResourceInstrument": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "Resource"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "Resource"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "ResourceInventory": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Product",
+          "referenceType": 7,
+          "target": "Product"
+        },
+        {
+          "name": "Resource",
+          "referenceType": 1,
+          "target": "Resource"
+        }
+      ],
+      "enums": [
+        "ReorderMode",
+        "UniversalState"
+      ]
+    },
+    "ResourceLane": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Resource",
+          "referenceType": 1,
+          "target": "Resource"
+        }
+      ],
+      "enums": [
+        "CurrentRecipeSource",
+        "UniversalState"
+      ]
+    },
+    "ResourceLocation": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Resource",
+          "referenceType": 1,
+          "target": "Resource"
+        },
+        {
+          "name": "LastProduct",
+          "referenceType": 7,
+          "target": "Product"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "ResourceMeasurementCapability": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Parameter",
+          "referenceType": 1,
+          "target": "Parameter"
+        },
+        {
+          "name": "Resource",
+          "referenceType": 1,
+          "target": "Resource"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "ResourcePersonnelRequirements": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "Resource"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "Certification"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "AllocationType"
+      ]
+    },
+    "ResourceService": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "Resource"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "Service"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "ResourceStoredResource": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "Resource"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "Resource"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "ReworkPath": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "GotoFlow",
+          "referenceType": 7,
+          "target": "Flow"
+        },
+        {
+          "name": "GotoStep",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "ReturnStep",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "ReworkReason",
+          "referenceType": 1,
+          "target": "Reason"
+        },
+        {
+          "name": "SourceStep",
+          "referenceType": 1,
+          "target": "Step"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "Rule": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [],
+      "enums": [
+        "Type",
+        "UniversalState"
+      ]
+    },
+    "SamplingPattern": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Rule",
+          "referenceType": 1,
+          "target": "Rule"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "SamplingPatternType",
+        "SystemSamplingSelection",
+        "SystemSamplingSequence"
+      ]
+    },
+    "SamplingPlan": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [],
+      "enums": [
+        "DefaultSamplingType",
+        "UniversalState"
+      ]
+    },
+    "SamplingPlanContextInformation": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SamplingPlan",
+          "referenceType": 1,
+          "target": "SamplingPlan"
+        }
+      ],
+      "enums": [
+        "Context",
+        "UniversalState"
+      ]
+    },
+    "SamplingPlanContextValues": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SamplingPlanInstance",
+          "referenceType": 1,
+          "target": "SamplingPlanInstance"
+        },
+        {
+          "name": "SamplingPlanContextInformation",
+          "referenceType": 1,
+          "target": "SamplingPlanContextInformation"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "SamplingPlanInstance": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SamplingPlan",
+          "referenceType": 1,
+          "target": "SamplingPlan"
+        }
+      ],
+      "enums": [
+        "SamplingType",
+        "UniversalState"
+      ]
+    },
+    "Schedule": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [],
+      "enums": [
+        "UniversalState",
+        "Mode",
+        "DefaultScheduleView",
+        "FutureHoldsProcessingMode",
+        "HoldsProcessingMode",
+        "SchedulePersonnelMode",
+        "UnscheduledJobsHandlingMode",
+        "AutoReschedulingOperationalAccurateScenarioTimeDueScale",
+        "AutoReschedulingOperationalFastScenarioTimeDueScale",
+        "AutoReschedulingPlanningScenarioTimeDueScale"
+      ]
+    },
+    "ScheduleFeedStep": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "Schedule"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "Facility",
+          "referenceType": 1,
+          "target": "Facility"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "ScheduleMaterial": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Facility",
+          "referenceType": 1,
+          "target": "Facility"
+        },
+        {
+          "name": "Flow",
+          "referenceType": 7,
+          "target": "Flow"
+        },
+        {
+          "name": "Material",
+          "referenceType": 1,
+          "target": "Material"
+        },
+        {
+          "name": "Product",
+          "referenceType": 7,
+          "target": "Product"
+        },
+        {
+          "name": "ScheduleScenario",
+          "referenceType": 1,
+          "target": "ScheduleScenario"
+        },
+        {
+          "name": "Step",
+          "referenceType": 1,
+          "target": "Step"
+        }
+      ],
+      "enums": [
+        "ScheduleMaterialType",
+        "UniversalState",
+        "SchedulingMode"
+      ]
+    },
+    "ScheduleOptimizationCriteria": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Schedule",
+          "referenceType": 1,
+          "target": "Schedule"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "Criteria"
+      ]
+    },
+    "ScheduleScenario": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Schedule",
+          "referenceType": 1,
+          "target": "Schedule"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "SystemState",
+        "ProcessingState",
+        "SchedulingRule",
+        "SchedulePersonnelMode",
+        "Type"
+      ]
+    },
+    "ScheduleScenarioJob": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "ScheduleScenario",
+          "referenceType": 1,
+          "target": "ScheduleScenario"
+        },
+        {
+          "name": "Resource",
+          "referenceType": 1,
+          "target": "Resource"
+        },
+        {
+          "name": "Facility",
+          "referenceType": 1,
+          "target": "Facility"
+        },
+        {
+          "name": "Step",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "ScheduledMaterial",
+          "referenceType": 1,
+          "target": "ScheduleMaterial"
+        },
+        {
+          "name": "Product",
+          "referenceType": 7,
+          "target": "Product"
+        },
+        {
+          "name": "Service",
+          "referenceType": 1,
+          "target": "Service"
+        },
+        {
+          "name": "PlannedProductGroup",
+          "referenceType": 7,
+          "target": "ProductGroup"
+        },
+        {
+          "name": "PlannedRecipe",
+          "referenceType": 7,
+          "target": "Recipe"
+        },
+        {
+          "name": "ProductionOrderStep",
+          "referenceType": 1,
+          "target": "ProductionOrderStep"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "SystemState",
+        "EditState",
+        "ScheduleScenarioJobType",
+        "LogisticType",
+        "LastJobType",
+        "StepSetupCharacteristic"
+      ]
+    },
+    "ScheduleScenarioJobDurable": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Product",
+          "referenceType": 7,
+          "target": "Product"
+        },
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "ScheduleScenarioJob"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "Material"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "ScheduleScenarioJobEmployee": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Certification",
+          "referenceType": 1,
+          "target": "Certification"
+        },
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "ScheduleScenarioJob"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "Employee"
+        }
+      ],
+      "enums": [
+        "AllocationType",
+        "UniversalState"
+      ]
+    },
+    "ScheduleScenarioJobPredecessor": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "ScheduleScenarioJob",
+          "referenceType": 1,
+          "target": "ScheduleScenarioJob"
+        },
+        {
+          "name": "PredecessorScheduleScenarioJob",
+          "referenceType": 1,
+          "target": "ScheduleScenarioJob"
+        },
+        {
+          "name": "PredecessorScheduleScenarioMaintenanceActivity",
+          "referenceType": 1,
+          "target": "ScheduleScenarioMaintenanceActivity"
+        },
+        {
+          "name": "ScheduleScenarioMaintenanceActivity",
+          "referenceType": 1,
+          "target": "ScheduleScenarioMaintenanceActivity"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "Type",
+        "ConstraintFrom"
+      ]
+    },
+    "ScheduleScenarioKPI": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "ScheduleScenario",
+          "referenceType": 1,
+          "target": "ScheduleScenario"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "KPI"
+      ]
+    },
+    "ScheduleScenarioMaintenanceActivity": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "MaintenanceActivity",
+          "referenceType": 1,
+          "target": "MaintenanceActivity"
+        },
+        {
+          "name": "Resource",
+          "referenceType": 1,
+          "target": "Resource"
+        },
+        {
+          "name": "ScheduleScenario",
+          "referenceType": 1,
+          "target": "ScheduleScenario"
+        }
+      ],
+      "enums": [
+        "ApplicableTo",
+        "ScheduleScenarioMaintenanceType",
+        "UniversalState"
+      ]
+    },
+    "ScheduleScenarioMessage": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "ScheduleScenario",
+          "referenceType": 1,
+          "target": "ScheduleScenario"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "MessageType",
+        "Code"
+      ]
+    },
+    "ScheduleScenarioOptimizationCriteria": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "ScheduleScenario",
+          "referenceType": 1,
+          "target": "ScheduleScenario"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "Criteria"
+      ]
+    },
+    "ScheduleScenarioSortRule": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "ScheduleScenario",
+          "referenceType": 1,
+          "target": "ScheduleScenario"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "SortRule",
+        "SortDirection"
+      ]
+    },
+    "ScheduleSortRule": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Schedule",
+          "referenceType": 1,
+          "target": "Schedule"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "SortRule",
+        "SortDirection"
+      ]
+    },
+    "SendAheadRun": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "EvaluationFlow",
+          "referenceType": 7,
+          "target": "Flow"
+        },
+        {
+          "name": "EvaluationStep",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "MergeFlow",
+          "referenceType": 7,
+          "target": "Flow"
+        },
+        {
+          "name": "MergeStep",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "StartFlow",
+          "referenceType": 7,
+          "target": "Flow"
+        },
+        {
+          "name": "StartStep",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "WaitFlow",
+          "referenceType": 7,
+          "target": "Flow"
+        },
+        {
+          "name": "WaitStep",
+          "referenceType": 1,
+          "target": "Step"
+        }
+      ],
+      "enums": [
+        "Result",
+        "ResultsCaptureMode",
+        "SystemState",
+        "UniversalState"
+      ]
+    },
+    "SendAheadRunMaterial": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Material",
+          "referenceType": 1,
+          "target": "Material"
+        },
+        {
+          "name": "SendAheadRun",
+          "referenceType": 1,
+          "target": "SendAheadRun"
+        }
+      ],
+      "enums": [
+        "Result",
+        "ResultCaptureMode",
+        "SendAheadType",
+        "SplitScope",
+        "SplitType",
+        "SystemState",
+        "UniversalState"
+      ]
+    },
+    "Service": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [],
+      "enums": [
+        "ProcessingType",
+        "UniversalState"
+      ]
+    },
+    "SetupMatrix": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [],
+      "enums": [
+        "TimeScale",
+        "UniversalState"
+      ]
+    },
+    "SetupMatrixTransition": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "FromService",
+          "referenceType": 1,
+          "target": "Service"
+        },
+        {
+          "name": "SetupMatrix",
+          "referenceType": 1,
+          "target": "SetupMatrix"
+        },
+        {
+          "name": "ToService",
+          "referenceType": 1,
+          "target": "Service"
+        }
+      ],
+      "enums": [
+        "ChangeType",
+        "UniversalState"
+      ]
+    },
+    "ShiftDefinition": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Calendar",
+          "referenceType": 1,
+          "target": "Calendar"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "ShiftDefinitionShift": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "ShiftDefinition",
+          "referenceType": 1,
+          "target": "ShiftDefinition"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "ShiftLogbook": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Area",
+          "referenceType": 1,
+          "target": "Area"
+        },
+        {
+          "name": "ShiftDefinitionShift",
+          "referenceType": 1,
+          "target": "ShiftDefinitionShift"
+        },
+        {
+          "name": "CalendarDay",
+          "referenceType": 1,
+          "target": "CalendarDay"
+        },
+        {
+          "name": "Team",
+          "referenceType": 1,
+          "target": "Team"
+        },
+        {
+          "name": "SignOffBy",
+          "referenceType": 1,
+          "target": "Employee"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "SystemState"
+      ]
+    },
+    "ShiftLogbookEntry": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Equipment",
+          "referenceType": 1,
+          "target": "Resource"
+        },
+        {
+          "name": "ShiftLogbook",
+          "referenceType": 1,
+          "target": "ShiftLogbook"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "ShiftPlan": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Calendar",
+          "referenceType": 1,
+          "target": "Calendar"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "ShiftPlanRule": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "ShiftPlan"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "Rule"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "ShippingFacility": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "Facility"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "Facility"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "Site": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Enterprise",
+          "referenceType": 1,
+          "target": "Enterprise"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "SortRuleSet": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [],
+      "enums": [
+        "Scope",
+        "UniversalState"
+      ]
+    },
+    "SortRuleSetRule": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "SortRuleSet"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "Rule"
+        }
+      ],
+      "enums": [
+        "SortingDirection",
+        "UniversalState"
+      ]
+    },
+    "Step": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "LotTraveler",
+          "referenceType": 7,
+          "target": "PrintableDocument"
+        },
+        {
+          "name": "ProcessedStorageService",
+          "referenceType": 1,
+          "target": "Service"
+        },
+        {
+          "name": "QueuedStorageService",
+          "referenceType": 1,
+          "target": "Service"
+        },
+        {
+          "name": "SortRuleSet",
+          "referenceType": 1,
+          "target": "SortRuleSet"
+        },
+        {
+          "name": "StepViewSortRuleSet",
+          "referenceType": 1,
+          "target": "SortRuleSet"
+        },
+        {
+          "name": "MaterialLabel",
+          "referenceType": 7,
+          "target": "PrintableDocument"
+        }
+      ],
+      "enums": [
+        "DefaultScheduleView",
+        "SetupTimeTimeScale",
+        "TrackOutLossesMode",
+        "UniversalState",
+        "DefaultFutureLogisticActionExecutionMode",
+        "ProcessingType",
+        "SetupCharacteristic",
+        "SchedulingInventoryType",
+        "SplitChecklistMode",
+        "ProductionOrderSchedulingMode",
+        "ProductionOrderStepProcessingMode",
+        "ScheduleViewMode"
+      ]
+    },
+    "StepArea": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "Area"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "StepInspectionSeverityContextInformation": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Step",
+          "referenceType": 1,
+          "target": "Step"
+        }
+      ],
+      "enums": [
+        "Context",
+        "UniversalState"
+      ]
+    },
+    "StepInspectionSeverityInstance": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Flow",
+          "referenceType": 7,
+          "target": "Flow"
+        },
+        {
+          "name": "Product",
+          "referenceType": 7,
+          "target": "Product"
+        },
+        {
+          "name": "ProductGroup",
+          "referenceType": 7,
+          "target": "ProductGroup"
+        },
+        {
+          "name": "Resource",
+          "referenceType": 1,
+          "target": "Resource"
+        },
+        {
+          "name": "Step",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "PreviousInspectionSeverityRule",
+          "referenceType": 1,
+          "target": "Rule"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "StepInspectionSeveritySwitchingRule": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Rule",
+          "referenceType": 1,
+          "target": "Rule"
+        },
+        {
+          "name": "Step",
+          "referenceType": 1,
+          "target": "Step"
+        }
+      ],
+      "enums": [
+        "Direction",
+        "FilterType",
+        "FilterUnitOfTime",
+        "UniversalState"
+      ]
+    },
+    "StepLogicalName": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Step",
+          "referenceType": 1,
+          "target": "Step"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "StepReason": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "Reason"
+        },
+        {
+          "name": "LossStep",
+          "referenceType": 1,
+          "target": "Step"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "StepSamplingPlan": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "SamplingPlan"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "StorageBin": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Product",
+          "referenceType": 7,
+          "target": "Product"
+        },
+        {
+          "name": "ProductGroup",
+          "referenceType": 7,
+          "target": "ProductGroup"
+        },
+        {
+          "name": "Resource",
+          "referenceType": 1,
+          "target": "Resource"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "SubContainer": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "Container"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "Container"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "SubFlow": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "TargetEntity",
+          "referenceType": 7,
+          "target": "Flow"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "SubProduct": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Facility",
+          "referenceType": 1,
+          "target": "Facility"
+        },
+        {
+          "name": "SourceEntity",
+          "referenceType": 7,
+          "target": "Product"
+        },
+        {
+          "name": "Step",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 7,
+          "target": "Product"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "SubRecipe": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "ChildRecipe",
+          "referenceType": 7,
+          "target": "Recipe"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "SubRecipeParameter": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "SubRecipe"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "Parameter"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "SubResource": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "Resource"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "Resource"
+        },
+        {
+          "name": "ConsumableFeedLocation",
+          "referenceType": 1,
+          "target": "ResourceLocation"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "SubstrateMap": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "BinConverter",
+          "referenceType": 1,
+          "target": "BinConverter"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "SubstrateMapContent": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SubstrateMap",
+          "referenceType": 1,
+          "target": "SubstrateMap"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "SubstrateMapSubstrate": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SubstrateMap",
+          "referenceType": 1,
+          "target": "SubstrateMap"
+        }
+      ],
+      "enums": [
+        "SubstrateType",
+        "UniversalState"
+      ]
+    },
+    "SubstrateMapSubstrateAlias": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SubstrateMap",
+          "referenceType": 1,
+          "target": "SubstrateMap"
+        }
+      ],
+      "enums": [
+        "SubstrateType",
+        "UniversalState"
+      ]
+    },
+    "Task": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "CompletedBy",
+          "referenceType": 1,
+          "target": "Employee"
+        },
+        {
+          "name": "OriginalOwner",
+          "referenceType": 1,
+          "target": "Employee"
+        },
+        {
+          "name": "Owner",
+          "referenceType": 1,
+          "target": "Employee"
+        },
+        {
+          "name": "Requester",
+          "referenceType": 1,
+          "target": "Employee"
+        }
+      ],
+      "enums": [
+        "Priority",
+        "SystemState",
+        "UniversalState"
+      ]
+    },
+    "Team": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Calendar",
+          "referenceType": 1,
+          "target": "Calendar"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "TransferOrder": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "DestinationLocation",
+          "referenceType": 1,
+          "target": "Area"
+        },
+        {
+          "name": "ForMAO",
+          "referenceType": 1,
+          "target": "MaintenanceActivityOrder"
+        },
+        {
+          "name": "ForMaterial",
+          "referenceType": 1,
+          "target": "Material"
+        },
+        {
+          "name": "ForProductionOrder",
+          "referenceType": 1,
+          "target": "ProductionOrder"
+        },
+        {
+          "name": "ForResource",
+          "referenceType": 1,
+          "target": "Resource"
+        },
+        {
+          "name": "ForStep",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "Owner",
+          "referenceType": 1,
+          "target": "Employee"
+        },
+        {
+          "name": "PickList",
+          "referenceType": 1,
+          "target": "PickList"
+        },
+        {
+          "name": "Resource",
+          "referenceType": 1,
+          "target": "Resource"
+        },
+        {
+          "name": "SourceLocation",
+          "referenceType": 1,
+          "target": "Area"
+        },
+        {
+          "name": "TransferRequirement",
+          "referenceType": 1,
+          "target": "TransferRequirement"
+        },
+        {
+          "name": "ForResourceLocation",
+          "referenceType": 1,
+          "target": "ResourceLocation"
+        }
+      ],
+      "enums": [
+        "CreationMode",
+        "SystemState",
+        "UniversalState"
+      ]
+    },
+    "TransferOrderItem": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "DestinationStorageBin",
+          "referenceType": 1,
+          "target": "StorageBin"
+        },
+        {
+          "name": "DestinationStorageResource",
+          "referenceType": 1,
+          "target": "Resource"
+        },
+        {
+          "name": "Manufacturer",
+          "referenceType": 1,
+          "target": "BusinessPartner"
+        },
+        {
+          "name": "Material",
+          "referenceType": 1,
+          "target": "Material"
+        },
+        {
+          "name": "PickListItem",
+          "referenceType": 1,
+          "target": "PickListItem"
+        },
+        {
+          "name": "Product",
+          "referenceType": 7,
+          "target": "Product"
+        },
+        {
+          "name": "SourceStorageBin",
+          "referenceType": 1,
+          "target": "StorageBin"
+        },
+        {
+          "name": "SourceStorageResource",
+          "referenceType": 1,
+          "target": "Resource"
+        },
+        {
+          "name": "Supplier",
+          "referenceType": 1,
+          "target": "BusinessPartner"
+        },
+        {
+          "name": "TransferOrder",
+          "referenceType": 1,
+          "target": "TransferOrder"
+        },
+        {
+          "name": "TransferRequirementItem",
+          "referenceType": 1,
+          "target": "TransferRequirementItem"
+        }
+      ],
+      "enums": [
+        "FloorLifeUnitOfTime",
+        "SystemState",
+        "Type",
+        "UniversalState"
+      ]
+    },
+    "TransferRequirement": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "DestinationLocation",
+          "referenceType": 1,
+          "target": "Area"
+        },
+        {
+          "name": "ForLocation",
+          "referenceType": 1,
+          "target": "Area"
+        },
+        {
+          "name": "ForMAO",
+          "referenceType": 1,
+          "target": "MaintenanceActivityOrder"
+        },
+        {
+          "name": "ForMaterial",
+          "referenceType": 1,
+          "target": "Material"
+        },
+        {
+          "name": "ForProductionOrder",
+          "referenceType": 1,
+          "target": "ProductionOrder"
+        },
+        {
+          "name": "ForResource",
+          "referenceType": 1,
+          "target": "Resource"
+        },
+        {
+          "name": "ForStep",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "SourceLocation",
+          "referenceType": 1,
+          "target": "Area"
+        },
+        {
+          "name": "ForResourceLocation",
+          "referenceType": 1,
+          "target": "ResourceLocation"
+        }
+      ],
+      "enums": [
+        "SystemState",
+        "UniversalState"
+      ]
+    },
+    "TransferRequirementItem": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "Product",
+          "referenceType": 7,
+          "target": "Product"
+        },
+        {
+          "name": "ResourceInventory",
+          "referenceType": 1,
+          "target": "ResourceInventory"
+        },
+        {
+          "name": "TransferRequirement",
+          "referenceType": 1,
+          "target": "TransferRequirement"
+        },
+        {
+          "name": "RequestedBOMProduct",
+          "referenceType": 1,
+          "target": "BOMProduct"
+        }
+      ],
+      "enums": [
+        "SystemState",
+        "UniversalState"
+      ]
+    },
+    "UIPage": {
+      "hasId": true,
+      "hasDefinitionId": true,
+      "references": [
+        {
+          "name": "ChangeSet",
+          "referenceType": 1,
+          "target": "ChangeSet"
+        },
+        {
+          "name": "Folder",
+          "referenceType": 1,
+          "target": "Folder"
+        }
+      ],
+      "enums": [
+        "UniversalState",
+        "UIType",
+        "PinType",
+        "RevisionState",
+        "Scope"
+      ]
+    },
+    "UIPagePreset": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [],
+      "enums": [
+        "PinType",
+        "UniversalState"
+      ]
+    },
+    "Workgroup": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "ShiftPlan",
+          "referenceType": 1,
+          "target": "ShiftPlan"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "WorkgroupPersonnelRequirements": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "Workgroup"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "Certification"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "WorkgroupResource": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "Workgroup"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "Resource"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    },
+    "WorkgroupStep": {
+      "hasId": true,
+      "hasDefinitionId": false,
+      "references": [
+        {
+          "name": "SourceEntity",
+          "referenceType": 1,
+          "target": "Workgroup"
+        },
+        {
+          "name": "TargetEntity",
+          "referenceType": 1,
+          "target": "Step"
+        },
+        {
+          "name": "Facility",
+          "referenceType": 1,
+          "target": "Facility"
+        }
+      ],
+      "enums": [
+        "UniversalState"
+      ]
+    }
+  }
+}

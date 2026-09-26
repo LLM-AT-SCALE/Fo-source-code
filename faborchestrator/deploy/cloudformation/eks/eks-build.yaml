@@ -1,0 +1,177 @@
+AWSTemplateFormatVersion: '2010-09-09'
+# =============================================================================
+# EKS image build — a CodeBuild batch that builds the six module images in
+# parallel from a source zip in S3 and pushes them to ECR (fo-dev/<module>).
+#
+# No GitHub access and no Docker on anyone's laptop:
+#   deploy/scripts/aws-build-images.sh
+#     1. `git archive` of the committed code  -> s3://<ArtifactBucket>/eks-source/faborchestrator.zip
+#     2. start-build-batch with IMAGE_TAG=<7-char commit id>
+#     3. each child build runs deploy/Dockerfile.image for one module and pushes
+#        <repo>:<commit> and <repo>:latest
+# =============================================================================
+Description: >-
+  FabOrchestrator EKS images: CodeBuild batch that builds the six module images
+  from a source zip in S3 and pushes them to ECR.
+
+Parameters:
+  EnvName:
+    Type: String
+    Default: fo-dev
+  ArtifactBucket:
+    Type: String
+    Default: fo-dev-pipeline-artifacts-358982197923
+    Description: Existing bucket that receives the source zip.
+  SourceKey:
+    Type: String
+    Default: eks-source/faborchestrator.zip
+  EcrRepositoryPrefix:
+    Type: String
+    Default: fo-dev
+  BuildComputeType:
+    Type: String
+    Default: BUILD_GENERAL1_LARGE
+    AllowedValues: [BUILD_GENERAL1_MEDIUM, BUILD_GENERAL1_LARGE, BUILD_GENERAL1_XLARGE]
+    Description: next build uses a 3 GB heap; LARGE (8 vCPU / 15 GB) keeps it comfortable.
+
+Resources:
+  BuildLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/codebuild/${EnvName}-eks-images'
+      RetentionInDays: 60
+
+  BuildRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${EnvName}-eks-images-build'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: { Service: codebuild.amazonaws.com }
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: build
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: Logs
+                Effect: Allow
+                Action: [logs:CreateLogStream, logs:PutLogEvents]
+                Resource: !Sub '${BuildLogGroup.Arn}:*'
+              - Sid: SourceZip
+                Effect: Allow
+                Action: [s3:GetObject, s3:GetObjectVersion]
+                Resource: !Sub 'arn:aws:s3:::${ArtifactBucket}/eks-source/*'
+              - Sid: SourceBucket
+                Effect: Allow
+                Action: [s3:GetBucketAcl, s3:GetBucketLocation]
+                Resource: !Sub 'arn:aws:s3:::${ArtifactBucket}'
+              - Sid: EcrLogin
+                Effect: Allow
+                Action: ecr:GetAuthorizationToken
+                Resource: '*'
+              - Sid: EcrPush
+                Effect: Allow
+                Action:
+                  - ecr:BatchCheckLayerAvailability
+                  - ecr:BatchGetImage
+                  - ecr:GetDownloadUrlForLayer
+                  - ecr:InitiateLayerUpload
+                  - ecr:UploadLayerPart
+                  - ecr:CompleteLayerUpload
+                  - ecr:PutImage
+                Resource: !Sub 'arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/${EcrRepositoryPrefix}/*'
+              # A batch build starts one child build per image.
+              - Sid: BatchChildren
+                Effect: Allow
+                Action: [codebuild:StartBuild, codebuild:StopBuild, codebuild:RetryBuild]
+                Resource: !Sub 'arn:aws:codebuild:${AWS::Region}:${AWS::AccountId}:project/${EnvName}-eks-images'
+
+  BuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Sub '${EnvName}-eks-images'
+      Description: Builds and pushes the six FabOrchestrator module images (one batch child per image).
+      ServiceRole: !GetAtt BuildRole.Arn
+      Source:
+        Type: S3
+        Location: !Sub '${ArtifactBucket}/${SourceKey}'
+        BuildSpec: |
+          version: 0.2
+          batch:
+            fast-fail: false
+            build-list:
+              - identifier: home
+                env: { variables: { IMAGE: home } }
+              - identifier: support_engineer
+                env: { variables: { IMAGE: support-engineer } }
+              - identifier: master_data_load
+                env: { variables: { IMAGE: master-data-load } }
+              - identifier: coding_agent
+                env: { variables: { IMAGE: coding-agent } }
+              - identifier: admin
+                env: { variables: { IMAGE: admin } }
+              - identifier: fabinsight
+                env: { variables: { IMAGE: fabinsight } }
+          # IMAGES (comma list, default "all") picks which children do any work;
+          # the others finish in seconds without building or pushing.
+          phases:
+            pre_build:
+              commands:
+                - REGISTRY="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com"
+                - REPO="$REGISTRY/$ECR_PREFIX/$IMAGE"
+                - TAG="${IMAGE_TAG:-manual-$(date +%Y%m%d%H%M)}"
+                - SKIP=0; case ",${IMAGES:-all}," in *,all,*|*",$IMAGE,"*) ;; *) SKIP=1 ;; esac
+                - if [ "$SKIP" = 1 ]; then echo "$IMAGE not selected (IMAGES=$IMAGES) - skipped"; else aws ecr get-login-password | docker login --username AWS --password-stdin "$REGISTRY"; fi
+            build:
+              commands:
+                - cd faborchestrator
+                - |
+                  if [ "$SKIP" = 0 ]; then
+                    echo "building $IMAGE -> $REPO:$TAG"
+                    docker build --platform linux/amd64 -f deploy/Dockerfile.image \
+                      --build-arg IMAGE="$IMAGE" \
+                      --build-arg NODE_IMAGE=public.ecr.aws/docker/library/node:22-alpine \
+                      -t "$REPO:$TAG" -t "$REPO:latest" .
+                  fi
+            post_build:
+              commands:
+                - '[ "$CODEBUILD_BUILD_SUCCEEDING" = "1" ] || exit 1'
+                - |
+                  if [ "$SKIP" = 0 ]; then
+                    docker push "$REPO:$TAG"
+                    docker push "$REPO:latest"
+                    echo "pushed $REPO:$TAG"
+                  fi
+      Artifacts:
+        Type: NO_ARTIFACTS
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: !Ref BuildComputeType
+        Image: aws/codebuild/amazonlinux-x86_64-standard:5.0
+        PrivilegedMode: true            # docker build
+        EnvironmentVariables:
+          - { Name: AWS_ACCOUNT_ID, Value: !Ref 'AWS::AccountId' }
+          - { Name: ECR_PREFIX, Value: !Ref EcrRepositoryPrefix }
+      BuildBatchConfig:
+        ServiceRole: !GetAtt BuildRole.Arn
+        TimeoutInMins: 60
+        Restrictions:
+          MaximumBuildsAllowed: 6
+          ComputeTypesAllowed: [!Ref BuildComputeType]
+      TimeoutInMinutes: 45
+      Cache:
+        Type: LOCAL
+        Modes: [LOCAL_DOCKER_LAYER_CACHE]
+      LogsConfig:
+        CloudWatchLogs:
+          Status: ENABLED
+          GroupName: !Ref BuildLogGroup
+
+Outputs:
+  BuildProjectName:
+    Value: !Ref BuildProject
+  SourceLocation:
+    Value: !Sub 's3://${ArtifactBucket}/${SourceKey}'

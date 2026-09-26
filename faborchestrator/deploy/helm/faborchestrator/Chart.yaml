@@ -1,0 +1,9 @@
+apiVersion: v2
+name: faborchestrator
+description: >-
+  FabOrchestrator on EKS — the six module images (deploy/modules.json) as one
+  release. Pods attach to the ALB target groups created by
+  deploy/cloudformation/eks/eks-edge.yaml through TargetGroupBindings.
+type: application
+version: 0.1.0
+appVersion: "2e7b4dd"

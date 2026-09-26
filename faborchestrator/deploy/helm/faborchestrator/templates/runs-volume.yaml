@@ -1,0 +1,39 @@
+{{- /*
+Coding Agent run output: a static EFS volume on the edge stack's access point
+(uid/gid 1001 = the `nextjs` user of the image). Retained if the release is
+deleted — it holds customer content.
+*/ -}}
+{{- with .Values.runsVolume }}
+{{- if .fileSystemId }}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ $.Release.Name }}-po-ui-runs
+spec:
+  capacity:
+    storage: {{ .size }}
+  volumeMode: Filesystem
+  accessModes: [ReadWriteMany]
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: ""
+  mountOptions: [tls]
+  csi:
+    driver: efs.csi.aws.com
+    volumeHandle: {{ .fileSystemId }}::{{ .accessPointId }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: po-ui-runs
+  namespace: {{ $.Release.Namespace }}
+  annotations:
+    helm.sh/resource-policy: keep
+spec:
+  accessModes: [ReadWriteMany]
+  storageClassName: ""
+  volumeName: {{ $.Release.Name }}-po-ui-runs
+  resources:
+    requests:
+      storage: {{ .size }}
+{{- end }}
+{{- end }}

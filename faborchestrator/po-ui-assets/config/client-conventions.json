@@ -1,0 +1,208 @@
+{
+  "$comment": [
+    "CLIENT CONVENTIONS — Athena's standards, not CMF laws.",
+    "",
+    "Everything here is a choice a client made, and a different client would choose",
+    "differently. That is what separates this file from app/src/platform.ts: the",
+    "platform constants are facts about CMF and cannot vary; these can.",
+    "",
+    "Evidence for each value is recorded alongside it. Where something is only a",
+    "convention observed in a handful of samples, that is stated - it is not a rule",
+    "we have proven, and a page that breaks it may be legitimate rather than wrong.",
+    "That is why these produce WARN rather than FAIL."
+  ],
+  "client": "Athena",
+  "tenant": "EntegrisKSPUpgrade",
+  "namePrefix": {
+    "value": "Custom",
+    "severity": "FAIL",
+    "why": "Stated explicitly by Athena in writing: 'all newly created artifacts should have the Custom prefix - XML files, queries, APIs and any other related components.' An instruction, not an observation, so a breach is a FAIL. SEVERITY DELIBERATELY UNCHANGED despite the measurement below: the rule is their written instruction, and weakening it is their call, not ours. What the measurement changes is the QUESTION we ask them (Q-20, sharpened; Q-28), not the rule.",
+    "_alsoMeasured": {
+      "measuredOn": "2026-08-31",
+      "note": [
+        "Measured across every export Athena delivered, de-duplicated by (object type, Name),",
+        "with the test-pair exclusion applied. The rule was previously recorded as breached by",
+        "'two of their own older artifacts' (Q-20). It is broader than that in three ways, and",
+        "each one changes what the question to Athena should be.",
+        "",
+        "1. IT IS 8 OF 30, NOT 2 - and it spans three artifact classes, including one nobody",
+        "   had looked at (a PrintableDocument).",
+        "",
+        "2. IT IS NOT CHRONOLOGICAL, so 'they predate the convention' does not hold. The",
+        "   breaches run from package 2.1.0 to 2.39.0, and 'Load Materials to Feeder' - the",
+        "   NEWEST page in the delivery, shipped at 2.28.0 and again at 2.39.0 - is one of them,",
+        "   while CustomProductionOrderManagementUI at 2.1.0 carries the prefix. 'BinInventory'",
+        "   (2.1.0) was later re-shipped as 'Bin Inventory' (2.8.0): renamed, gaining a space,",
+        "   still without the prefix.",
+        "",
+        "3. THE NAMES ARE LOAD-BEARING, which makes this a correctness question rather than a",
+        "   tidiness one. F-150 established that CMF resolves a reference BY NAME",
+        "   (GetObjectByName), and five delivered pages reference 'Bin Inventory' by name while",
+        "   03_TransferTote.xml references 'BinInventory' and 'SampleNewQ'. Renaming on import",
+        "   leaves those references resolving to nothing - a blank widget, which CMF's import",
+        "   validator does not catch (F-44).",
+        "",
+        "AND THE MECHANICAL RULE DOES NOT COMPOSE WITH THEIR SPACED NAMES. applyNamePrefix is a",
+        "concatenation, so 'Bin Inventory' becomes 'CustomBin Inventory' - a name no convention",
+        "would produce. Two of their pages already carry the prefix WITH a space",
+        "('Custom Core Call ERP Message', 'Custom Material Reattachment'), so 'Custom' + space is",
+        "a form they do use; 'CustomBin Inventory' is not. Separately, 'Bin Inventory' and",
+        "'BinInventory' are two distinct artifacts that a de-spacing rule would collapse onto one",
+        "name.",
+        "",
+        "None of this is fixed here on purpose. The rule is theirs; the evidence is ours."
+      ],
+      "deliveredArtifacts": 30,
+      "carryingThePrefix": 22,
+      "breaches": 8,
+      "byObjectType": {
+        "UIPage": { "artifacts": 16, "prefixed": 11, "breaches": 5 },
+        "QueryObject": { "artifacts": 13, "prefixed": 11, "breaches": 2 },
+        "PrintableDocument": { "artifacts": 1, "prefixed": 0, "breaches": 1 }
+      },
+      "breachingNames": {
+        "Bin Inventory": "UIPage, package 2.8.0 - referenced BY NAME from 5 other delivered pages",
+        "BinInventory": "UIPage, package 2.1.0 - referenced BY NAME from 03_TransferTote.xml",
+        "Load Materials to Feeder": "UIPage, packages 2.28.0 and 2.39.0 - the newest page delivered",
+        "Transfer Inventory ( Non-Tote )": "UIPage, packages 2.12.0 and 2.16.0",
+        "Transfer Tote": "UIPage, packages 2.1.0 and 2.16.0",
+        "SampleNewQ": "QueryObject, package 2.1.0 - referenced BY NAME from 03_TransferTote.xml (Q-20)",
+        "GetFlowFromStep": "QueryObject, package 2.1.0 (Q-20)",
+        "GetStepDetails": "PrintableDocument, package 2.8.0 - a class not previously counted"
+      }
+    }
+  },
+  "expectedScope": {
+    "value": "General",
+    "severity": "WARN",
+    "why": "True in all three supplied samples, but falsified as a universal rule: 3 of the 66 live pages use a different scope. A convention, not a law - hence WARN. (Recorded as '3 of 198' until 2026-08-18: the numerator was already a unique-page count, the denominator was not - F-94. The exception is therefore 4.5%, not 1.5%.)"
+  },
+  "expectedRevision": {
+    "value": "A",
+    "severity": "WARN",
+    "why": "Every artifact we hold is revision A, including all 66 live pages. We have never seen a revision B, so this is an unverified assumption rather than a rule. Ask B4 covers it."
+  },
+  "actionGroupId": {
+    "value": "General",
+    "severity": "WARN",
+    "why": "Athena's reference page puts all four action buttons in the group 'General'. The base tenant instead uses localised group labels ($(MaterialMaterialGroupLabel) and similar) on 491 of 1,015 buttons, so this is a client choice rather than a platform fact. Filled in only when the generator did not set one."
+  },
+  "gridTitleStyle": {
+    "value": "plain",
+    "severity": "WARN",
+    "why": "A grid's settings.title is the caption rendered above it ('Production Order (7)', 'Materials (20)'). The two populations disagree completely and the split is clean: across the 66 live base-tenant pages, 6 of 6 non-empty grid titles are $(MessageName) references and NONE is plain text; across Entegris' 36 custom pages, 6 of 6 are plain text and NONE is a message reference. So if a title is emitted for Athena it should be plain, following their own artifacts - and it must NOT be treated as an unlocalised label and failed, which is what the platform's own habit would suggest. NOTE the more important half: 12 of Entegris' 18 grids carry an EMPTY title, so emitting '' is normal rather than a defect. Do not add a rule requiring a caption; see FINDINGS F-135, where the action asking for one was withdrawn on this measurement.",
+    "_alsoMeasured": {
+      "baseTenantGrids": {
+        "plain": 0,
+        "message": 6,
+        "empty": 4,
+        "keyAbsent": 6
+      },
+      "entegrisGrids": {
+        "plain": 6,
+        "message": 0,
+        "empty": 12,
+        "keyAbsent": 0
+      }
+    }
+  },
+  "noHardcode": {
+    "$comment": [
+      "Fuel for test/hardcoding.test.ts, which enforces the standing rule that",
+      "case-specific values live in config and never in source.",
+      "",
+      "The gate derives most of what it forbids from `client` and `tenant` above,",
+      "including their camel-case word parts — it found that out the hard way: a",
+      "first version matched only the exact strings and passed when the client's",
+      "site name `Entegris KSP` was put back into preview.ts, because the declared",
+      "tenant is `EntegrisKSPUpgrade` and one is not a substring of the other.",
+      "",
+      "genericParts  word parts too generic to forbid — dropping them stops the",
+      "              gate firing on ordinary English.",
+      "forbidden     values no name can be derived from. These are here BECAUSE",
+      "              they were once in source: employee login names and the",
+      "              client's lot-id format, as sample rows in the preview. Listing",
+      "              them is how they stay out."
+    ],
+    "genericParts": ["Upgrade", "Test", "Prod", "Core", "Data"],
+    "forbidden": ["thulasiraman", "AGRTis", "TSTPanaya"]
+  },
+  "specTermMappings": {
+    "$comment": [
+      "Terms THIS CLIENT'S requirement documents use that are not properties of the",
+      "entity, together with the path their own delivered artifact maps each to.",
+      "",
+      "This was prose inside scripts/build-entity-types.ts until 2026-08-28 — two",
+      "column names from one user story, written into source. It is real guidance:",
+      "F-63 measured that without it the model emitted `path: UNKNOWN` for both,",
+      "because Rule 1 forbids inventing a path and neither term is in the schema.",
+      "But it is guidance about ONE CLIENT'S VOCABULARY, so it belongs here.",
+      "",
+      "Empty the list and the section disappears from ENTITY-TYPES.md; the generator",
+      "then reports both as gaps, which is correct behaviour without the evidence.",
+      "",
+      "The residual caveat is theirs and is kept in the gap report: ModifiedBy is",
+      "'last modified by', which equals the track-in user only while the track-in is",
+      "the most recent modification. Their approximation, knowingly shipped (Q-02)."
+    ],
+    "mappings": [
+      {
+        "term": "TrackInResource",
+        "entity": "Material",
+        "path": "LastProcessedResource",
+        "type": "LastProcessedResource:BigInt=11*",
+        "notThese": ["TrackInDate", "TrackInPrimaryQuantity", "TrackInSecondaryQuantity",
+                     "LastProcessedResource", "LastProcessStepResource", "LastSetupResource",
+                     "RequiredResource"]
+      },
+      {
+        "term": "TrackInId",
+        "entity": "Material",
+        "path": "ModifiedBy",
+        "type": "ModifiedBy:VarChar=4"
+      }
+    ]
+  },
+  "folder": {
+    "value": "\\Dashboards",
+    "severity": "WARN",
+    "why": "All three supplied UI pages live there. The CMF designer permits other folders, so a page filed elsewhere is not necessarily wrong."
+  },
+  "wizardStepPageType": {
+    "value": "Page",
+    "severity": "WARN",
+    "why": "CMF has four page classes and Step (UIType 1) is a real, WIDELY USED one. Verified on the live base tenant (CriticalManufacturing, CMF 10.2.7.10591, 2026-08-27, read-only): of 198 UI pages, UIType 0=126, 1=33, 2=30, 3=9. Thirty-three base-tenant pages ARE authored as Step, named Cmf_Material_Hold_Wizard_Hold_Reasons_Step and the like. But Athena does not follow the platform here: their wizard step, CustomChangePriorityStep, ships as UIType Page, hosted inside CustomChangePriorityWizard by a UiPageWidget. Across the delivered Athena exports: Page 27, Wizard 5, Cluster 4, Step 0. So a page whose NAME ends in Step should still be uiType Page for THIS client, unless something says otherwise. WARN not FAIL: the platform itself does the opposite, so a page using UIType 1 is correct CMF and merely unlike Athena. RE-MEASURED 2026-08-27: was Page 32, which counted three copies of OUR OWN generated page and two duplicate copies of Athena's, all living under CLIENT SRC/VERIFIED PAIRS. Those are now excluded via querySources.excludeContaining. Nothing was lost - every athena-delivered file there is byte-identical to one already present in Aug19th_Infos. The Step 0 finding is unaffected.",
+    "_alsoMeasured": {
+      "deliveredInstancesByUiType": {
+        "Page": 27,
+        "Wizard": 5,
+        "Cluster": 4,
+        "Step": 0
+      },
+      "liveBaseTenant": {
+        "tenant": "CriticalManufacturing",
+        "cmfVersion": "10.2.7.10591",
+        "checkedOn": "2026-08-27",
+        "pages": 198,
+        "byUiType": {
+          "0_Page": 126,
+          "1_Step": 33,
+          "2_Wizard": 30,
+          "3_Cluster": 9
+        }
+      }
+    },
+    "evidence": "200_CustomChangePriorityStep.xml"
+  },
+  "formFieldLabelStyle": {
+    "value": "either",
+    "severity": "WARN",
+    "why": "A form field label is NOT required to be a $(MessageName) reference. Measured across every form field in the delivered Athena exports: 26 labels are $(...) references and 32 are PLAIN TEXT - plain text is in fact the MAJORITY, so forcing a reference is wrong more often than not. RE-MEASURED 2026-08-27: was 33 references to 32 plain. The corpus had included three copies of our own generated page and two duplicates of Athena's; every label they contributed was a $(...) reference and the plain-text count did not move at all, so the old figure flattered the reference form by echoing our own habit back at us. Correcting it strengthens this convention rather than weakening it. This matters because the generator was emitting $(UNKNOWN_ChangePriorityAndHot) for a caption Athena writes as the plain string \"Change Priority and Hot\": it invented a message name, marked it unknown, and put a placeholder on screen where a real caption belonged. Where the story gives a label and no message name is evidenced in DICTIONARY.md, PLAIN TEXT is a legitimate answer and usually the better one - it renders correctly, whereas $(UNKNOWN_...) renders as a broken key. Compare gridTitleStyle, which measured the same question for grid TITLES and found a clean split the other way.",
+    "_alsoMeasured": {
+      "deliveredFormFieldLabels": {
+        "messageReference": 26,
+        "plainText": 32
+      }
+    }
+  }
+}
